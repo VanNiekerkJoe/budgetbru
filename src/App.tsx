@@ -11,6 +11,7 @@ import Insights from "./pages/Insights";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import React from "react";
+import { BudgetProvider } from "./contexts/BudgetContext";
 
 const queryClient = new QueryClient();
 
@@ -18,18 +19,20 @@ const App = () => (
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner position="top-center" />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/savings" element={<Savings />} />
-            <Route path="/insights" element={<Insights />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
+        <BudgetProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner position="top-center" />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/expenses" element={<Expenses />} />
+              <Route path="/savings" element={<Savings />} />
+              <Route path="/insights" element={<Insights />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </BudgetProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>
