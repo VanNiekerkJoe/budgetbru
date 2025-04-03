@@ -132,9 +132,9 @@ const Savings: React.FC = () => {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="short">Short-term (< 3 months)</SelectItem>
+                      <SelectItem value="short">Short-term (&lt; 3 months)</SelectItem>
                       <SelectItem value="medium">Medium-term (3-12 months)</SelectItem>
-                      <SelectItem value="long">Long-term (> 12 months)</SelectItem>
+                      <SelectItem value="long">Long-term (&gt; 12 months)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
