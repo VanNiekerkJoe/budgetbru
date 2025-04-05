@@ -1,13 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import NavBar from '@/components/NavBar';
-import BalanceCard from '@/components/dashboard/BalanceCard';
-import QuickAddExpense from '@/components/dashboard/QuickAddExpense';
-import CategoryBreakdown from '@/components/dashboard/CategoryBreakdown';
-import SavingsGoalsList from '@/components/savings/SavingsGoalsList';
 import { motion } from 'framer-motion';
-import { Moon, Sun } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Moon, Sun, Plus } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
+
+import NavBar from '@/components/NavBar';
+import LogoBadge from '@/components/LogoBadge';
+import CategoryIcon from '@/components/CategoryIcon';
+import BalanceCard from '@/components/dashboard/BalanceCard';
+import EventPopup from '@/components/EventPopup';
+import JoziBoetChatbot from '@/components/JoziBoetChatbot';
 
 const Index: React.FC = () => {
   const [darkMode, setDarkMode] = useState(() => {
@@ -16,6 +19,13 @@ const Index: React.FC = () => {
     }
     return false;
   });
+  
+  const [showEventPopup, setShowEventPopup] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState<{
+    title: string;
+    description: string;
+    date?: string;
+  } | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -23,26 +33,39 @@ const Index: React.FC = () => {
       localStorage.setItem('darkMode', darkMode.toString());
     }
   }, [darkMode]);
+  
+  useEffect(() => {
+    // Show event popup after a delay
+    const timer = setTimeout(() => {
+      setCurrentEvent({
+        title: "Varsity Night Market",
+        description: "Don't miss the Night Market this Friday! Food, music, and more at the Student Center.",
+        date: "Friday, 8 April 2025"
+      });
+      setShowEventPopup(true);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
+  
+  const handleCloseEventPopup = () => {
+    setShowEventPopup(false);
+  };
 
   return (
-    <div className={`min-h-screen pb-28 ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+    <div className={`min-h-screen pb-28 ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50'}`}>
       <motion.header 
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`relative ${darkMode ? 'bg-gradient-to-r from-gray-900 to-gray-800' : 'bg-gradient-to-r from-budgetbru-purple to-budgetbru-blue'} text-white py-6 px-4 shadow-lg`}
+        className={`relative ${darkMode ? 'bg-gray-900' : 'bg-white'} py-6 px-4 shadow-md`}
       >
-        <div className="container mx-auto max-w-md">
-          <h1 className="text-3xl font-bold flex items-center justify-center space-x-2">
-            <span>Budget</span>
-            <span className="text-budgetbru-orange">Bru</span>
-            <span className="ml-2 text-xs bg-budgetbru-orange rounded-full px-2 py-0.5">Beta</span>
-          </h1>
-          <p className="text-center text-sm opacity-90 mt-2 tracking-wider">You must budget, bru!</p>
+        <div className="container mx-auto max-w-md flex justify-center">
+          <LogoBadge size="lg" />
         </div>
         
         <Toggle 
@@ -51,7 +74,7 @@ const Index: React.FC = () => {
           onPressedChange={toggleDarkMode}
           aria-label="Toggle dark mode"
         >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          {darkMode ? <Sun size={18} className="animate-pulse-soft" /> : <Moon size={18} />}
         </Toggle>
       </motion.header>
       
@@ -64,32 +87,93 @@ const Index: React.FC = () => {
           <BalanceCard />
         </motion.div>
         
+        {/* Main Categories */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
+          className="grid grid-cols-2 gap-4"
         >
-          <QuickAddExpense />
+          {/* Finances Category */}
+          <motion.div 
+            whileHover={{ scale: 1.03 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
+          >
+            <CategoryIcon category="finances" withBackground withAnimation size={28} />
+            <h3 className="font-semibold text-lg">Finances</h3>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <Link to="/expenses" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="expenses" size={18} />
+                <span className="text-xs mt-1">Expenses</span>
+              </Link>
+              <Link to="/savings" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="savings" size={18} />
+                <span className="text-xs mt-1">Savings</span>
+              </Link>
+              <Link to="/insights" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="tips" size={18} />
+                <span className="text-xs mt-1">Tips</span>
+              </Link>
+              <Link to="/iou" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="iou" size={18} />
+                <span className="text-xs mt-1">IOU</span>
+              </Link>
+            </div>
+          </motion.div>
+          
+          {/* Jols Category */}
+          <motion.div 
+            whileHover={{ scale: 1.03 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
+          >
+            <CategoryIcon category="jols" withBackground withAnimation size={28} />
+            <h3 className="font-semibold text-lg">Jols</h3>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <Link to="/map" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="map" size={18} />
+                <span className="text-xs mt-1">Map</span>
+              </Link>
+              <Link to="/community" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="community" size={18} />
+                <span className="text-xs mt-1">Community</span>
+              </Link>
+              <Link to="/planning" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="planning" size={18} />
+                <span className="text-xs mt-1">Planning</span>
+              </Link>
+              <Link to="/vibes" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <CategoryIcon category="vibes" size={18} />
+                <span className="text-xs mt-1">Vibes Hub</span>
+              </Link>
+            </div>
+          </motion.div>
         </motion.div>
         
+        {/* Quick Add Button */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
         >
-          <h2 className={`text-xl font-bold mt-6 mb-3 ${darkMode ? 'text-white' : 'text-budgetbru-dark'} pl-2`}>Your Finances</h2>
-          <CategoryBreakdown />
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-        >
-          <h2 className={`text-xl font-bold mt-6 mb-3 ${darkMode ? 'text-white' : 'text-budgetbru-dark'} pl-2`}>Savings Goals</h2>
-          <SavingsGoalsList />
+          <button className="bg-theme-pink hover:bg-theme-pink/90 text-white rounded-full h-14 w-14 flex items-center justify-center shadow-lg">
+            <Plus size={24} />
+          </button>
         </motion.div>
       </main>
+      
+      {/* Event Popup */}
+      {showEventPopup && currentEvent && (
+        <EventPopup 
+          title={currentEvent.title}
+          description={currentEvent.description}
+          date={currentEvent.date}
+          onClose={handleCloseEventPopup}
+        />
+      )}
+      
+      {/* Jozi Boet Chatbot */}
+      <JoziBoetChatbot />
       
       <NavBar />
     </div>
