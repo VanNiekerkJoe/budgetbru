@@ -26,18 +26,18 @@ const Map: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen pb-28 ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+    <div className={`min-h-screen pb-28 ${darkMode ? 'bg-[#03213D] text-white' : 'bg-gradient-to-br from-[#304575] to-[#106A94]'}`}>
       <motion.header 
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`relative ${darkMode ? 'bg-gradient-to-r from-gray-900 to-gray-800' : 'bg-gradient-to-r from-budgetbru-purple to-budgetbru-blue'} text-white py-6 px-4 shadow-lg`}
+        className={`relative ${darkMode ? 'bg-[#03213D]' : 'bg-gradient-to-r from-[#304575] to-[#106A94]'} text-white py-6 px-4 shadow-lg`}
       >
         <div className="container mx-auto max-w-md">
           <h1 className="text-3xl font-bold flex items-center justify-center space-x-2">
             <span>Budget</span>
-            <span className="text-budgetbru-orange">Map</span>
-            <span className="ml-2 text-xs bg-budgetbru-orange rounded-full px-2 py-0.5">Beta</span>
+            <span className="text-[#CA529A]">Map</span>
+            <span className="ml-2 text-xs bg-[#CA529A] rounded-full px-2 py-0.5">Beta</span>
           </h1>
           <p className="text-center text-sm opacity-90 mt-2 tracking-wider">Find events and people near you!</p>
         </div>
