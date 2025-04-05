@@ -17,11 +17,9 @@ import Map from "./pages/Map";
 import NotFound from "./pages/NotFound";
 import IOUPage from "./pages/IOUPage";
 import TipsPage from "./pages/TipsPage";
-
-// Placeholder pages for new routes
-const CommunityPage = () => <div className="p-4 pt-16">Community Chat Group coming soon</div>;
-const PlanningPage = () => <div className="p-4 pt-16">Group Planning coming soon</div>;
-const VibesHubPage = () => <div className="p-4 pt-16">Varsity Vibes Hub coming soon</div>;
+import PlanningPage from "./pages/PlanningPage";
+import VibesHubPage from "./pages/VibesHubPage";
+import CommunityPage from "./pages/CommunityPage";
 
 const queryClient = new QueryClient();
 
