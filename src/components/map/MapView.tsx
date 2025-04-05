@@ -4,6 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 // This is a temporary public token - in a real app, you would store this securely
 // and load it from environment variables
@@ -63,7 +64,7 @@ const MapView: React.FC = () => {
         const markerEl = document.createElement('div');
         markerEl.className = 'event-marker';
         markerEl.innerHTML = `
-          <div class="bg-[${event.color}] p-2 rounded-full">
+          <div class="bg-[${event.color}] p-2 rounded-full shadow-lg">
             <div class="bg-[${event.color}] p-1 rounded-full animate-pulse-soft">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -74,7 +75,12 @@ const MapView: React.FC = () => {
         `;
         
         const popup = new mapboxgl.Popup({ offset: 25 })
-          .setHTML(`<h3 class="font-bold">${event.title}</h3>`);
+          .setHTML(`
+            <div class="p-2">
+              <h3 class="font-bold text-theme-pink">${event.title}</h3>
+              <p class="text-xs mt-1">Click for more details</p>
+            </div>
+          `);
           
         new mapboxgl.Marker(markerEl)
           .setLngLat([event.lng, event.lat])
@@ -87,8 +93,8 @@ const MapView: React.FC = () => {
         const markerEl = document.createElement('div');
         markerEl.className = 'person-marker';
         markerEl.innerHTML = `
-          <div class="bg-white p-1 rounded-full">
-            <div class="bg-[#106A94] p-1 rounded-full">
+          <div class="bg-white p-1 rounded-full shadow-lg">
+            <div class="bg-theme-teal p-1 rounded-full animate-pulse-soft">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -98,7 +104,12 @@ const MapView: React.FC = () => {
         `;
         
         const popup = new mapboxgl.Popup({ offset: 25 })
-          .setHTML(`<h3 class="font-bold">${person.name}</h3>`);
+          .setHTML(`
+            <div class="p-2">
+              <h3 class="font-bold text-theme-teal">${person.name}</h3>
+              <p class="text-xs mt-1">Online now</p>
+            </div>
+          `);
           
         new mapboxgl.Marker(markerEl)
           .setLngLat([person.lng, person.lat])
@@ -116,26 +127,41 @@ const MapView: React.FC = () => {
     setMapBoxToken(e.target.value);
   };
 
+  const variants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+  };
+
   return (
-    <div className="h-[calc(100vh-220px)] w-full relative rounded-lg overflow-hidden border-4 border-[#03213D] shadow-xl">
-      <div className="absolute top-2 left-2 right-2 z-10 bg-[#03213D]/80 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2">
+    <div className="h-[calc(100vh-220px)] w-full relative rounded-lg overflow-hidden border-4 border-theme-navy shadow-xl">
+      <motion.div 
+        className="absolute top-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2"
+        initial="hidden"
+        animate="show"
+        variants={variants}
+      >
         <div className="flex gap-1 items-center">
-          <div className="bg-[#CA529A] p-1 rounded-full">
+          <div className="bg-theme-pink p-1 rounded-full">
             <MapPin size={14} className="text-white" />
           </div>
           <span className="text-xs text-white">Events</span>
         </div>
         <div className="flex gap-1 items-center ml-4">
-          <div className="bg-[#106A94] p-1 rounded-full">
+          <div className="bg-theme-teal p-1 rounded-full">
             <User size={14} className="text-white" />
           </div>
           <span className="text-xs text-white">People</span>
         </div>
-      </div>
+      </motion.div>
       
       <div ref={mapContainer} className="w-full h-full" />
       
-      <div className="absolute bottom-2 left-2 right-2 z-10 bg-[#03213D]/80 backdrop-blur-sm p-2 rounded-lg">
+      <motion.div 
+        className="absolute bottom-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+      >
         <input
           type="text"
           className="w-full text-xs bg-transparent border border-white/30 rounded px-2 py-1 text-white"
@@ -147,12 +173,12 @@ const MapView: React.FC = () => {
           For a production app, you would store your Mapbox token securely.
         </p>
         <div className="mt-2 flex flex-wrap gap-1">
-          <Badge className="bg-[#CA529A] hover:bg-[#CA529A]/80">Pink #CA529A</Badge>
-          <Badge className="bg-[#03213D] hover:bg-[#03213D]/80">Navy #03213D</Badge>
-          <Badge className="bg-[#304575] hover:bg-[#304575]/80">Indigo #304575</Badge>
-          <Badge className="bg-[#106A94] hover:bg-[#106A94]/80">Teal #106A94</Badge>
+          <Badge className="bg-theme-pink hover:bg-theme-pink/80 animate-fade-in">Pink #CA529A</Badge>
+          <Badge className="bg-theme-navy hover:bg-theme-navy/80 animate-fade-in" style={{ animationDelay: '0.1s' }}>Navy #03213D</Badge>
+          <Badge className="bg-theme-indigo hover:bg-theme-indigo/80 animate-fade-in" style={{ animationDelay: '0.2s' }}>Indigo #304575</Badge>
+          <Badge className="bg-theme-teal hover:bg-theme-teal/80 animate-fade-in" style={{ animationDelay: '0.3s' }}>Teal #106A94</Badge>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

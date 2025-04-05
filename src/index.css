@@ -14,16 +14,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 262 33% 50%;
+    --primary: 324 58% 55%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 30 95% 53%;
+    --secondary: 210 70% 30%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 199 92% 49%;
+    --accent: 199 52% 32%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,7 +31,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262 33% 50%;
+    --ring: 324 58% 55%;
 
     --radius: 0.8rem;
 
@@ -55,16 +55,16 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 262 33% 60%;
+    --primary: 324 58% 55%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 30 95% 53%;
+    --secondary: 210 70% 20%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 199 92% 49%;
+    --accent: 199 52% 32%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 62.8% 30.6%;
@@ -76,7 +76,7 @@
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 324 58% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
@@ -97,7 +97,7 @@
 
 @layer components {
   .gradient-heading {
-    @apply bg-gradient-to-r from-budgetbru-purple via-budgetbru-blue to-budgetbru-orange bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-theme-pink via-theme-indigo to-theme-teal bg-clip-text text-transparent;
   }
   
   .budget-card {
@@ -105,6 +105,43 @@
   }
   
   .quick-add-button {
-    @apply bg-budgetbru-purple hover:bg-budgetbru-purple/90 text-white font-medium px-4 py-2 rounded-lg transition-all;
+    @apply bg-theme-pink hover:bg-theme-pink/90 text-white font-medium px-4 py-2 rounded-lg transition-all;
+  }
+
+  .animated-card {
+    @apply transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg;
+  }
+
+  .shimmer-bg {
+    @apply bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%] animate-shimmer;
+  }
+
+  .floating-icon {
+    @apply animate-float;
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-lg bg-white/10 border border-white/20 shadow-lg;
+  }
+
+  .nav-link {
+    @apply relative flex flex-col items-center p-2 transition-all;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 h-0.5 w-0 bg-theme-pink transition-all duration-300;
+  }
+
+  .nav-link.active::after {
+    @apply w-full;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .dashboard-container {
+    @apply space-y-6 p-4;
   }
 }
