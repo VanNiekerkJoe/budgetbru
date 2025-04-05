@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import ParticleBackground from '@/components/ParticleBackground';
 
 // This is a temporary public token - in a real app, you would store this securely
 // and load it from environment variables
@@ -26,7 +27,11 @@ interface Person {
   avatar?: string;
 }
 
-const MapView: React.FC = () => {
+interface MapViewProps {
+  compact?: boolean;
+}
+
+const MapView: React.FC<MapViewProps> = ({ compact = false }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapBoxToken, setMapBoxToken] = useState<string>(MAPBOX_TOKEN);
@@ -53,10 +58,14 @@ const MapView: React.FC = () => {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11', // Use dark style
       center: [18.4241, -33.9249], // Cape Town coordinates
-      zoom: 13
+      zoom: compact ? 11.5 : 13,
+      interactive: !compact
     });
     
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    // Only add navigation controls if not compact
+    if (!compact) {
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    }
     
     map.current.on('load', () => {
       // Add events to the map
@@ -64,64 +73,84 @@ const MapView: React.FC = () => {
         const markerEl = document.createElement('div');
         markerEl.className = 'event-marker';
         markerEl.innerHTML = `
-          <div class="bg-[${event.color}] p-2 rounded-full shadow-lg">
-            <div class="bg-[${event.color}] p-1 rounded-full animate-pulse-soft">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            </div>
+          <div class="bg-[${event.color}] p-2 rounded-full shadow-lg animate-pulse-soft">
+            <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
           </div>
         `;
         
-        const popup = new mapboxgl.Popup({ offset: 25 })
-          .setHTML(`
-            <div class="p-2">
-              <h3 class="font-bold text-theme-pink">${event.title}</h3>
-              <p class="text-xs mt-1">Click for more details</p>
-            </div>
-          `);
-          
-        new mapboxgl.Marker(markerEl)
-          .setLngLat([event.lng, event.lat])
-          .setPopup(popup)
-          .addTo(map.current!);
+        if (!compact) {
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <div class="p-2">
+                <h3 class="font-bold text-theme-pink">${event.title}</h3>
+                <p class="text-xs mt-1">Click for more details</p>
+              </div>
+            `);
+            
+          new mapboxgl.Marker(markerEl)
+            .setLngLat([event.lng, event.lat])
+            .setPopup(popup)
+            .addTo(map.current!);
+        } else {
+          new mapboxgl.Marker(markerEl)
+            .setLngLat([event.lng, event.lat])
+            .addTo(map.current!);
+        }
       });
       
-      // Add people to the map
-      people.forEach(person => {
-        const markerEl = document.createElement('div');
-        markerEl.className = 'person-marker';
-        markerEl.innerHTML = `
-          <div class="bg-white p-1 rounded-full shadow-lg">
-            <div class="bg-theme-teal p-1 rounded-full animate-pulse-soft">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+      // Add people to the map (only if not compact)
+      if (!compact) {
+        people.forEach(person => {
+          const markerEl = document.createElement('div');
+          markerEl.className = 'person-marker';
+          markerEl.innerHTML = `
+            <div class="bg-white p-1 rounded-full shadow-lg">
+              <div class="bg-theme-teal p-1 rounded-full animate-pulse-soft">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
             </div>
-          </div>
-        `;
-        
-        const popup = new mapboxgl.Popup({ offset: 25 })
-          .setHTML(`
-            <div class="p-2">
-              <h3 class="font-bold text-theme-teal">${person.name}</h3>
-              <p class="text-xs mt-1">Online now</p>
-            </div>
-          `);
+          `;
           
-        new mapboxgl.Marker(markerEl)
-          .setLngLat([person.lng, person.lat])
-          .setPopup(popup)
-          .addTo(map.current!);
-      });
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <div class="p-2">
+                <h3 class="font-bold text-theme-teal">${person.name}</h3>
+                <p class="text-xs mt-1">Online now</p>
+              </div>
+            `);
+            
+          new mapboxgl.Marker(markerEl)
+            .setLngLat([person.lng, person.lat])
+            .setPopup(popup)
+            .addTo(map.current!);
+        });
+      }
+      
+      // Add particle effect animation
+      if (!compact) {
+        // Add a canvas layer for particle effects
+        const canvas = document.createElement('canvas');
+        canvas.width = mapContainer.current?.clientWidth || 800;
+        canvas.height = mapContainer.current?.clientHeight || 600;
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '5';
+        mapContainer.current?.appendChild(canvas);
+      }
     });
 
     return () => {
       map.current?.remove();
     };
-  }, [mapBoxToken]);
+  }, [mapBoxToken, compact]);
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMapBoxToken(e.target.value);
@@ -133,52 +162,60 @@ const MapView: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-220px)] w-full relative rounded-lg overflow-hidden border-4 border-theme-navy shadow-xl">
-      <motion.div 
-        className="absolute top-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2"
-        initial="hidden"
-        animate="show"
-        variants={variants}
-      >
-        <div className="flex gap-1 items-center">
-          <div className="bg-theme-pink p-1 rounded-full">
-            <MapPin size={14} className="text-white" />
+    <div className={`${compact ? 'h-full' : 'h-[calc(100vh-220px)]'} w-full relative rounded-lg overflow-hidden border-4 border-theme-navy shadow-xl`}>
+      {!compact && (
+        <ParticleBackground count={20} theme="jols" className="opacity-40" />
+      )}
+      
+      {!compact && (
+        <motion.div 
+          className="absolute top-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2"
+          initial="hidden"
+          animate="show"
+          variants={variants}
+        >
+          <div className="flex gap-1 items-center">
+            <div className="bg-theme-pink p-1 rounded-full">
+              <MapPin size={14} className="text-white" />
+            </div>
+            <span className="text-xs text-white">Events</span>
           </div>
-          <span className="text-xs text-white">Events</span>
-        </div>
-        <div className="flex gap-1 items-center ml-4">
-          <div className="bg-theme-teal p-1 rounded-full">
-            <User size={14} className="text-white" />
+          <div className="flex gap-1 items-center ml-4">
+            <div className="bg-theme-teal p-1 rounded-full">
+              <User size={14} className="text-white" />
+            </div>
+            <span className="text-xs text-white">People</span>
           </div>
-          <span className="text-xs text-white">People</span>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
       
       <div ref={mapContainer} className="w-full h-full" />
       
-      <motion.div 
-        className="absolute bottom-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-      >
-        <input
-          type="text"
-          className="w-full text-xs bg-transparent border border-white/30 rounded px-2 py-1 text-white"
-          placeholder="Enter your Mapbox token (optional)"
-          value={mapBoxToken}
-          onChange={handleTokenChange}
-        />
-        <p className="text-xs text-white/70 mt-1">
-          For a production app, you would store your Mapbox token securely.
-        </p>
-        <div className="mt-2 flex flex-wrap gap-1">
-          <Badge className="bg-theme-pink hover:bg-theme-pink/80 animate-fade-in">Pink #CA529A</Badge>
-          <Badge className="bg-theme-navy hover:bg-theme-navy/80 animate-fade-in" style={{ animationDelay: '0.1s' }}>Navy #03213D</Badge>
-          <Badge className="bg-theme-indigo hover:bg-theme-indigo/80 animate-fade-in" style={{ animationDelay: '0.2s' }}>Indigo #304575</Badge>
-          <Badge className="bg-theme-teal hover:bg-theme-teal/80 animate-fade-in" style={{ animationDelay: '0.3s' }}>Teal #106A94</Badge>
-        </div>
-      </motion.div>
+      {!compact && (
+        <motion.div 
+          className="absolute bottom-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        >
+          <input
+            type="text"
+            className="w-full text-xs bg-transparent border border-white/30 rounded px-2 py-1 text-white"
+            placeholder="Enter your Mapbox token (optional)"
+            value={mapBoxToken}
+            onChange={handleTokenChange}
+          />
+          <p className="text-xs text-white/70 mt-1">
+            For a production app, you would store your Mapbox token securely.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1">
+            <Badge className="bg-theme-pink hover:bg-theme-pink/80 animate-fade-in">Pink #CA529A</Badge>
+            <Badge className="bg-theme-navy hover:bg-theme-navy/80 animate-fade-in" style={{ animationDelay: '0.1s' }}>Navy #03213D</Badge>
+            <Badge className="bg-theme-indigo hover:bg-theme-indigo/80 animate-fade-in" style={{ animationDelay: '0.2s' }}>Indigo #304575</Badge>
+            <Badge className="bg-theme-teal hover:bg-theme-teal/80 animate-fade-in" style={{ animationDelay: '0.3s' }}>Teal #106A94</Badge>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

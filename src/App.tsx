@@ -15,9 +15,10 @@ import Insights from "./pages/Insights";
 import Profile from "./pages/Profile";
 import Map from "./pages/Map";
 import NotFound from "./pages/NotFound";
+import IOUPage from "./pages/IOUPage";
+import TipsPage from "./pages/TipsPage";
 
 // Placeholder pages for new routes
-const IOUPage = () => <div className="p-4 pt-16">IOU Management coming soon</div>;
 const CommunityPage = () => <div className="p-4 pt-16">Community Chat Group coming soon</div>;
 const PlanningPage = () => <div className="p-4 pt-16">Group Planning coming soon</div>;
 const VibesHubPage = () => <div className="p-4 pt-16">Varsity Vibes Hub coming soon</div>;
@@ -40,8 +41,9 @@ const App = () => (
               <Route path="/insights" element={<Insights />} />
               <Route path="/profile" element={<Profile />} />
               
-              {/* New Routes */}
+              {/* Updated Routes */}
               <Route path="/iou" element={<IOUPage />} />
+              <Route path="/tips" element={<TipsPage />} />
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/planning" element={<PlanningPage />} />
               <Route path="/vibes" element={<VibesHubPage />} />
