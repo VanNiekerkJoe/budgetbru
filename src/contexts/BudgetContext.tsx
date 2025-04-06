@@ -12,6 +12,7 @@ export type ExpenseCategory =
   | 'education'
   | 'clothing'
   | 'health'
+  | 'food'
   | 'other';
 
 export interface Expense {
@@ -20,6 +21,8 @@ export interface Expense {
   category: ExpenseCategory;
   description: string;
   date: string;
+  location?: string;
+  receiptImage?: string;
 }
 
 export interface SavingsGoal {
@@ -40,14 +43,27 @@ export interface Income {
   frequency?: 'weekly' | 'monthly' | 'once';
 }
 
+export interface EmergencyFund {
+  id: string;
+  targetAmount: number;
+  currentAmount: number;
+  monthlyContribution: number;
+  lastContribution?: string;
+}
+
 interface BudgetContextType {
   expenses: Expense[];
   savingsGoals: SavingsGoal[];
   incomes: Income[];
+  emergencyFund: EmergencyFund | null;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
+  updateExpense: (id: string, expense: Partial<Omit<Expense, 'id'>>) => void;
+  deleteExpense: (id: string) => void;
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id'>) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
   updateSavingsGoal: (id: string, amount: number) => void;
+  updateEmergencyFund: (amount: number) => void;
+  setEmergencyFund: (fund: Omit<EmergencyFund, 'id'>) => void;
   totalIncome: number;
   totalExpenses: number;
   remainingBudget: number;
@@ -132,6 +148,7 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(initialSavingsGoals);
   const [incomes, setIncomes] = useState<Income[]>(initialIncomes);
+  const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund | null>(null);
 
   // Calculate totals
   const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
@@ -152,6 +169,20 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
     setExpenses([...expenses, newExpense]);
     toast.success("Expense added successfully!");
+  };
+
+  // Update existing expense
+  const updateExpense = (id: string, updatedFields: Partial<Omit<Expense, 'id'>>) => {
+    setExpenses(expenses.map(expense => 
+      expense.id === id ? { ...expense, ...updatedFields } : expense
+    ));
+    toast.success("Expense updated successfully!");
+  };
+
+  // Delete expense
+  const deleteExpense = (id: string) => {
+    setExpenses(expenses.filter(expense => expense.id !== id));
+    toast.success("Expense deleted successfully!");
   };
 
   // Add new savings goal
@@ -194,6 +225,36 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       })
     );
   };
+  
+  // Set emergency fund
+  const setEmergencyFund = (fund: Omit<EmergencyFund, 'id'>) => {
+    const newFund = {
+      ...fund,
+      id: Date.now().toString(),
+    };
+    setEmergencyFundState(newFund);
+    toast.success("Emergency fund created!");
+  };
+  
+  // Update emergency fund
+  const updateEmergencyFund = (amount: number) => {
+    if (emergencyFund) {
+      const newAmount = emergencyFund.currentAmount + amount;
+      if (newAmount >= emergencyFund.targetAmount) {
+        toast.success("🎉 You've fully funded your emergency fund!", {
+          description: `Great job on reaching your emergency fund target!`,
+        });
+      }
+      setEmergencyFundState({
+        ...emergencyFund,
+        currentAmount: Math.min(newAmount, emergencyFund.targetAmount),
+        lastContribution: new Date().toISOString().split('T')[0]
+      });
+      toast.success("Emergency fund updated!");
+    } else {
+      toast.error("Please set up an emergency fund first!");
+    }
+  };
 
   return (
     <BudgetContext.Provider
@@ -201,10 +262,15 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         expenses,
         savingsGoals,
         incomes,
+        emergencyFund,
         addExpense,
+        updateExpense,
+        deleteExpense,
         addSavingsGoal,
         addIncome,
         updateSavingsGoal,
+        updateEmergencyFund,
+        setEmergencyFund,
         totalIncome,
         totalExpenses,
         remainingBudget,
