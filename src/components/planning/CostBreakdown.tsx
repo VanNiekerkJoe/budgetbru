@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CreditCard, Divide, Home, Map, Plus, Ticket } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CreditCard, Divide, Home, Map, Plus, Ticket, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type CostItem = {
@@ -141,26 +141,39 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({ eventId, onCostUpdate }) 
       </div>
       
       {/* Cost summary */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-md">
+      <motion.div 
+        className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-md"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      >
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm text-gray-500 dark:text-gray-400">Total Event Cost</span>
           <span className="text-lg font-semibold">R{totalCost}</span>
         </div>
         
         {/* Category breakdown */}
-        <div className="space-y-2">
-          {Object.entries(costsByCategory).map(([category, amount]) => (
-            <div key={category} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-1.5">
-                <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${categoryColors[category as keyof typeof categoryColors]} flex items-center justify-center text-white`}>
-                  {categoryIcons[category as keyof typeof categoryIcons]}
+        <AnimatePresence>
+          <div className="space-y-2">
+            {Object.entries(costsByCategory).map(([category, amount], index) => (
+              <motion.div 
+                key={category} 
+                className="flex items-center justify-between text-sm"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${categoryColors[category as keyof typeof categoryColors]} flex items-center justify-center text-white`}>
+                    {categoryIcons[category as keyof typeof categoryIcons]}
+                  </div>
+                  <span>{categoryLabels[category as keyof typeof categoryLabels]}</span>
                 </div>
-                <span>{categoryLabels[category as keyof typeof categoryLabels]}</span>
-              </div>
-              <span>R{amount}</span>
-            </div>
-          ))}
-        </div>
+                <span>R{amount}</span>
+              </motion.div>
+            ))}
+          </div>
+        </AnimatePresence>
         
         {/* Progress chart */}
         <div className="mt-4">
@@ -168,56 +181,66 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({ eventId, onCostUpdate }) 
             <div className="h-4 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
               {Object.entries(costsByCategory).map(([category, amount], index, array) => {
                 const percentage = (amount / totalCost) * 100;
-                const prevPercentages = array.slice(0, index).reduce((acc, [_, val]) => acc + (val / totalCost) * 100, 0);
                 
                 return (
-                  <div
+                  <motion.div
                     key={category}
                     className={`h-full bg-gradient-to-r ${categoryColors[category as keyof typeof categoryColors]}`}
-                    style={{ 
-                      width: `${percentage}%`, 
-                      marginLeft: index === 0 ? 0 : `${prevPercentages}%`,
-                      position: index === 0 ? 'relative' : 'absolute',
-                      top: 0
-                    }}
+                    style={{ width: `${percentage}%` }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percentage}%` }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                   />
                 );
               })}
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
       
       {/* Cost items list */}
       <div className="space-y-2">
-        {costs.map((cost) => (
-          <motion.div
-            key={cost.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${categoryColors[cost.category]} flex items-center justify-center text-white`}>
-                  {categoryIcons[cost.category]}
+        <AnimatePresence>
+          {costs.map((cost) => (
+            <motion.div
+              key={cost.id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm relative"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${categoryColors[cost.category]} flex items-center justify-center text-white`}>
+                    {categoryIcons[cost.category]}
+                  </div>
+                  <div>
+                    <div className="font-medium">{cost.description}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Paid by {cost.paidBy} • {cost.splitAmong?.length || 1} people
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-medium">{cost.description}</div>
+                <div className="text-right">
+                  <div className="font-medium">R{cost.amount}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Paid by {cost.paidBy} • {cost.splitAmong?.length || 1} people
+                    R{calculateSplitAmount(cost.amount, cost.splitAmong).toFixed(2)} each
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-medium">R{cost.amount}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  R{calculateSplitAmount(cost.amount, cost.splitAmong).toFixed(2)} each
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+              
+              <motion.button 
+                className="absolute -top-2 -right-2 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full p-1"
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleDeleteCost(cost.id)}
+              >
+                <X size={12} />
+              </motion.button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
         
         {costs.length === 0 && (
           <div className="text-center py-6 text-gray-500 dark:text-gray-400">
@@ -227,115 +250,123 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({ eventId, onCostUpdate }) 
       </div>
       
       {/* Add cost modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <AnimatePresence>
+        {showAddModal && (
           <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md shadow-xl"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <div className="p-4 border-b dark:border-gray-700">
-              <h3 className="text-xl font-semibold">Add Cost Item</h3>
-            </div>
-            
-            <div className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <select
-                  className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
-                  value={newCost.category}
-                  onChange={(e) => setNewCost({...newCost, category: e.target.value as CostItem['category']})}
-                >
-                  <option value="transport">Transport</option>
-                  <option value="accommodation">Accommodation</option>
-                  <option value="tickets">Tickets</option>
-                  <option value="food">Food</option>
-                  <option value="other">Other</option>
-                </select>
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md shadow-xl"
+            >
+              <div className="p-4 border-b dark:border-gray-700">
+                <h3 className="text-xl font-semibold">Add Cost Item</h3>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
-                  value={newCost.description}
-                  onChange={(e) => setNewCost({...newCost, description: e.target.value})}
-                  placeholder="e.g., Uber ride, Event tickets"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Amount (R)</label>
-                <input
-                  type="number"
-                  className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
-                  value={newCost.amount || ''}
-                  onChange={(e) => setNewCost({...newCost, amount: parseFloat(e.target.value) || 0})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Paid By</label>
-                <select
-                  className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
-                  value={newCost.paidBy}
-                  onChange={(e) => setNewCost({...newCost, paidBy: e.target.value})}
-                >
-                  <option value="Me">Me</option>
-                  <option value="John">John</option>
-                  <option value="Sarah">Sarah</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Split Among</label>
-                <div className="flex flex-wrap gap-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-md">
-                  {['Me', 'John', 'Sarah'].map(person => (
-                    <div key={person} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`split-${person}`}
-                        className="mr-1"
-                        checked={newCost.splitAmong?.includes(person) || false}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setNewCost({
-                              ...newCost,
-                              splitAmong: [...(newCost.splitAmong || []), person]
-                            });
-                          } else {
-                            setNewCost({
-                              ...newCost,
-                              splitAmong: newCost.splitAmong?.filter(p => p !== person)
-                            });
-                          }
-                        }}
-                      />
-                      <label htmlFor={`split-${person}`} className="text-sm">{person}</label>
-                    </div>
-                  ))}
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <select
+                    className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
+                    value={newCost.category}
+                    onChange={(e) => setNewCost({...newCost, category: e.target.value as CostItem['category']})}
+                  >
+                    <option value="transport">Transport</option>
+                    <option value="accommodation">Accommodation</option>
+                    <option value="tickets">Tickets</option>
+                    <option value="food">Food</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
+                    value={newCost.description}
+                    onChange={(e) => setNewCost({...newCost, description: e.target.value})}
+                    placeholder="e.g., Uber ride, Event tickets"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Amount (R)</label>
+                  <input
+                    type="number"
+                    className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
+                    value={newCost.amount || ''}
+                    onChange={(e) => setNewCost({...newCost, amount: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Paid By</label>
+                  <select
+                    className="w-full px-3 py-2 rounded-md border dark:bg-gray-700 dark:border-gray-600"
+                    value={newCost.paidBy}
+                    onChange={(e) => setNewCost({...newCost, paidBy: e.target.value})}
+                  >
+                    <option value="Me">Me</option>
+                    <option value="John">John</option>
+                    <option value="Sarah">Sarah</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Split Among</label>
+                  <div className="flex flex-wrap gap-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-md">
+                    {['Me', 'John', 'Sarah'].map(person => (
+                      <div key={person} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`split-${person}`}
+                          className="mr-1"
+                          checked={newCost.splitAmong?.includes(person) || false}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewCost({
+                                ...newCost,
+                                splitAmong: [...(newCost.splitAmong || []), person]
+                              });
+                            } else {
+                              setNewCost({
+                                ...newCost,
+                                splitAmong: newCost.splitAmong?.filter(p => p !== person)
+                              });
+                            }
+                          }}
+                        />
+                        <label htmlFor={`split-${person}`} className="text-sm">{person}</label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="p-4 flex space-x-2 justify-end border-t dark:border-gray-700">
-              <button 
-                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md"
-                onClick={() => setShowAddModal(false)}
-              >
-                Cancel
-              </button>
-              <button 
-                className="px-3 py-1.5 bg-theme-pink text-white rounded-md"
-                onClick={handleAddCost}
-              >
-                Add Cost
-              </button>
-            </div>
+              
+              <div className="p-4 flex space-x-2 justify-end border-t dark:border-gray-700">
+                <button 
+                  className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="px-3 py-1.5 bg-theme-pink text-white rounded-md"
+                  onClick={handleAddCost}
+                >
+                  Add Cost
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
