@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgeGlow } from '@/components/ui/badge-glow';
 import { AlertCircle, X, Gift, MessageCircle, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Update the MascotType to include 'insights'
-export type MascotType = 'budgetbru' | 'savings' | 'expenses' | 'planning' | 'insights';
+// Update the MascotType to include both 'insights' and 'finance'
+export type MascotType = 'budgetbru' | 'savings' | 'expenses' | 'planning' | 'insights' | 'finance';
 
 interface MascotHelperProps {
   type?: MascotType;
@@ -59,6 +58,10 @@ const MascotHelper: React.FC<MascotHelperProps> = ({
         return "🦊"; // Fox for expenses tracker
       case 'planning':
         return "🦉"; // Owl for planning
+      case 'finance':
+        return "🦅"; // Eagle for finance
+      case 'insights':
+        return "🦁"; // Lion for insights
       default:
         return "🦁"; // Lion for general BudgetBru mascot
     }
@@ -72,6 +75,10 @@ const MascotHelper: React.FC<MascotHelperProps> = ({
         return "bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800/50";
       case 'planning':
         return "bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50";
+      case 'finance':
+        return "bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800/50";
+      case 'insights':
+        return "bg-amber-100 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/50";
       default:
         return "bg-theme-pink/10 dark:bg-theme-pink/20 border-theme-pink/20 dark:border-theme-pink/30";
     }

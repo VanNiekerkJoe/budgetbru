@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useBudget, Income } from '@/contexts/BudgetContext';
+import { useBudget } from '@/contexts/BudgetContext';
+import type { Income as IncomeType } from '@/contexts/BudgetContext';
 import { ArrowLeft, Plus, Calendar, DollarSign, Landmark, Clock, Repeat, Coins, CalendarClock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/utils/formatters';
