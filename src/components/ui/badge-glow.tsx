@@ -1,11 +1,12 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, HTMLMotionProps } from "framer-motion";
 
-interface BadgeGlowProps extends React.HTMLAttributes<HTMLDivElement> {
+interface BadgeGlowProps extends Omit<HTMLMotionProps<"div">, "children"> {
   children: React.ReactNode;
   glowColor?: string;
+  className?: string;
 }
 
 export function BadgeGlow({
