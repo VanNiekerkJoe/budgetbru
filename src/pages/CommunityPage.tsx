@@ -1,12 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { MessageSquare, Send, Users, Heart, School } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Send, Users, Heart, School, ShoppingBag, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
 import NavBar from '@/components/NavBar';
 import ParticleBackground from '@/components/ParticleBackground';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import Marketplace from '@/components/community/Marketplace';
+import DonationPlanner from '@/components/community/DonationPlanner';
+import MascotHelper from '@/components/MascotHelper';
+import LanguageSelector from '@/components/LanguageSelector';
 
 type Message = {
   id: string;
@@ -63,13 +68,15 @@ const initialMessages: Message[] = [
 const CommunityPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'chat' | 'people'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'people' | 'marketplace' | 'donate'>('chat');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (activeTab === 'chat') {
+      scrollToBottom();
+    }
+  }, [messages, activeTab]);
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -115,47 +122,40 @@ const CommunityPage: React.FC = () => {
       <ParticleBackground count={20} className="opacity-30" />
       
       <header className="bg-white bg-opacity-80 dark:bg-gray-900 dark:bg-opacity-80 backdrop-blur-lg shadow-md py-4 px-4">
-        <div className="container mx-auto max-w-md">
-          <h1 className="text-2xl font-bold flex items-center justify-center">
+        <div className="container mx-auto max-w-md flex justify-between items-center">
+          <h1 className="text-2xl font-bold flex items-center">
             <MessageSquare size={24} className="mr-2 text-theme-pink" />
-            Community Chat
+            Community Hub
           </h1>
+          <div className="flex items-center gap-2">
+            <LanguageSelector compact />
+          </div>
         </div>
       </header>
       
       <main className="container mx-auto px-4 py-6 max-w-md">
         {/* Tabs */}
-        <div className="flex bg-white dark:bg-gray-800 rounded-lg shadow-md mb-4 p-1">
-          <button
-            className={`flex-1 py-2 px-4 rounded-md ${
-              activeTab === 'chat' 
-                ? 'bg-theme-pink text-white' 
-                : 'text-gray-700 dark:text-gray-300'
-            }`}
-            onClick={() => setActiveTab('chat')}
-          >
-            <div className="flex items-center justify-center">
-              <MessageSquare size={16} className="mr-2" />
-              Chat
-            </div>
-          </button>
-          <button
-            className={`flex-1 py-2 px-4 rounded-md ${
-              activeTab === 'people' 
-                ? 'bg-theme-pink text-white' 
-                : 'text-gray-700 dark:text-gray-300'
-            }`}
-            onClick={() => setActiveTab('people')}
-          >
-            <div className="flex items-center justify-center">
-              <Users size={16} className="mr-2" />
-              People
-            </div>
-          </button>
-        </div>
-        
-        {activeTab === 'chat' ? (
-          <>
+        <Tabs defaultValue="chat" value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="chat" className="flex items-center gap-1">
+              <MessageSquare size={14} />
+              <span className="hidden sm:inline">Chat</span>
+            </TabsTrigger>
+            <TabsTrigger value="people" className="flex items-center gap-1">
+              <Users size={14} />
+              <span className="hidden sm:inline">People</span>
+            </TabsTrigger>
+            <TabsTrigger value="marketplace" className="flex items-center gap-1">
+              <ShoppingBag size={14} />
+              <span className="hidden sm:inline">Market</span>
+            </TabsTrigger>
+            <TabsTrigger value="donate" className="flex items-center gap-1">
+              <Gift size={14} />
+              <span className="hidden sm:inline">Donate</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="chat">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md mb-4">
               <div className="p-2 border-b dark:border-gray-700 flex items-center">
                 <div className="flex items-center space-x-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
@@ -237,40 +237,55 @@ const CommunityPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-            <h3 className="text-lg font-medium mb-4">Community Members</h3>
-            <div className="space-y-3">
-              {mockUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-theme-pink to-purple-500 flex items-center justify-center text-white font-bold">
-                      {user.avatar}
-                    </div>
-                    <div className="ml-3">
-                      <div className="font-medium">{user.name}</div>
-                      <div className="flex items-center text-xs">
-                        <div className={`h-2 w-2 rounded-full ${
-                          user.status === 'online' ? 'bg-green-500' :
-                          user.status === 'away' ? 'bg-yellow-500' :
-                          'bg-gray-500'
-                        } mr-1`}></div>
-                        <span className="text-gray-500 dark:text-gray-400 capitalize">{user.status}</span>
+
+            <MascotHelper
+              type="insights" 
+              message="Engaging with your campus community can help you find budget-friendly activities and resources!" 
+            />
+          </TabsContent>
+
+          <TabsContent value="people">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+              <h3 className="text-lg font-medium mb-4">Community Members</h3>
+              <div className="space-y-3">
+                {mockUsers.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-theme-pink to-purple-500 flex items-center justify-center text-white font-bold">
+                        {user.avatar}
+                      </div>
+                      <div className="ml-3">
+                        <div className="font-medium">{user.name}</div>
+                        <div className="flex items-center text-xs">
+                          <div className={`h-2 w-2 rounded-full ${
+                            user.status === 'online' ? 'bg-green-500' :
+                            user.status === 'away' ? 'bg-yellow-500' :
+                            'bg-gray-500'
+                          } mr-1`}></div>
+                          <span className="text-gray-500 dark:text-gray-400 capitalize">{user.status}</span>
+                        </div>
                       </div>
                     </div>
+                    <button 
+                      className="text-xs text-theme-pink px-2 py-1 border border-theme-pink rounded-full hover:bg-theme-pink/10"
+                      onClick={() => toast.success(`Chat with ${user.name} coming soon!`)}
+                    >
+                      Message
+                    </button>
                   </div>
-                  <button 
-                    className="text-xs text-theme-pink px-2 py-1 border border-theme-pink rounded-full hover:bg-theme-pink/10"
-                    onClick={() => toast.success(`Chat with ${user.name} coming soon!`)}
-                  >
-                    Message
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="marketplace">
+            <Marketplace />
+          </TabsContent>
+
+          <TabsContent value="donate">
+            <DonationPlanner />
+          </TabsContent>
+        </Tabs>
       </main>
       
       <NavBar />
