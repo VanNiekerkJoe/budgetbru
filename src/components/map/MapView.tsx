@@ -27,11 +27,29 @@ interface Person {
   avatar?: string;
 }
 
-interface MapViewProps {
-  compact?: boolean;
+export interface EventMarker {
+  id: number;
+  name: string;
+  lat: number;
+  lng: number;
+  type: 'social' | 'academic' | 'sport' | 'food';
+  date?: string;
+  description?: string;
 }
 
-const MapView: React.FC<MapViewProps> = ({ compact = false }) => {
+interface MapViewProps {
+  compact?: boolean;
+  mapStyle?: 'default' | 'satellite' | 'dark';
+  markers?: EventMarker[];
+  onMarkerClick?: (event: EventMarker) => void;
+}
+
+const MapView: React.FC<MapViewProps> = ({ 
+  compact = false, 
+  mapStyle = 'dark',
+  markers = [],
+  onMarkerClick
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapBoxToken, setMapBoxToken] = useState<string>(MAPBOX_TOKEN);
@@ -54,9 +72,17 @@ const MapView: React.FC<MapViewProps> = ({ compact = false }) => {
 
     mapboxgl.accessToken = mapBoxToken;
     
+    // Use the mapStyle prop to determine the style
+    let mapboxStyle = 'mapbox://styles/mapbox/dark-v11';
+    if (mapStyle === 'satellite') {
+      mapboxStyle = 'mapbox://styles/mapbox/satellite-streets-v12';
+    } else if (mapStyle === 'default') {
+      mapboxStyle = 'mapbox://styles/mapbox/streets-v12';
+    }
+    
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11', // Use dark style
+      style: mapboxStyle,
       center: [18.4241, -33.9249], // Cape Town coordinates
       zoom: compact ? 11.5 : 13,
       interactive: !compact
@@ -68,38 +94,80 @@ const MapView: React.FC<MapViewProps> = ({ compact = false }) => {
     }
     
     map.current.on('load', () => {
-      // Add events to the map
-      events.forEach(event => {
-        const markerEl = document.createElement('div');
-        markerEl.className = 'event-marker';
-        markerEl.innerHTML = `
-          <div class="bg-[${event.color}] p-2 rounded-full shadow-lg animate-pulse-soft">
-            <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-          </div>
-        `;
-        
-        if (!compact) {
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div class="p-2">
-                <h3 class="font-bold text-theme-pink">${event.title}</h3>
-                <p class="text-xs mt-1">Click for more details</p>
-              </div>
-            `);
-            
-          new mapboxgl.Marker(markerEl)
-            .setLngLat([event.lng, event.lat])
-            .setPopup(popup)
-            .addTo(map.current!);
-        } else {
-          new mapboxgl.Marker(markerEl)
-            .setLngLat([event.lng, event.lat])
-            .addTo(map.current!);
-        }
-      });
+      // Check if we have markers from props
+      if (markers && markers.length > 0) {
+        markers.forEach(marker => {
+          const markerEl = document.createElement('div');
+          markerEl.className = 'event-marker';
+          
+          // Determine color based on marker type
+          let color = '#CA529A';
+          switch(marker.type) {
+            case 'social': color = '#9b87f5'; break;
+            case 'academic': color = '#33C3F0'; break;
+            case 'sport': color = '#4BC0C0'; break;
+            case 'food': color = '#FF9F40'; break;
+          }
+          
+          markerEl.innerHTML = `
+            <div class="bg-[${color}] p-2 rounded-full shadow-lg animate-pulse-soft">
+              <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+          `;
+          
+          if (!compact && onMarkerClick) {
+            const el = new mapboxgl.Marker(markerEl)
+              .setLngLat([marker.lng, marker.lat])
+              .addTo(map.current!);
+              
+            // Add click event listener
+            markerEl.addEventListener('click', () => {
+              onMarkerClick(marker);
+            });
+          } else {
+            new mapboxgl.Marker(markerEl)
+              .setLngLat([marker.lng, marker.lat])
+              .addTo(map.current!);
+          }
+        });
+      } else {
+        // Use default events if no markers provided
+        // Add events to the map
+        events.forEach(event => {
+          const markerEl = document.createElement('div');
+          markerEl.className = 'event-marker';
+          markerEl.innerHTML = `
+            <div class="bg-[${event.color}] p-2 rounded-full shadow-lg animate-pulse-soft">
+              <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+          `;
+          
+          if (!compact) {
+            const popup = new mapboxgl.Popup({ offset: 25 })
+              .setHTML(`
+                <div class="p-2">
+                  <h3 class="font-bold text-theme-pink">${event.title}</h3>
+                  <p class="text-xs mt-1">Click for more details</p>
+                </div>
+              `);
+              
+            new mapboxgl.Marker(markerEl)
+              .setLngLat([event.lng, event.lat])
+              .setPopup(popup)
+              .addTo(map.current!);
+          } else {
+            new mapboxgl.Marker(markerEl)
+              .setLngLat([event.lng, event.lat])
+              .addTo(map.current!);
+          }
+        });
+      }
       
       // Add people to the map (only if not compact)
       if (!compact) {
@@ -150,7 +218,7 @@ const MapView: React.FC<MapViewProps> = ({ compact = false }) => {
     return () => {
       map.current?.remove();
     };
-  }, [mapBoxToken, compact]);
+  }, [mapBoxToken, compact, mapStyle, markers, onMarkerClick]);
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMapBoxToken(e.target.value);

@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import EnhancedNavBar from '@/components/EnhancedNavBar';
-import MapView from '@/components/map/MapView';
+import MapView, { EventMarker } from '@/components/map/MapView';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, MapPin, Filter, Search, Calendar, MapIcon, Menu, X, Info } from 'lucide-react';
+import { Moon, Sun, MapPin, Filter, Search, Calendar, MapIcon, Menu, X, Info, ChevronRight } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

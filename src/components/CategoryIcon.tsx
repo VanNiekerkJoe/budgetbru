@@ -1,115 +1,143 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, MapPin, CircleDollarSign, BookOpen, Users, PartyPopper, MessageCircle, Bot } from 'lucide-react';
+import { Star, ShoppingCart, PiggyBank, BookOpen, Coffee, Lightbulb, BarChart3, Map, Users, Heart, ArrowUpDown, ThumbsUp, Home } from 'lucide-react';
 
+// Define the allowed category types
 export type CategoryType = 
-  | 'finances' 
-  | 'jols' 
-  | 'expenses' 
-  | 'savings' 
-  | 'tips' 
-  | 'iou' 
-  | 'map' 
-  | 'community' 
-  | 'planning' 
-  | 'vibes' 
-  | 'chatbot';
+  | 'expenses'
+  | 'income'
+  | 'savings'
+  | 'education'
+  | 'food'
+  | 'tips'
+  | 'insights'
+  | 'map'
+  | 'community'
+  | 'planning'
+  | 'iou'
+  | 'finances'
+  | 'jols'
+  | 'vibes';
 
 interface CategoryIconProps {
   category: CategoryType;
   size?: number;
-  className?: string;
-  withBackground?: boolean;
   withAnimation?: boolean;
+  withBackground?: boolean;
+  className?: string;
 }
 
 const CategoryIcon: React.FC<CategoryIconProps> = ({ 
   category, 
   size = 24, 
-  className = "",
+  withAnimation = false,
   withBackground = false,
-  withAnimation = false
+  className = ""
 }) => {
-  
   const getIcon = () => {
     switch(category) {
-      case 'finances':
-        return <Wallet size={size} />;
-      case 'jols':
-        return <PartyPopper size={size} />;
       case 'expenses':
-        return <Wallet size={size} />;
+        return <ShoppingCart size={size} />;
+      case 'income':
+        return <ArrowUpDown size={size} />;
       case 'savings':
-        return <CircleDollarSign size={size} />;
-      case 'tips':
+        return <PiggyBank size={size} />;
+      case 'education':
         return <BookOpen size={size} />;
-      case 'iou':
-        return <Users size={size} />;
-      case 'map':
-        return <MapPin size={size} />;
-      case 'community':
-        return <MessageCircle size={size} />;
-      case 'planning':
-        return <Users size={size} />;
-      case 'vibes':
-        return <PartyPopper size={size} />;
-      case 'chatbot':
-        return <Bot size={size} />;
-      default:
-        return <Wallet size={size} />;
-    }
-  };
-  
-  const getCategoryClass = () => {
-    if (!withBackground) return '';
-    
-    switch(category) {
-      case 'finances':
-        return 'finances-icon';
-      case 'jols':
-        return 'jols-icon';
-      case 'expenses':
-        return 'bg-orange-500 text-white';
-      case 'savings':
-        return 'bg-green-500 text-white';
+      case 'food':
+        return <Coffee size={size} />;
       case 'tips':
-        return 'bg-blue-500 text-white';
-      case 'iou':
-        return 'bg-purple-500 text-white';
+        return <Lightbulb size={size} />;
+      case 'insights':
+        return <BarChart3 size={size} />;
       case 'map':
-        return 'bg-emerald-500 text-white';
+        return <Map size={size} />;
       case 'community':
-        return 'bg-pink-500 text-white';
+        return <Users size={size} />;
       case 'planning':
-        return 'bg-indigo-500 text-white';
+        return <Users size={size} />;
+      case 'iou':
+        return <Heart size={size} />;
+      case 'finances':
+        return <PiggyBank size={size} />;
+      case 'jols':
+        return <ThumbsUp size={size} />;
       case 'vibes':
-        return 'bg-amber-500 text-white';
-      case 'chatbot':
-        return 'bg-teal-500 text-white chatbot-icon';
+        return <Star size={size} />;
       default:
-        return 'bg-gray-500 text-white';
+        return <Home size={size} />;
     }
   };
   
-  const iconContent = getIcon();
+  const getBackgroundColor = () => {
+    switch(category) {
+      case 'expenses':
+        return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+      case 'income':
+        return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
+      case 'savings':
+        return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'education':
+        return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'food':
+        return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'tips':
+        return 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+      case 'insights':
+        return 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400';
+      case 'map':
+        return 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400';
+      case 'community':
+        return 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400';
+      case 'planning':
+        return 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
+      case 'iou':
+        return 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400';
+      case 'finances':
+        return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'jols':
+        return 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+      case 'vibes':
+        return 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
+      default:
+        return 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400';
+    }
+  };
+  
+  const icon = getIcon();
   
   if (withAnimation) {
-    return (
-      <motion.div
-        className={`category-icon ${getCategoryClass()} ${className}`}
+    return withBackground ? (
+      <motion.div 
+        className={`w-10 h-10 rounded-full ${getBackgroundColor()} flex items-center justify-center ${className}`}
         whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.9 }}
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
-        {iconContent}
+        {icon}
+      </motion.div>
+    ) : (
+      <motion.div
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        className={className}
+      >
+        {icon}
       </motion.div>
     );
   }
   
-  return (
-    <div className={`${withBackground ? 'category-icon' : ''} ${getCategoryClass()} ${className}`}>
-      {iconContent}
+  return withBackground ? (
+    <div className={`w-10 h-10 rounded-full ${getBackgroundColor()} flex items-center justify-center ${className}`}>
+      {icon}
     </div>
+  ) : (
+    <div className={className}>{icon}</div>
   );
 };
 

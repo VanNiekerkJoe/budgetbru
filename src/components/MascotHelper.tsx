@@ -5,7 +5,8 @@ import { BadgeGlow } from '@/components/ui/badge-glow';
 import { AlertCircle, X, Gift, MessageCircle, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
-type MascotType = 'budgetbru' | 'savings' | 'expenses' | 'planning';
+// Update the MascotType to include 'insights'
+export type MascotType = 'budgetbru' | 'savings' | 'expenses' | 'planning' | 'insights';
 
 interface MascotHelperProps {
   type?: MascotType;
