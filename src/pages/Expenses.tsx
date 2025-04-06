@@ -161,12 +161,12 @@ const Expenses: React.FC = () => {
               />
             </div>
             
-            <Select value={expenseFilter || ''} onValueChange={(value) => setExpenseFilter(value || null)}>
+            <Select value={expenseFilter || 'all'} onValueChange={(value) => setExpenseFilter(value === 'all' ? null : value)}>
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="rent">Rent</SelectItem>
                 <SelectItem value="groceries">Groceries</SelectItem>
                 <SelectItem value="transport">Transport</SelectItem>
