@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { School, Heart, Flag, Star, Calendar } from 'lucide-react';
@@ -72,7 +71,7 @@ const VibesHubPage: React.FC = () => {
     {
       id: '2',
       author: 'MphoVibes',
-      content: 'The campus food court is serving free coffee today until 2pm. Get it while it's hot! ☕',
+      content: "The campus food court is serving free coffee today until 2pm. Get it while it's hot! ☕",
       likes: 42,
       comments: 8,
       date: '4 hours ago',
@@ -127,7 +126,6 @@ const VibesHubPage: React.FC = () => {
       </header>
       
       <div className="container mx-auto px-4 py-6 max-w-md">
-        {/* Tabs */}
         <div className="flex bg-white dark:bg-gray-800 rounded-lg shadow-md mb-6 p-1">
           <button
             className={`flex-1 py-2 px-4 rounded-md ${
