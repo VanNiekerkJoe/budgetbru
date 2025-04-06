@@ -2,11 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, Plus, ArrowUpRight, CreditCard, Landmark } from 'lucide-react';
+import { Moon, Sun, Plus, ArrowUpRight, CreditCard, Landmark, Wallet, ChevronRight, Search, Bell, Settings } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { toast } from 'sonner';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { BadgeGlow } from '@/components/ui/badge-glow';
 
-import NavBar from '@/components/NavBar';
+import EnhancedNavBar from '@/components/EnhancedNavBar';
 import LogoBadge from '@/components/LogoBadge';
 import CategoryIcon from '@/components/CategoryIcon';
 import BalanceCard from '@/components/dashboard/BalanceCard';
@@ -14,7 +21,6 @@ import EventPopup from '@/components/EventPopup';
 import JoziBoetChatbot from '@/components/JoziBoetChatbot';
 import MapView from '@/components/map/MapView';
 import ParticleBackground from '@/components/ParticleBackground';
-import { Card, CardContent } from '@/components/ui/card';
 
 const WALLPAPERS = [
   {
@@ -52,10 +58,21 @@ const Index: React.FC = () => {
   
   const [showMap, setShowMap] = useState(false);
   const [wallpaper, setWallpaper] = useState(WALLPAPERS[0].value);
+  const [activeTab, setActiveTab] = useState("overview");
   
   const [transactions, setTransactions] = useState([
-    { id: 1, type: 'expense', amount: 50, description: 'Textbooks' },
-    { id: 2, type: 'income', amount: 300, description: 'Money from Mom' }
+    { id: 1, type: 'expense', amount: 50, description: 'Textbooks', category: 'education', date: new Date(Date.now() - 3600000) },
+    { id: 2, type: 'income', amount: 300, description: 'Money from Mom', category: 'other', date: new Date(Date.now() - 86400000) },
+    { id: 3, type: 'expense', amount: 35, description: 'Lunch with friends', category: 'food', date: new Date(Date.now() - 172800000) },
+    { id: 4, type: 'expense', amount: 80, description: 'Phone data', category: 'utilities', date: new Date(Date.now() - 259200000) }
+  ]);
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [quickActions, setQuickActions] = useState([
+    { id: 1, name: 'Add Expense', icon: 'expenses', path: '/expenses' },
+    { id: 2, name: 'Add Income', icon: 'income', path: '/income' },
+    { id: 3, name: 'Set Goal', icon: 'savings', path: '/savings' },
+    { id: 4, name: 'Insights', icon: 'insights', path: '/insights' },
   ]);
   
   const [newCategoryModal, setNewCategoryModal] = useState(false);
@@ -106,7 +123,9 @@ const Index: React.FC = () => {
       id: Date.now(),
       type: 'income',
       amount: 300,
-      description: 'Money from Mom'
+      description: 'Money from Mom',
+      category: 'other',
+      date: new Date()
     };
     setTransactions([newTransaction, ...transactions]);
     toast.success('Income of R300 added!');
@@ -121,6 +140,10 @@ const Index: React.FC = () => {
       toast.error("Please enter a category name");
     }
   };
+  
+  const filteredTransactions = transactions.filter(
+    transaction => transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Animation variants
   const containerVariants = {
@@ -137,10 +160,46 @@ const Index: React.FC = () => {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
   };
+  
+  const buttonVariants = {
+    rest: { scale: 1 },
+    hover: { scale: 1.05 },
+    tap: { scale: 0.95 }
+  };
+  
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    
+    if (diffHrs < 1) return 'Just now';
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    const diffDays = Math.floor(diffHrs / 24);
+    return `${diffDays}d ago`;
+  };
+  
+  const getCategoryEmoji = (category: string) => {
+    switch(category) {
+      case 'education': return '📚';
+      case 'food': return '🍔';
+      case 'utilities': return '💡';
+      case 'transport': return '🚗';
+      case 'entertainment': return '🎬';
+      case 'income': return '💰';
+      default: return '💼';
+    }
+  };
+  
+  const exploreItems = [
+    { title: 'Tips for Food Budget', category: 'Food', icon: '🍔' },
+    { title: 'Save on Textbooks', category: 'Education', icon: '📚' },
+    { title: 'Weekend Activities', category: 'Entertainment', icon: '🎬' },
+    { title: 'Transport Tips', category: 'Transport', icon: '🚗' },
+  ];
 
   return (
     <div className={`min-h-screen pb-28 ${wallpaper} transition-all duration-500`}>
-      <ParticleBackground count={30} className="opacity-30" />
+      <ParticleBackground count={20} className="opacity-30" />
       
       <motion.header 
         initial={{ opacity: 0, y: -50 }}
@@ -148,32 +207,59 @@ const Index: React.FC = () => {
         transition={{ duration: 0.5 }}
         className={`relative ${darkMode ? 'bg-theme-navy bg-opacity-60 backdrop-blur-lg' : 'bg-white bg-opacity-80 backdrop-blur-lg'} py-6 px-4 shadow-md`}
       >
-        <div className="container mx-auto max-w-md flex justify-center">
-          <LogoBadge size="lg" />
-        </div>
-        
-        <div className="absolute top-4 right-4 flex space-x-2">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="rounded-full p-2 bg-gray-100 dark:bg-gray-800 shadow-md text-gray-600 dark:text-gray-300"
-            onClick={handleWallpaperChange}
-          >
-            <Landmark size={18} />
-          </motion.button>
+        <div className="container mx-auto max-w-md flex justify-between items-center">
+          <div className="flex items-center">
+            <LogoBadge size="md" />
+            <div className="ml-3">
+              <h1 className="text-xl font-bold">BudgetBru</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Student Finance Made Easy</p>
+            </div>
+          </div>
           
-          <Toggle 
-            className="p-2 rounded-full"
-            pressed={darkMode}
-            onPressedChange={toggleDarkMode}
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <Sun size={18} className="animate-pulse-soft" /> : <Moon size={18} />}
-          </Toggle>
+          <div className="flex items-center space-x-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="rounded-full p-2 bg-gray-100 dark:bg-gray-800 shadow-md text-gray-600 dark:text-gray-300"
+              onClick={handleWallpaperChange}
+            >
+              <Landmark size={18} />
+            </motion.button>
+            
+            <Toggle 
+              className="p-2 rounded-full"
+              pressed={darkMode}
+              onPressedChange={toggleDarkMode}
+              aria-label="Toggle dark mode"
+            >
+              {darkMode ? <Sun size={18} className="animate-pulse-soft" /> : <Moon size={18} />}
+            </Toggle>
+            
+            <Link to="/profile">
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Avatar className="h-9 w-9 border-2 border-white dark:border-gray-800">
+                  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-xs">
+                    BP
+                  </AvatarFallback>
+                </Avatar>
+              </motion.div>
+            </Link>
+          </div>
         </div>
       </motion.header>
       
-      <main className="container mx-auto px-4 py-4 space-y-6 max-w-md">
+      <main className="container mx-auto px-4 py-4 space-y-5 max-w-md">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+          <Input 
+            type="text"
+            placeholder="Search transactions, tips, or categories..." 
+            className="pl-9 bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -182,168 +268,364 @@ const Index: React.FC = () => {
           <BalanceCard />
         </motion.div>
         
-        {/* Recent Transactions */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4"
-        >
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-lg">Recent Activity</h3>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="text-sm text-theme-pink flex items-center gap-1"
-              onClick={handleAddIncome}
-            >
-              <CreditCard size={14} />
-              Add Income
-            </motion.button>
-          </div>
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-3 mb-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="explore">Explore</TabsTrigger>
+          </TabsList>
           
-          <div className="space-y-2">
-            {transactions.map((transaction) => (
-              <motion.div 
-                key={transaction.id}
-                variants={itemVariants}
-                className={`flex justify-between items-center p-2 rounded-lg ${
-                  transaction.type === 'income' 
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
-                    : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                }`}
+          <AnimatePresence mode="wait">
+            <TabsContent value="overview" asChild>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-5"
               >
-                <div className="flex items-center gap-2">
-                  {transaction.type === 'income' ? 
-                    <ArrowUpRight size={18} /> : 
-                    <CreditCard size={18} />
-                  }
-                  <span>{transaction.description}</span>
-                </div>
-                <span className="font-medium">
-                  {transaction.type === 'income' ? '+' : '-'}R{transaction.amount}
-                </span>
+                <motion.div 
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-4 gap-3"
+                >
+                  {quickActions.map(action => (
+                    <Link to={action.path} key={action.id}>
+                      <motion.div 
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-white dark:bg-gray-800/80 rounded-lg shadow-sm p-3 flex flex-col items-center justify-center"
+                      >
+                        <CategoryIcon category={action.icon} size={20} withAnimation />
+                        <span className="text-xs mt-2 text-center">{action.name}</span>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </motion.div>
+                
+                {/* Recent Transactions */}
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md p-4"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <BadgeGlow>
+                        <h3 className="font-semibold text-base">Recent Activity</h3>
+                      </BadgeGlow>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Your latest transactions</p>
+                    </div>
+                    <motion.button 
+                      variants={buttonVariants}
+                      initial="rest"
+                      whileHover="hover"
+                      whileTap="tap"
+                      className="text-xs text-theme-pink flex items-center gap-1 px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-900/20"
+                      onClick={handleAddIncome}
+                    >
+                      <Plus size={12} />
+                      Add Income
+                    </motion.button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {filteredTransactions.length > 0 ? (
+                      filteredTransactions.slice(0, 4).map((transaction) => (
+                        <motion.div 
+                          key={transaction.id}
+                          variants={itemVariants}
+                          className={`flex justify-between items-center p-2.5 rounded-lg ${
+                            transaction.type === 'income' 
+                              ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
+                              : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-9 h-9 flex items-center justify-center rounded-full ${
+                              transaction.type === 'income' 
+                                ? 'bg-green-100 dark:bg-green-800/30 text-green-600 dark:text-green-300' 
+                                : 'bg-red-100 dark:bg-red-800/30 text-red-600 dark:text-red-300'
+                            }`}>
+                              {getCategoryEmoji(transaction.category)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{transaction.description}</p>
+                              <p className="text-xs opacity-80">{formatTimeAgo(transaction.date)}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="font-medium">
+                              {transaction.type === 'income' ? '+' : '-'}R{transaction.amount}
+                            </span>
+                            <span className="text-xs opacity-80 capitalize">{transaction.category}</span>
+                          </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6">
+                        <Wallet className="mx-auto text-gray-400 mb-2" size={24} />
+                        <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Try clearing your search</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {filteredTransactions.length > 4 && (
+                    <div className="mt-3 text-center">
+                      <Button variant="link" size="sm" className="text-theme-pink">
+                        View All Transactions
+                        <ChevronRight size={14} className="ml-1" />
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+                
+                {/* Mini Map */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="rounded-xl overflow-hidden shadow-xl h-32 relative cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={toggleMap}
+                >
+                  <MapView compact />
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/50 via-black/20 to-transparent hover:from-black/30 transition-all z-10">
+                    <Badge variant="secondary" className="bg-white/90 dark:bg-black/70 text-black dark:text-white shadow-lg">
+                      Campus Map
+                    </Badge>
+                  </div>
+                </motion.div>
+                
+                {/* Main Categories */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  {/* Finances Category */}
+                  <motion.div 
+                    whileHover={{ scale: 1.03 }}
+                    className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
+                  >
+                    <CategoryIcon category="finances" withBackground withAnimation size={28} />
+                    <h3 className="font-semibold text-base">Finances</h3>
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                      <Link to="/expenses" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="expenses" size={16} />
+                        <span className="text-xs mt-1">Expenses</span>
+                      </Link>
+                      <Link to="/savings" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="savings" size={16} />
+                        <span className="text-xs mt-1">Savings</span>
+                      </Link>
+                      <Link to="/tips" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="tips" size={16} />
+                        <span className="text-xs mt-1">Tips</span>
+                      </Link>
+                      <Link to="/iou" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="iou" size={16} />
+                        <span className="text-xs mt-1">IOU</span>
+                      </Link>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Jols Category */}
+                  <motion.div 
+                    whileHover={{ scale: 1.03 }}
+                    className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
+                  >
+                    <CategoryIcon category="jols" withBackground withAnimation size={28} />
+                    <h3 className="font-semibold text-base">Jols</h3>
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                      <Link to="/map" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="map" size={16} />
+                        <span className="text-xs mt-1">Map</span>
+                      </Link>
+                      <Link to="/community" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="community" size={16} />
+                        <span className="text-xs mt-1">Community</span>
+                      </Link>
+                      <Link to="/planning" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="planning" size={16} />
+                        <span className="text-xs mt-1">Planning</span>
+                      </Link>
+                      <Link to="/vibes" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <CategoryIcon category="vibes" size={16} />
+                        <span className="text-xs mt-1">Vibes Hub</span>
+                      </Link>
+                    </div>
+                  </motion.div>
+                </motion.div>
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
-        
-        {/* Mini Map */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="rounded-xl overflow-hidden shadow-xl h-32 relative cursor-pointer"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={toggleMap}
-        >
-          <MapView compact />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/10 transition-all z-10">
-            <span className="text-white font-semibold text-lg shadow-sm">Campus Map</span>
-          </div>
-        </motion.div>
-        
-        {/* Main Categories */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="grid grid-cols-2 gap-4"
-        >
-          {/* Finances Category */}
-          <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
-          >
-            <CategoryIcon category="finances" withBackground withAnimation size={28} />
-            <h3 className="font-semibold text-lg">Finances</h3>
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Link to="/expenses" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="expenses" size={18} />
-                <span className="text-xs mt-1">Expenses</span>
-              </Link>
-              <Link to="/savings" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="savings" size={18} />
-                <span className="text-xs mt-1">Savings</span>
-              </Link>
-              <Link to="/tips" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="tips" size={18} />
-                <span className="text-xs mt-1">Tips</span>
-              </Link>
-              <Link to="/iou" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="iou" size={18} />
-                <span className="text-xs mt-1">IOU</span>
-              </Link>
-            </div>
-          </motion.div>
-          
-          {/* Jols Category */}
-          <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
-          >
-            <CategoryIcon category="jols" withBackground withAnimation size={28} />
-            <h3 className="font-semibold text-lg">Jols</h3>
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Link to="/map" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="map" size={18} />
-                <span className="text-xs mt-1">Map</span>
-              </Link>
-              <Link to="/community" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="community" size={18} />
-                <span className="text-xs mt-1">Community</span>
-              </Link>
-              <Link to="/planning" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="planning" size={18} />
-                <span className="text-xs mt-1">Planning</span>
-              </Link>
-              <Link to="/vibes" className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                <CategoryIcon category="vibes" size={18} />
-                <span className="text-xs mt-1">Vibes Hub</span>
-              </Link>
-            </div>
-          </motion.div>
-        </motion.div>
-        
-        {/* Custom Category Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold">Custom Categories</h3>
-            <button 
-              onClick={() => setNewCategoryModal(true)}
-              className="text-sm text-theme-pink flex items-center"
-            >
-              <Plus size={16} className="mr-1" /> Add
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-4 gap-2">
-            <div 
-              className="bg-white dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center border border-dashed border-gray-300 dark:border-gray-600"
-              onClick={() => setNewCategoryModal(true)}
-            >
-              <Plus size={20} className="text-gray-400" />
-              <span className="text-xs text-gray-500 mt-1">New</span>
-            </div>
-          </div>
-        </motion.div>
-        
-        {/* Quick Add Button */}
-        <motion.div
-          className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
-        >
-          <button className="bg-theme-pink hover:bg-theme-pink/90 text-white rounded-full h-14 w-14 flex items-center justify-center shadow-lg">
-            <Plus size={24} />
-          </button>
-        </motion.div>
+            </TabsContent>
+            
+            <TabsContent value="activity" asChild>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-semibold">All Transactions</h3>
+                  <div className="flex space-x-1">
+                    <Select 
+                      options={["All Types", "Income", "Expense"]} 
+                      defaultValue="All Types"
+                      small
+                    />
+                    <Select 
+                      options={["All Time", "This Week", "This Month"]} 
+                      defaultValue="All Time"
+                      small
+                    />
+                  </div>
+                </div>
+                
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-2"
+                >
+                  {filteredTransactions.length > 0 ? (
+                    filteredTransactions.map((transaction) => (
+                      <motion.div 
+                        key={transaction.id}
+                        variants={itemVariants}
+                        className="bg-white dark:bg-gray-800/90 backdrop-blur-md p-3 rounded-lg shadow-sm flex items-center justify-between"
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            transaction.type === 'income' 
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' 
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                          }`}>
+                            {getCategoryEmoji(transaction.category)}
+                          </div>
+                          <div>
+                            <p className="font-medium">{transaction.description}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                              <span className="capitalize">{transaction.category}</span>
+                              <span>•</span>
+                              <span>{formatTimeAgo(transaction.date)}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className={`font-medium ${
+                          transaction.type === 'income' 
+                            ? 'text-green-600 dark:text-green-400' 
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {transaction.type === 'income' ? '+' : '-'}R{transaction.amount}
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <motion.div 
+                      variants={itemVariants}
+                      className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-lg p-6 shadow-sm text-center"
+                    >
+                      <Wallet className="mx-auto mb-2 text-gray-400" size={24} />
+                      <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
+                      {searchTerm && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => setSearchTerm('')}
+                        >
+                          Clear Search
+                        </Button>
+                      )}
+                    </motion.div>
+                  )}
+                </motion.div>
+              </motion.div>
+            </TabsContent>
+            
+            <TabsContent value="explore" asChild>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <Card className="border-0 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <BadgeGlow>
+                          <h3 className="font-medium text-lg">Explore</h3>
+                        </BadgeGlow>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Discover budget tips and ideas</p>
+                      </div>
+                      <div className="text-2xl">💡</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-3"
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    {exploreItems.map((item, index) => (
+                      <motion.div
+                        key={index}
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="bg-white dark:bg-gray-800/90 backdrop-blur-md p-4 rounded-lg shadow-sm cursor-pointer"
+                        onClick={() => toast.info("Coming soon!", { description: "This feature is under development" })}
+                      >
+                        <div className="text-2xl mb-2">{item.icon}</div>
+                        <h3 className="font-medium text-sm">{item.title}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.category}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  <motion.div 
+                    variants={itemVariants}
+                    className="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 p-4 rounded-lg shadow-sm border border-amber-200 dark:border-amber-800/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">🎓</div>
+                      <div>
+                        <h3 className="font-medium">Student Discounts</h3>
+                        <p className="text-sm text-amber-800 dark:text-amber-200 mt-0.5">Tap to explore special offers</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div 
+                    variants={itemVariants}
+                    className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/20 p-4 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">📊</div>
+                      <div>
+                        <h3 className="font-medium">Budget Challenges</h3>
+                        <p className="text-sm text-blue-800 dark:text-blue-200 mt-0.5">Join a challenge and save more</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+            </TabsContent>
+          </AnimatePresence>
+        </Tabs>
       </main>
       
       {/* Event Popup */}
@@ -386,7 +668,7 @@ const Index: React.FC = () => {
       <AnimatePresence>
         {newCategoryModal && (
           <motion.div 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -411,26 +693,60 @@ const Index: React.FC = () => {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <button 
-                  className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600"
+                <Button 
+                  variant="outline"
+                  size="sm"
                   onClick={() => setNewCategoryModal(false)}
                 >
                   Cancel
-                </button>
-                <button 
-                  className="px-4 py-2 text-sm bg-theme-pink text-white rounded-md"
+                </Button>
+                <Button 
+                  size="sm"
                   onClick={handleAddCategory}
                 >
                   Create
-                </button>
+                </Button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
       
-      <NavBar />
+      {/* Quick Add Button */}
+      <motion.div
+        className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
+      >
+        <motion.button 
+          className="bg-theme-pink hover:bg-theme-pink/90 text-white rounded-full h-14 w-14 flex items-center justify-center shadow-lg"
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        >
+          <Plus size={24} />
+        </motion.button>
+      </motion.div>
+      
+      <EnhancedNavBar />
     </div>
+  );
+};
+
+// Simple select component for the activity tab
+const Select: React.FC<{options: string[], defaultValue: string, small?: boolean}> = ({ options, defaultValue, small }) => {
+  return (
+    <select 
+      defaultValue={defaultValue} 
+      className={`rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 ${
+        small ? 'text-xs py-1' : 'text-sm py-2'
+      } px-2`}
+    >
+      {options.map(option => (
+        <option key={option} value={option}>{option}</option>
+      ))}
+    </select>
   );
 };
 
