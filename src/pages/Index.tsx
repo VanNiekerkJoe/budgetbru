@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -15,7 +14,7 @@ import { BadgeGlow } from '@/components/ui/badge-glow';
 
 import EnhancedNavBar from '@/components/EnhancedNavBar';
 import LogoBadge from '@/components/LogoBadge';
-import CategoryIcon from '@/components/CategoryIcon';
+import CategoryIcon, { CategoryType } from '@/components/CategoryIcon';
 import BalanceCard from '@/components/dashboard/BalanceCard';
 import EventPopup from '@/components/EventPopup';
 import JoziBoetChatbot from '@/components/JoziBoetChatbot';
@@ -69,10 +68,10 @@ const Index: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [quickActions, setQuickActions] = useState([
-    { id: 1, name: 'Add Expense', icon: 'expenses', path: '/expenses' },
-    { id: 2, name: 'Add Income', icon: 'income', path: '/income' },
-    { id: 3, name: 'Set Goal', icon: 'savings', path: '/savings' },
-    { id: 4, name: 'Insights', icon: 'insights', path: '/insights' },
+    { id: 1, name: 'Add Expense', icon: 'expenses' as CategoryType, path: '/expenses' },
+    { id: 2, name: 'Add Income', icon: 'income' as CategoryType, path: '/income' },
+    { id: 3, name: 'Set Goal', icon: 'savings' as CategoryType, path: '/savings' },
+    { id: 4, name: 'Insights', icon: 'insights' as CategoryType, path: '/insights' },
   ]);
   
   const [newCategoryModal, setNewCategoryModal] = useState(false);
@@ -86,7 +85,6 @@ const Index: React.FC = () => {
   }, [darkMode]);
   
   useEffect(() => {
-    // Show event popup after a delay
     const timer = setTimeout(() => {
       setCurrentEvent({
         title: "Varsity Night Market",
@@ -145,7 +143,6 @@ const Index: React.FC = () => {
     transaction => transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     show: { 
@@ -734,7 +731,6 @@ const Index: React.FC = () => {
   );
 };
 
-// Simple select component for the activity tab
 const Select: React.FC<{options: string[], defaultValue: string, small?: boolean}> = ({ options, defaultValue, small }) => {
   return (
     <select 

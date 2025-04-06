@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import EnhancedNavBar from '@/components/EnhancedNavBar';
-import MapView, { EventMarker } from '@/components/map/MapView';
+import MapView from '@/components/map/MapView';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Moon, Sun, MapPin, Filter, Search, Calendar, MapIcon, Menu, X, Info, ChevronRight } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
@@ -13,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import ParticleBackground from '@/components/ParticleBackground';
 import { toast } from 'sonner';
 
-type EventMarker = {
+type MapEventMarker = {
   id: number;
   name: string;
   lat: number;
@@ -23,7 +22,7 @@ type EventMarker = {
   description?: string;
 };
 
-const MOCK_EVENTS: EventMarker[] = [
+const MOCK_EVENTS: MapEventMarker[] = [
   { id: 1, name: "Friday Night Market", lat: -26.1915, lng: 28.0264, type: "social", date: "2025-04-12", description: "Local food, crafts, and live music" },
   { id: 2, name: "Library Study Hall", lat: -26.1932, lng: 28.0301, type: "academic", description: "Open 24/7 for exam period" },
   { id: 3, name: "Campus Rugby Match", lat: -26.1853, lng: 28.0283, type: "sport", date: "2025-04-10", description: "Varsity cup semi-final" },
@@ -43,7 +42,7 @@ const Map: React.FC = () => {
   const [eventFilters, setEventFilters] = useState<string[]>([]);
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('default');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<EventMarker | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<MapEventMarker | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -69,18 +68,16 @@ const Map: React.FC = () => {
     toast.success(`Map style changed to ${style}`);
   };
   
-  const handleEventSelect = (event: EventMarker) => {
+  const handleEventSelect = (event: MapEventMarker) => {
     setSelectedEvent(event);
   };
   
   const getFilteredEvents = () => {
     return MOCK_EVENTS.filter(event => {
-      // Filter by search query
       if (searchQuery && !event.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
-      // Filter by event type
       if (eventFilters.length > 0 && !eventFilters.includes(event.type)) {
         return false;
       }
@@ -91,7 +88,6 @@ const Map: React.FC = () => {
   
   const filteredEvents = getFilteredEvents();
   
-  // Get event type icon
   const getEventIcon = (type: string) => {
     switch(type) {
       case 'social': return "🎉";
