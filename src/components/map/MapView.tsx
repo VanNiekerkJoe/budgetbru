@@ -42,13 +42,15 @@ interface MapViewProps {
   mapStyle?: 'default' | 'satellite' | 'dark';
   markers?: EventMarker[];
   onMarkerClick?: (event: EventMarker) => void;
+  selectedLocation?: [number, number];
 }
 
 const MapView: React.FC<MapViewProps> = ({ 
   compact = false, 
   mapStyle = 'dark',
   markers = [],
-  onMarkerClick
+  onMarkerClick,
+  selectedLocation
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -80,10 +82,15 @@ const MapView: React.FC<MapViewProps> = ({
       mapboxStyle = 'mapbox://styles/mapbox/streets-v12';
     }
     
+    // Use selected location if provided, otherwise default to Cape Town
+    const initialCenter = selectedLocation ? 
+      [selectedLocation[1], selectedLocation[0]] : 
+      [18.4241, -33.9249];
+    
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: mapboxStyle,
-      center: [18.4241, -33.9249], // Cape Town coordinates
+      center: initialCenter,
       zoom: compact ? 11.5 : 13,
       interactive: !compact
     });
@@ -91,6 +98,24 @@ const MapView: React.FC<MapViewProps> = ({
     // Only add navigation controls if not compact
     if (!compact) {
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    }
+    
+    // Add a marker for the selected location if provided
+    if (selectedLocation) {
+      const markerEl = document.createElement('div');
+      markerEl.className = 'selected-location-marker';
+      markerEl.innerHTML = `
+        <div class="bg-theme-pink p-2 rounded-full shadow-lg pulse-animation">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+      `;
+      
+      new mapboxgl.Marker(markerEl)
+        .setLngLat([selectedLocation[1], selectedLocation[0]])
+        .addTo(map.current);
     }
     
     map.current.on('load', () => {
@@ -218,7 +243,7 @@ const MapView: React.FC<MapViewProps> = ({
     return () => {
       map.current?.remove();
     };
-  }, [mapBoxToken, compact, mapStyle, markers, onMarkerClick]);
+  }, [mapBoxToken, compact, mapStyle, markers, onMarkerClick, selectedLocation]);
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMapBoxToken(e.target.value);
