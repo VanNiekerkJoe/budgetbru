@@ -5,12 +5,14 @@ interface CursorParticleEffectProps {
   colors?: string[];
   size?: number;
   glowIntensity?: number;
+  lifespan?: number;
 }
 
 const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
   colors = ['#CA529A', '#106A94', '#304575'],
   size = 8,
-  glowIntensity = 0.4
+  glowIntensity = 0.4,
+  lifespan = 40
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mousePosition = useRef({ x: -100, y: -100 });
@@ -71,7 +73,7 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [colors, size, glowIntensity]);
+  }, [colors, size, glowIntensity, lifespan]);
   
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -91,4 +93,3 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
 };
 
 export default CursorParticleEffect;
-
