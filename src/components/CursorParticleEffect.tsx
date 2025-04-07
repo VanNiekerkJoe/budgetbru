@@ -1,16 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  color: string;
-  life: number;
-  maxLife: number;
-}
+import React, { useEffect, useRef } from 'react';
 
 interface CursorParticleEffectProps {
   count?: number;
@@ -18,18 +7,30 @@ interface CursorParticleEffectProps {
   size?: number;
   speed?: number;
   lifespan?: number;
+  glowIntensity?: number;
 }
 
 const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
   count = 15,
   colors = ['#CA529A', '#106A94', '#304575'],
-  size = 6,
-  speed = 1,
-  lifespan = 30
+  size = 12,
+  speed = 0.8,
+  lifespan = 40,
+  glowIntensity = 0.7
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const particles = useRef<Particle[]>([]);
+  const particles = useRef<Array<{
+    x: number;
+    y: number;
+    size: number;
+    speedX: number;
+    speedY: number;
+    color: string;
+    life: number;
+    maxLife: number;
+  }>>([]);
   const mousePosition = useRef({ x: -100, y: -100 });
+  const prevMousePosition = useRef({ x: -100, y: -100 });
   const animationFrameId = useRef<number | null>(null);
 
   useEffect(() => {
@@ -50,32 +51,43 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
     window.addEventListener('resize', handleResize);
     handleResize();
     
-    // Track mouse position
+    // Track mouse position and create trail effect
     const handleMouseMove = (e: MouseEvent) => {
+      prevMousePosition.current = { ...mousePosition.current };
       mousePosition.current = { x: e.clientX, y: e.clientY };
       
-      // Create particles on mouse move
-      for (let i = 0; i < 2; i++) {
-        createParticle();
+      // Create particles on mouse move with interpolation for smoother trails
+      const dx = mousePosition.current.x - prevMousePosition.current.x;
+      const dy = mousePosition.current.y - prevMousePosition.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Create more particles when moving faster
+      const particleCount = Math.min(Math.max(1, Math.floor(distance / 5)), 3);
+      
+      for (let i = 0; i < particleCount; i++) {
+        // Interpolate position for smoother trails
+        const ratio = i / particleCount;
+        const x = prevMousePosition.current.x + dx * ratio;
+        const y = prevMousePosition.current.y + dy * ratio;
+        
+        createParticle(x, y);
       }
     };
     
-    const createParticle = () => {
+    const createParticle = (x: number, y: number) => {
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const maxLife = lifespan + Math.random() * lifespan;
+      const maxLife = lifespan + Math.random() * lifespan * 0.5;
       
-      const particle: Particle = {
-        x: mousePosition.current.x,
-        y: mousePosition.current.y,
-        size: Math.random() * size + 1,
-        speedX: (Math.random() - 0.5) * speed * 2,
-        speedY: (Math.random() - 0.5) * speed * 2,
+      particles.current.push({
+        x,
+        y,
+        size: Math.random() * size + size * 0.5,
+        speedX: (Math.random() - 0.5) * speed,
+        speedY: (Math.random() - 0.5) * speed,
         color,
         life: 0,
         maxLife
-      };
-      
-      particles.current.push(particle);
+      });
     };
     
     window.addEventListener('mousemove', handleMouseMove);
@@ -88,7 +100,7 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
       
       // Update and draw particles
       particles.current.forEach((particle, index) => {
-        // Update position
+        // Update position with slight gravity effect
         particle.x += particle.speedX;
         particle.y += particle.speedY;
         
@@ -96,11 +108,8 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
         particle.life++;
         
         // Calculate opacity based on life
-        const opacity = 1 - particle.life / particle.maxLife;
-        
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        const progress = particle.life / particle.maxLife;
+        const opacity = 1 - progress;
         
         // Extract RGB from hex color
         const hex = particle.color.replace('#', '');
@@ -108,6 +117,26 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
         
+        // Draw glow effect (multiple layered circles with decreasing opacity)
+        const glowRadius = particle.size * 2;
+        
+        // Create radial gradient for glow
+        const gradient = ctx.createRadialGradient(
+          particle.x, particle.y, 0,
+          particle.x, particle.y, glowRadius
+        );
+        
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity * glowIntensity})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, glowRadius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Core of the particle (smaller, more opaque)
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
         ctx.fill();
         
@@ -129,13 +158,13 @@ const CursorParticleEffect: React.FC<CursorParticleEffectProps> = ({
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [colors, size, speed, lifespan, count]);
+  }, [colors, size, speed, lifespan, glowIntensity, count]);
   
   return (
     <canvas 
       ref={canvasRef}
       className="fixed inset-0 z-50 pointer-events-none"
-      style={{ mixBlendMode: 'lighten' }}
+      style={{ mixBlendMode: 'screen' }}
     />
   );
 };

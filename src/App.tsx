@@ -51,7 +51,12 @@ const App = () => {
   return (
     <React.StrictMode>
       {showAnimation && <WelcomeAnimation />}
-      {showParticles && <CursorParticleEffect count={10} />}
+      {showParticles && <CursorParticleEffect 
+        size={16} 
+        colors={['#CA529A', '#106A94', '#304575', '#8B5CF6']} 
+        glowIntensity={0.8}
+        lifespan={45}
+      />}
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <BudgetProvider>
