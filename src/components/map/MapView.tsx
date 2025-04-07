@@ -83,9 +83,10 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     // Use selected location if provided, otherwise default to Cape Town
-    const initialCenter = selectedLocation ? 
-      [selectedLocation[1], selectedLocation[0]] : 
-      [18.4241, -33.9249];
+    // Using proper LngLat formatting for Mapbox GL
+    const initialCenter: mapboxgl.LngLatLike = selectedLocation ? 
+      [selectedLocation[1], selectedLocation[0]] as [number, number] : 
+      [18.4241, -33.9249] as [number, number];
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -114,7 +115,7 @@ const MapView: React.FC<MapViewProps> = ({
       `;
       
       new mapboxgl.Marker(markerEl)
-        .setLngLat([selectedLocation[1], selectedLocation[0]])
+        .setLngLat([selectedLocation[1], selectedLocation[0]] as [number, number])
         .addTo(map.current);
     }
     
