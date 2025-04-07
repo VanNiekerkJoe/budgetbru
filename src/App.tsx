@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
+import CursorParticleEffect from "./components/CursorParticleEffect";
 
 // Pages
 import Index from "./pages/Index";
@@ -29,6 +30,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [showAnimation, setShowAnimation] = useState(true);
+  const [showParticles, setShowParticles] = useState(true);
 
   // Check if this is the first load of the session
   useEffect(() => {
@@ -38,11 +40,18 @@ const App = () => {
     } else {
       sessionStorage.setItem('hasSeenAnimation', 'true');
     }
+    
+    // Check user preference for particles
+    const particlesDisabled = localStorage.getItem('particlesDisabled');
+    if (particlesDisabled === 'true') {
+      setShowParticles(false);
+    }
   }, []);
 
   return (
     <React.StrictMode>
       {showAnimation && <WelcomeAnimation />}
+      {showParticles && <CursorParticleEffect count={10} />}
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <BudgetProvider>
