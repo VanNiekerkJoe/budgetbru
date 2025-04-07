@@ -20,6 +20,8 @@ import EventPopup from '@/components/EventPopup';
 import JoziBoetChatbot from '@/components/JoziBoetChatbot';
 import MapView from '@/components/map/MapView';
 import ParticleBackground from '@/components/ParticleBackground';
+import TutorialGuide from '@/components/TutorialGuide';
+import { useTutorial } from '@/services/TutorialService';
 
 const WALLPAPERS = [
   {
@@ -76,7 +78,9 @@ const Index: React.FC = () => {
   
   const [newCategoryModal, setNewCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
-
+  
+  const { showTutorial, completeTutorial, skipTutorial, resetTutorial } = useTutorial();
+  
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     if (typeof window !== 'undefined') {
@@ -198,6 +202,11 @@ const Index: React.FC = () => {
     <div className={`min-h-screen pb-28 ${wallpaper} transition-all duration-500`}>
       <ParticleBackground count={20} className="opacity-30" />
       
+      {/* Welcome Tutorial */}
+      {showTutorial && (
+        <TutorialGuide onComplete={handleTutorialComplete} onSkip={handleTutorialSkip} />
+      )}
+      
       <motion.header 
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -208,12 +217,22 @@ const Index: React.FC = () => {
           <div className="flex items-center">
             <LogoBadge size="md" />
             <div className="ml-3">
-              <h1 className="text-xl font-bold">BudgetBru</h1>
+              <h1 className="text-xl font-bold gradient-heading">BudgetBru</h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Student Finance Made Easy</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="rounded-full p-2 bg-gray-100 dark:bg-gray-800 shadow-md text-gray-600 dark:text-gray-300"
+              onClick={() => resetTutorial()}
+              aria-label="Show tutorial"
+            >
+              <Bell size={18} />
+            </motion.button>
+            
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -246,7 +265,12 @@ const Index: React.FC = () => {
       </motion.header>
       
       <main className="container mx-auto px-4 py-4 space-y-5 max-w-md">
-        <div className="relative">
+        <motion.div 
+          className="relative"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
           <Input 
             type="text"
@@ -255,12 +279,13 @@ const Index: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
+        </motion.div>
         
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
+          className="animated-card"
         >
           <BalanceCard />
         </motion.div>
@@ -709,12 +734,17 @@ const Index: React.FC = () => {
         )}
       </AnimatePresence>
       
-      {/* Quick Add Button */}
+      {/* Quick Add Button - Enhanced with spring animation */}
       <motion.div
         className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 260, 
+          damping: 20, 
+          delay: 1 
+        }}
       >
         <motion.button 
           className="bg-theme-pink hover:bg-theme-pink/90 text-white rounded-full h-14 w-14 flex items-center justify-center shadow-lg"
