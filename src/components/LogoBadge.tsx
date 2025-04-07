@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
 interface LogoBadgeProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const LogoBadge: React.FC<LogoBadgeProps> = ({ size = 'md' }) => {
@@ -30,6 +30,13 @@ const LogoBadge: React.FC<LogoBadgeProps> = ({ size = 'md' }) => {
       badge: 'text-xs px-2 py-0.5',
       sparkles: 20
     },
+    xl: {
+      container: 'h-20',
+      title: 'text-4xl',
+      subtitle: 'text-base',
+      badge: 'text-sm px-2.5 py-0.5',
+      sparkles: 24
+    }
   };
 
   const classes = sizeClasses[size];

@@ -147,6 +147,16 @@ const Index: React.FC = () => {
     transaction => transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleTutorialComplete = () => {
+    completeTutorial();
+    toast.success('Tutorial completed! Enjoy using BudgetBru!');
+  };
+  
+  const handleTutorialSkip = () => {
+    skipTutorial();
+    toast.info('Tutorial skipped. You can access it anytime from settings.');
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: { 
