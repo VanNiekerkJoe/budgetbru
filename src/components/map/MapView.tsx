@@ -2,30 +2,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { MapPin, User } from 'lucide-react';
+import { MapPin, User, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import ParticleBackground from '@/components/ParticleBackground';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 // This is a temporary public token - in a real app, you would store this securely
 // and load it from environment variables
 const MAPBOX_TOKEN = 'pk.eyJ1IjoibG92YWJsZS1kZW1vIiwiYSI6ImNscmhtMzZvYjI3OXIya3BlbHBzcWhwc3kifQ.Lxxiuyvv8UYsaXrVX9v6dw';
-
-interface Event {
-  id: string;
-  title: string;
-  lat: number;
-  lng: number;
-  color: string;
-}
-
-interface Person {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  avatar?: string;
-}
 
 export interface EventMarker {
   id: number;
@@ -55,19 +40,57 @@ const MapView: React.FC<MapViewProps> = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapBoxToken, setMapBoxToken] = useState<string>(MAPBOX_TOKEN);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   
-  // Mock data for events and people
-  const events: Event[] = [
-    { id: '1', title: 'Budget Workshop', lat: -33.9249, lng: 18.4241, color: '#CA529A' },
-    { id: '2', title: 'Finance Meetup', lat: -33.9169, lng: 18.4231, color: '#304575' },
-    { id: '3', title: 'Saving Tips Webinar', lat: -33.9209, lng: 18.4301, color: '#106A94' },
-  ];
-  
-  const people: Person[] = [
-    { id: '1', name: 'James', lat: -33.9279, lng: 18.4211 },
-    { id: '2', name: 'Sarah', lat: -33.9189, lng: 18.4271 },
-    { id: '3', name: 'Mike', lat: -33.9149, lng: 18.4191 },
-  ];
+  // Find user's location
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([longitude, latitude]);
+          
+          if (map.current) {
+            map.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 14,
+              essential: true
+            });
+            
+            // Add a marker for the user's location
+            const userMarkerEl = document.createElement('div');
+            userMarkerEl.className = 'user-location-marker';
+            userMarkerEl.innerHTML = `
+              <div class="bg-blue-500 p-2 rounded-full shadow-lg pulse-animation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+              </div>
+            `;
+            
+            new mapboxgl.Marker(userMarkerEl)
+              .setLngLat([longitude, latitude])
+              .addTo(map.current);
+              
+            toast.success("Found your location!");
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error getting user location:', error);
+          toast.error("Couldn't access your location");
+          setLoading(false);
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      toast.error("Geolocation is not supported by your browser");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -88,158 +111,166 @@ const MapView: React.FC<MapViewProps> = ({
       [selectedLocation[1], selectedLocation[0]] as [number, number] : 
       [18.4241, -33.9249] as [number, number];
     
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: mapboxStyle,
-      center: initialCenter,
-      zoom: compact ? 11.5 : 13,
-      interactive: !compact
-    });
-    
-    // Only add navigation controls if not compact
-    if (!compact) {
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    }
-    
-    // Add a marker for the selected location if provided
-    if (selectedLocation) {
-      const markerEl = document.createElement('div');
-      markerEl.className = 'selected-location-marker';
-      markerEl.innerHTML = `
-        <div class="bg-theme-pink p-2 rounded-full shadow-lg pulse-animation">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-        </div>
-      `;
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: mapboxStyle,
+        center: initialCenter,
+        zoom: compact ? 11.5 : 13,
+        interactive: !compact
+      });
       
-      new mapboxgl.Marker(markerEl)
-        .setLngLat([selectedLocation[1], selectedLocation[0]] as [number, number])
-        .addTo(map.current);
-    }
-    
-    map.current.on('load', () => {
-      // Check if we have markers from props
-      if (markers && markers.length > 0) {
-        markers.forEach(marker => {
-          const markerEl = document.createElement('div');
-          markerEl.className = 'event-marker';
-          
-          // Determine color based on marker type
-          let color = '#CA529A';
-          switch(marker.type) {
-            case 'social': color = '#9b87f5'; break;
-            case 'academic': color = '#33C3F0'; break;
-            case 'sport': color = '#4BC0C0'; break;
-            case 'food': color = '#FF9F40'; break;
-          }
-          
-          markerEl.innerHTML = `
-            <div class="bg-[${color}] p-2 rounded-full shadow-lg animate-pulse-soft">
-              <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            </div>
-          `;
-          
-          if (!compact && onMarkerClick) {
-            const el = new mapboxgl.Marker(markerEl)
-              .setLngLat([marker.lng, marker.lat])
-              .addTo(map.current!);
-              
-            // Add click event listener
-            markerEl.addEventListener('click', () => {
-              onMarkerClick(marker);
-            });
-          } else {
-            new mapboxgl.Marker(markerEl)
-              .setLngLat([marker.lng, marker.lat])
-              .addTo(map.current!);
-          }
-        });
-      } else {
-        // Use default events if no markers provided
-        // Add events to the map
-        events.forEach(event => {
-          const markerEl = document.createElement('div');
-          markerEl.className = 'event-marker';
-          markerEl.innerHTML = `
-            <div class="bg-[${event.color}] p-2 rounded-full shadow-lg animate-pulse-soft">
-              <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            </div>
-          `;
-          
-          if (!compact) {
-            const popup = new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div class="p-2">
-                  <h3 class="font-bold text-theme-pink">${event.title}</h3>
-                  <p class="text-xs mt-1">Click for more details</p>
-                </div>
-              `);
-              
-            new mapboxgl.Marker(markerEl)
-              .setLngLat([event.lng, event.lat])
-              .setPopup(popup)
-              .addTo(map.current!);
-          } else {
-            new mapboxgl.Marker(markerEl)
-              .setLngLat([event.lng, event.lat])
-              .addTo(map.current!);
-          }
-        });
+      // Only add navigation controls if not compact
+      if (!compact) {
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.current.addControl(new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true
+        }));
       }
       
-      // Add people to the map (only if not compact)
-      if (!compact) {
-        people.forEach(person => {
-          const markerEl = document.createElement('div');
-          markerEl.className = 'person-marker';
-          markerEl.innerHTML = `
-            <div class="bg-white p-1 rounded-full shadow-lg">
-              <div class="bg-theme-teal p-1 rounded-full animate-pulse-soft">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
+      // Add a marker for the selected location if provided
+      if (selectedLocation) {
+        const markerEl = document.createElement('div');
+        markerEl.className = 'selected-location-marker';
+        markerEl.innerHTML = `
+          <div class="bg-theme-pink p-2 rounded-full shadow-lg pulse-animation">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>
+        `;
+        
+        new mapboxgl.Marker(markerEl)
+          .setLngLat([selectedLocation[1], selectedLocation[0]] as [number, number])
+          .addTo(map.current);
+      }
+      
+      map.current.on('load', () => {
+        // Check if we have markers from props
+        if (markers && markers.length > 0) {
+          markers.forEach(marker => {
+            const markerEl = document.createElement('div');
+            markerEl.className = 'event-marker';
+            
+            // Determine color based on marker type
+            let color = '#CA529A';
+            switch(marker.type) {
+              case 'social': color = '#9b87f5'; break;
+              case 'academic': color = '#33C3F0'; break;
+              case 'sport': color = '#4BC0C0'; break;
+              case 'food': color = '#FF9F40'; break;
+            }
+            
+            markerEl.innerHTML = `
+              <div class="bg-[${color}] p-2 rounded-full shadow-lg animate-pulse-soft">
+                <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
                 </svg>
               </div>
-            </div>
-          `;
-          
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div class="p-2">
-                <h3 class="font-bold text-theme-teal">${person.name}</h3>
-                <p class="text-xs mt-1">Online now</p>
-              </div>
-            `);
+            `;
             
-          new mapboxgl.Marker(markerEl)
-            .setLngLat([person.lng, person.lat])
-            .setPopup(popup)
-            .addTo(map.current!);
-        });
-      }
+            if (!compact && onMarkerClick) {
+              const el = new mapboxgl.Marker(markerEl)
+                .setLngLat([marker.lng, marker.lat])
+                .addTo(map.current!);
+                
+              // Add click event listener
+              markerEl.addEventListener('click', () => {
+                onMarkerClick(marker);
+              });
+            } else {
+              new mapboxgl.Marker(markerEl)
+                .setLngLat([marker.lng, marker.lat])
+                .addTo(map.current!);
+            }
+          });
+        } else {
+          // Use default locations if no markers provided
+          const defaultLocations = [
+            { id: 1, name: 'University Main Campus', lat: -33.9249, lng: 18.4241, type: 'academic' as const },
+            { id: 2, name: 'Student Center', lat: -33.9269, lng: 18.4261, type: 'social' as const },
+            { id: 3, name: 'Library', lat: -33.9239, lng: 18.4221, type: 'academic' as const },
+            { id: 4, name: 'Sports Complex', lat: -33.9279, lng: 18.4201, type: 'sport' as const },
+            { id: 5, name: 'Student Cafeteria', lat: -33.9259, lng: 18.4281, type: 'food' as const },
+          ];
+          
+          defaultLocations.forEach(location => {
+            const markerEl = document.createElement('div');
+            markerEl.className = 'location-marker';
+            
+            // Determine color based on location type
+            let color = '#CA529A';
+            switch(location.type) {
+              case 'social': color = '#9b87f5'; break;
+              case 'academic': color = '#33C3F0'; break;
+              case 'sport': color = '#4BC0C0'; break;
+              case 'food': color = '#FF9F40'; break;
+            }
+            
+            markerEl.innerHTML = `
+              <div class="bg-[${color}] p-2 rounded-full shadow-lg">
+                <svg width="${compact ? '12' : '24'}" height="${compact ? '12' : '24'}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </div>
+            `;
+            
+            if (!compact) {
+              const popup = new mapboxgl.Popup({ offset: 25 })
+                .setHTML(`
+                  <div class="p-2">
+                    <h3 class="font-bold">${location.name}</h3>
+                    <p class="text-xs mt-1">${location.type}</p>
+                  </div>
+                `);
+                
+              new mapboxgl.Marker(markerEl)
+                .setLngLat([location.lng, location.lat])
+                .setPopup(popup)
+                .addTo(map.current!);
+            } else {
+              new mapboxgl.Marker(markerEl)
+                .setLngLat([location.lng, location.lat])
+                .addTo(map.current!);
+            }
+          });
+        }
+        
+        setLoading(false);
+        
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.innerHTML = `
+          .pulse-animation {
+            animation: pulse 2s infinite;
+          }
+          
+          @keyframes pulse {
+            0% {
+              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            }
+            70% {
+              box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+            100% {
+              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      });
       
-      // Add particle effect animation
-      if (!compact) {
-        // Add a canvas layer for particle effects
-        const canvas = document.createElement('canvas');
-        canvas.width = mapContainer.current?.clientWidth || 800;
-        canvas.height = mapContainer.current?.clientHeight || 600;
-        canvas.style.position = 'absolute';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.pointerEvents = 'none';
-        canvas.style.zIndex = '5';
-        mapContainer.current?.appendChild(canvas);
-      }
-    });
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast.error('Error loading map. Please check your Mapbox token.');
+      setLoading(false);
+    }
 
     return () => {
       map.current?.remove();
@@ -250,36 +281,34 @@ const MapView: React.FC<MapViewProps> = ({
     setMapBoxToken(e.target.value);
   };
 
-  const variants = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-  };
-
   return (
-    <div className={`${compact ? 'h-full' : 'h-[calc(100vh-220px)]'} w-full relative rounded-lg overflow-hidden border-4 border-theme-navy shadow-xl`}>
-      {!compact && (
-        <ParticleBackground count={20} theme="jols" className="opacity-40" />
+    <div className={`${compact ? 'h-full' : 'h-[calc(100vh-220px)]'} w-full relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl`}>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/30 backdrop-blur-sm">
+          <div className="flex flex-col items-center">
+            <div className="h-12 w-12 rounded-full border-4 border-t-theme-pink border-r-transparent border-b-transparent border-l-transparent animate-spin mb-4"></div>
+            <p className="text-white font-medium">Loading map...</p>
+          </div>
+        </div>
       )}
       
       {!compact && (
         <motion.div 
-          className="absolute top-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg flex items-center gap-2"
-          initial="hidden"
-          animate="show"
-          variants={variants}
+          className="absolute bottom-4 right-4 z-10 flex flex-col gap-2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
         >
-          <div className="flex gap-1 items-center">
-            <div className="bg-theme-pink p-1 rounded-full">
-              <MapPin size={14} className="text-white" />
-            </div>
-            <span className="text-xs text-white">Events</span>
-          </div>
-          <div className="flex gap-1 items-center ml-4">
-            <div className="bg-theme-teal p-1 rounded-full">
-              <User size={14} className="text-white" />
-            </div>
-            <span className="text-xs text-white">People</span>
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="backdrop-blur-md bg-white/80 dark:bg-gray-800/80 shadow-lg"
+            onClick={getUserLocation}
+            disabled={loading}
+          >
+            <Navigation size={16} className="mr-2" />
+            Find My Location
+          </Button>
         </motion.div>
       )}
       
@@ -287,27 +316,19 @@ const MapView: React.FC<MapViewProps> = ({
       
       {!compact && (
         <motion.div 
-          className="absolute bottom-2 left-2 right-2 z-10 bg-theme-navy/80 backdrop-blur-sm p-2 rounded-lg"
+          className="absolute bottom-4 left-4 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 rounded-lg max-w-xs"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
+          <p className="text-xs font-medium mb-1">Mapbox Token (for testing)</p>
           <input
             type="text"
-            className="w-full text-xs bg-transparent border border-white/30 rounded px-2 py-1 text-white"
-            placeholder="Enter your Mapbox token (optional)"
+            className="w-full text-xs bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+            placeholder="Enter your Mapbox token"
             value={mapBoxToken}
             onChange={handleTokenChange}
           />
-          <p className="text-xs text-white/70 mt-1">
-            For a production app, you would store your Mapbox token securely.
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1">
-            <Badge className="bg-theme-pink hover:bg-theme-pink/80 animate-fade-in">Pink #CA529A</Badge>
-            <Badge className="bg-theme-navy hover:bg-theme-navy/80 animate-fade-in" style={{ animationDelay: '0.1s' }}>Navy #03213D</Badge>
-            <Badge className="bg-theme-indigo hover:bg-theme-indigo/80 animate-fade-in" style={{ animationDelay: '0.2s' }}>Indigo #304575</Badge>
-            <Badge className="bg-theme-teal hover:bg-theme-teal/80 animate-fade-in" style={{ animationDelay: '0.3s' }}>Teal #106A94</Badge>
-          </div>
         </motion.div>
       )}
     </div>
