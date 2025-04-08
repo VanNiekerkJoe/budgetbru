@@ -3,20 +3,45 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 
 export type ExpenseCategory = 'food' | 'entertainment' | 'education' | 'transport' | 'utilities' | 'rent' | 'clothing' | 'health' | 'groceries' | 'other';
 
+// Define SavingsGoal type and export it
+export type SavingsGoal = {
+  id: number;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline?: Date;
+  category: 'short' | 'medium' | 'long';
+  iconName?: string;
+};
+
+export type EmergencyFund = {
+  targetAmount: number;
+  currentAmount: number;
+  lastUpdate?: Date;
+};
+
 type BudgetContextType = {
   totalBudget: number;
   remainingBudget: number;
   expenses: Expense[];
   income: Income[];
   savings: Saving[];
+  savingsGoals: SavingsGoal[];
   totalIncome: number;
   totalExpenses: number;
+  expensesByCategory: Record<string, number>;
+  emergencyFund: EmergencyFund;
+  incomes: Income[];
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
   addSaving: (saving: Omit<Saving, 'id'>) => void;
   deleteExpense: (id: number) => void;
   deleteIncome: (id: number) => void;
   deleteSaving: (id: number) => void;
+  addSavingsGoal: (goal: Omit<SavingsGoal, 'id'>) => void;
+  updateSavingsGoal: (id: number, amount: number) => void;
+  setEmergencyFund: (fund: EmergencyFund) => void;
+  updateEmergencyFund: (amount: number) => void;
 };
 
 export type Expense = {
@@ -24,7 +49,7 @@ export type Expense = {
   amount: number;
   category: string;
   description: string;
-  date?: Date;
+  date?: Date | string;
 };
 
 export type Income = {
@@ -32,7 +57,7 @@ export type Income = {
   amount: number;
   source: string;
   description: string;
-  date?: Date;
+  date?: Date | string;
 };
 
 export type Saving = {
@@ -40,7 +65,7 @@ export type Saving = {
   name: string;
   targetAmount: number;
   currentAmount: number;
-  deadline?: Date;
+  deadline?: Date | string;
   iconName?: string;
 };
 
@@ -92,10 +117,48 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     },
   ]);
 
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([
+    { 
+      id: 1, 
+      name: 'New Laptop', 
+      targetAmount: 1200, 
+      currentAmount: 400, 
+      deadline: new Date('2023-12-01'),
+      category: 'medium',
+      iconName: 'laptop',
+    },
+    { 
+      id: 2, 
+      name: 'Spring Break Trip', 
+      targetAmount: 500, 
+      currentAmount: 250,
+      deadline: new Date('2023-10-15'),
+      category: 'short',
+      iconName: 'palmtree',
+    },
+  ]);
+
+  const [emergencyFund, setEmergencyFund] = useState<EmergencyFund>({
+    targetAmount: 5000,
+    currentAmount: 1200,
+    lastUpdate: new Date(),
+  });
+
   // Calculate totals
   const totalIncome = income.reduce((sum, item) => sum + item.amount, 0);
   const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
   const remainingBudget = totalIncome - totalExpenses;
+  const totalBudget = totalIncome; // Set totalBudget equal to totalIncome
+
+  // Calculate expenses by category
+  const expensesByCategory = expenses.reduce((acc, expense) => {
+    const category = expense.category;
+    if (!acc[category]) {
+      acc[category] = 0;
+    }
+    acc[category] += expense.amount;
+    return acc;
+  }, {} as Record<string, number>);
 
   // Add functions
   const addExpense = (expense: Omit<Expense, 'id'>) => {
@@ -113,6 +176,29 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     setSavings([...savings, { ...saving, id }]);
   };
 
+  const addSavingsGoal = (goal: Omit<SavingsGoal, 'id'>) => {
+    const id = savingsGoals.length > 0 ? Math.max(...savingsGoals.map(g => g.id)) + 1 : 1;
+    setSavingsGoals([...savingsGoals, { ...goal, id }]);
+  };
+
+  const updateSavingsGoal = (id: number, amount: number) => {
+    setSavingsGoals(prevGoals => 
+      prevGoals.map(goal => 
+        goal.id === id 
+          ? { ...goal, currentAmount: goal.currentAmount + amount } 
+          : goal
+      )
+    );
+  };
+
+  const updateEmergencyFund = (amount: number) => {
+    setEmergencyFund(prev => ({
+      ...prev,
+      currentAmount: prev.currentAmount + amount,
+      lastUpdate: new Date()
+    }));
+  };
+
   // Delete functions
   const deleteExpense = (id: number) => {
     setExpenses(expenses.filter(expense => expense.id !== id));
@@ -126,6 +212,9 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     setSavings(savings.filter(saving => saving.id !== id));
   };
 
+  // Provide incomes as an alias for income
+  const incomes = income;
+
   return (
     <BudgetContext.Provider
       value={{
@@ -134,14 +223,22 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
         expenses,
         income,
         savings,
+        savingsGoals,
         totalIncome,
         totalExpenses,
+        expensesByCategory,
+        emergencyFund,
+        incomes,
         addExpense,
         addIncome,
         addSaving,
         deleteExpense,
         deleteIncome,
         deleteSaving,
+        addSavingsGoal,
+        updateSavingsGoal,
+        setEmergencyFund,
+        updateEmergencyFund,
       }}
     >
       {children}
