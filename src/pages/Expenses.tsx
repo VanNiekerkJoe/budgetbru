@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
@@ -27,7 +26,6 @@ const Expenses: React.FC = () => {
     date: new Date().toISOString().split('T')[0]
   });
   
-  // Sort expenses by date (newest first)
   const filteredExpenses = expenses
     .filter(expense => !expenseFilter || expense.category === expenseFilter)
     .filter(expense => !searchTerm || expense.description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -78,7 +76,6 @@ const Expenses: React.FC = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  // Get mascot message based on expenses
   const getMascotMessage = () => {
     if (expenses.length === 0) return "Start tracking your expenses to stay on budget!";
     if (biggestCategory && biggestCategory[0]) {

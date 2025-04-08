@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useBudget, SavingsGoal } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
@@ -21,11 +20,14 @@ const SavingsGoalCard: React.FC<SavingsGoalCardProps> = ({ goal }) => {
   const remaining = goal.targetAmount - goal.currentAmount;
   
   // Format deadline (if exists)
-  const formattedDeadline = goal.deadline ? new Date(goal.deadline).toLocaleDateString() : 'No deadline set';
+  const formattedDeadline = goal.deadline 
+    ? new Date(goal.deadline).toLocaleDateString() 
+    : 'No deadline set';
   
   // Calculate days remaining if deadline exists
-  const daysRemaining = goal.deadline ? 
-    Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+  const daysRemaining = goal.deadline 
+    ? Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) 
+    : null;
   
   const handleContribute = () => {
     const amount = parseFloat(contributionAmount);

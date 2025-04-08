@@ -38,7 +38,7 @@ const Savings: React.FC = () => {
       targetAmount: Number(targetAmount),
       currentAmount: initialAmount ? Number(initialAmount) : 0,
       category,
-      deadline: deadline || undefined,
+      deadline: deadline || undefined, // This now matches our updated type
     });
     
     // Reset form

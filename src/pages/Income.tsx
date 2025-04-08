@@ -60,6 +60,7 @@ const Income = () => {
         amount: Number(data.amount),
         source: data.source,
         date: data.date,
+        description: data.source, // Add description field using source as the value
         recurring: showRecurring,
         frequency: showRecurring ? selectedFrequency : undefined,
       });

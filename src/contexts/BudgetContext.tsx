@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export type ExpenseCategory = 'food' | 'entertainment' | 'education' | 'transport' | 'utilities' | 'rent' | 'clothing' | 'health' | 'groceries' | 'other';
@@ -9,7 +8,7 @@ export type SavingsGoal = {
   name: string;
   targetAmount: number;
   currentAmount: number;
-  deadline?: Date;
+  deadline?: Date | string;
   category: 'short' | 'medium' | 'long';
   iconName?: string;
 };
@@ -17,7 +16,7 @@ export type SavingsGoal = {
 export type EmergencyFund = {
   targetAmount: number;
   currentAmount: number;
-  lastUpdate?: Date;
+  lastUpdate?: Date | string;
   monthlyContribution: number;
 };
 
@@ -57,7 +56,7 @@ export type Income = {
   id: number;
   amount: number;
   source: string;
-  description: string;
+  description?: string;
   date?: Date | string;
   recurring?: boolean;
   frequency?: string;
@@ -87,7 +86,6 @@ type BudgetProviderProps = {
 };
 
 export const BudgetProvider = ({ children }: BudgetProviderProps) => {
-  // Sample data
   const [expenses, setExpenses] = useState<Expense[]>([
     { id: 1, amount: 350, category: 'food', description: 'Groceries' },
     { id: 2, amount: 150, category: 'entertainment', description: 'Movies' },
@@ -148,13 +146,11 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     monthlyContribution: 500,
   });
 
-  // Calculate totals
   const totalIncome = income.reduce((sum, item) => sum + item.amount, 0);
   const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
   const remainingBudget = totalIncome - totalExpenses;
-  const totalBudget = totalIncome; // Set totalBudget equal to totalIncome
+  const totalBudget = totalIncome;
 
-  // Calculate expenses by category
   const expensesByCategory = expenses.reduce((acc, expense) => {
     const category = expense.category;
     if (!acc[category]) {
@@ -164,7 +160,6 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     return acc;
   }, {} as Record<string, number>);
 
-  // Add functions
   const addExpense = (expense: Omit<Expense, 'id'>) => {
     const id = expenses.length > 0 ? Math.max(...expenses.map(e => e.id)) + 1 : 1;
     setExpenses([...expenses, { ...expense, id }]);
@@ -172,7 +167,7 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
 
   const addIncome = (incomeItem: Omit<Income, 'id'>) => {
     const id = income.length > 0 ? Math.max(...income.map(i => i.id)) + 1 : 1;
-    setIncome([...income, { ...incomeItem, id }]);
+    setIncome([...income, { ...incomeItem, id, description: incomeItem.description || incomeItem.source }]);
   };
 
   const addSaving = (saving: Omit<Saving, 'id'>) => {
@@ -207,7 +202,6 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     }));
   };
 
-  // Delete functions
   const deleteExpense = (id: number) => {
     setExpenses(expenses.filter(expense => expense.id !== id));
   };
@@ -220,7 +214,6 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     setSavings(savings.filter(saving => saving.id !== id));
   };
 
-  // Provide incomes as an alias for income
   const incomes = income;
 
   return (
