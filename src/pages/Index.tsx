@@ -42,7 +42,7 @@ const WALLPAPERS = [
   }
 ];
 
-const Index: React.FC = () => {
+const IndexPage: React.FC = () => {
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('darkMode') === 'true';
@@ -786,4 +786,4 @@ const Select: React.FC<{options: string[], defaultValue: string, small?: boolean
   );
 };
 
-export default Index;
+export default IndexPage;

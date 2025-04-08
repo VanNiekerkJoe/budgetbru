@@ -9,7 +9,7 @@ import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
 
 // Pages
-import Index from "./pages/Index";
+import IndexPage from "./pages/Index";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import Savings from "./pages/Savings";
@@ -49,7 +49,7 @@ const App = () => {
               <Toaster />
               <Sonner position="top-center" />
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<IndexPage />} />
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/income" element={<Income />} />
                 <Route path="/map" element={<MapPage />} />
