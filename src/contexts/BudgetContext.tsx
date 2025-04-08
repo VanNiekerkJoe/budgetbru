@@ -1,292 +1,144 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-// Define types for our budget data
-export type ExpenseCategory = 
-  | 'rent'
-  | 'groceries'
-  | 'transport'
-  | 'entertainment'
-  | 'utilities'
-  | 'education'
-  | 'clothing'
-  | 'health'
-  | 'food'
-  | 'other';
+type BudgetContextType = {
+  totalBudget: number;
+  remainingBudget: number;
+  expenses: Expense[];
+  income: Income[];
+  savings: Saving[];
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  addIncome: (income: Omit<Income, 'id'>) => void;
+  addSaving: (saving: Omit<Saving, 'id'>) => void;
+  deleteExpense: (id: number) => void;
+  deleteIncome: (id: number) => void;
+  deleteSaving: (id: number) => void;
+};
 
-export interface Expense {
-  id: string;
+export type Expense = {
+  id: number;
   amount: number;
-  category: ExpenseCategory;
+  category: string;
   description: string;
-  date: string;
-  location?: string;
-  receiptImage?: string;
-}
+  date?: Date;
+};
 
-export interface SavingsGoal {
-  id: string;
+export type Income = {
+  id: number;
+  amount: number;
+  source: string;
+  description: string;
+  date?: Date;
+};
+
+export type Saving = {
+  id: number;
   name: string;
   targetAmount: number;
   currentAmount: number;
-  deadline?: string;
-  category: 'short' | 'medium' | 'long';
-}
+  deadline?: Date;
+  iconName?: string;
+};
 
-export interface Income {
-  id: string;
-  amount: number;
-  source: string;
-  date: string;
-  recurring: boolean;
-  frequency?: 'weekly' | 'monthly' | 'once';
-}
-
-export interface EmergencyFund {
-  id: string;
-  targetAmount: number;
-  currentAmount: number;
-  monthlyContribution: number;
-  lastContribution?: string;
-}
-
-interface BudgetContextType {
-  expenses: Expense[];
-  savingsGoals: SavingsGoal[];
-  incomes: Income[];
-  emergencyFund: EmergencyFund | null;
-  addExpense: (expense: Omit<Expense, 'id'>) => void;
-  updateExpense: (id: string, expense: Partial<Omit<Expense, 'id'>>) => void;
-  deleteExpense: (id: string) => void;
-  addSavingsGoal: (goal: Omit<SavingsGoal, 'id'>) => void;
-  addIncome: (income: Omit<Income, 'id'>) => void;
-  updateSavingsGoal: (id: string, amount: number) => void;
-  updateEmergencyFund: (amount: number) => void;
-  setEmergencyFund: (fund: Omit<EmergencyFund, 'id'>) => void;
-  totalIncome: number;
-  totalExpenses: number;
-  remainingBudget: number;
-  expensesByCategory: Record<ExpenseCategory, number>;
-}
-
-// Create the context
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
-// Sample initial data
-const initialExpenses: Expense[] = [
-  {
-    id: '1',
-    amount: 600,
-    category: 'rent',
-    description: 'Monthly rent',
-    date: '2025-04-01',
-  },
-  {
-    id: '2',
-    amount: 150,
-    category: 'groceries',
-    description: 'Weekly shop',
-    date: '2025-04-02',
-  },
-  {
-    id: '3',
-    amount: 120,
-    category: 'entertainment',
-    description: 'Beers with the boys',
-    date: '2025-04-01',
-  },
-  {
-    id: '4',
-    amount: 50,
-    category: 'transport',
-    description: 'Uber rides',
-    date: '2025-04-01',
-  },
-];
+export const useBudget = () => {
+  const context = useContext(BudgetContext);
+  if (!context) {
+    throw new Error('useBudget must be used within a BudgetProvider');
+  }
+  return context;
+};
 
-const initialSavingsGoals: SavingsGoal[] = [
-  {
-    id: '1',
-    name: 'Rage 2026',
-    targetAmount: 5000,
-    currentAmount: 2000,
-    deadline: '2026-12-01',
-    category: 'long',
-  },
-  {
-    id: '2',
-    name: 'New textbooks',
-    targetAmount: 800,
-    currentAmount: 250,
-    deadline: '2025-06-15',
-    category: 'short',
-  },
-];
+type BudgetProviderProps = {
+  children: ReactNode;
+};
 
-const initialIncomes: Income[] = [
-  {
-    id: '1',
-    amount: 1200,
-    source: 'Allowance',
-    date: '2025-04-01',
-    recurring: true,
-    frequency: 'monthly',
-  },
-  {
-    id: '2',
-    amount: 400,
-    source: 'Part-time job',
-    date: '2025-04-01',
-    recurring: true,
-    frequency: 'weekly',
-  },
-];
+export const BudgetProvider = ({ children }: BudgetProviderProps) => {
+  // Sample data
+  const [expenses, setExpenses] = useState<Expense[]>([
+    { id: 1, amount: 350, category: 'food', description: 'Groceries' },
+    { id: 2, amount: 150, category: 'entertainment', description: 'Movies' },
+    { id: 3, amount: 200, category: 'education', description: 'Books' },
+    { id: 4, amount: 80, category: 'transport', description: 'Bus fare' },
+    { id: 5, amount: 120, category: 'utilities', description: 'Electricity' },
+  ]);
 
-// Provider component
-export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(initialSavingsGoals);
-  const [incomes, setIncomes] = useState<Income[]>(initialIncomes);
-  const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund | null>(null);
+  const [income, setIncome] = useState<Income[]>([
+    { id: 1, amount: 2000, source: 'part-time', description: 'Part-time job' },
+    { id: 2, amount: 500, source: 'allowance', description: 'Monthly allowance from parents' },
+  ]);
+
+  const [savings, setSavings] = useState<Saving[]>([
+    { 
+      id: 1, 
+      name: 'New Laptop', 
+      targetAmount: 1200, 
+      currentAmount: 400, 
+      deadline: new Date('2023-12-01'),
+      iconName: 'laptop',
+    },
+    { 
+      id: 2, 
+      name: 'Spring Break Trip', 
+      targetAmount: 500, 
+      currentAmount: 250,
+      deadline: new Date('2023-10-15'),
+      iconName: 'palmtree',
+    },
+  ]);
 
   // Calculate totals
-  const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const remainingBudget = totalIncome - totalExpenses;
+  const totalBudget = income.reduce((sum, item) => sum + item.amount, 0);
+  const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
+  const remainingBudget = totalBudget - totalExpenses;
 
-  // Calculate expenses by category
-  const expensesByCategory = expenses.reduce((acc, expense) => {
-    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-    return acc;
-  }, {} as Record<ExpenseCategory, number>);
-
-  // Add new expense
+  // Add functions
   const addExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense = {
-      ...expense,
-      id: Date.now().toString(),
-    };
-    setExpenses([...expenses, newExpense]);
-    toast.success("Expense added successfully!");
+    const id = expenses.length > 0 ? Math.max(...expenses.map(e => e.id)) + 1 : 1;
+    setExpenses([...expenses, { ...expense, id }]);
   };
 
-  // Update existing expense
-  const updateExpense = (id: string, updatedFields: Partial<Omit<Expense, 'id'>>) => {
-    setExpenses(expenses.map(expense => 
-      expense.id === id ? { ...expense, ...updatedFields } : expense
-    ));
-    toast.success("Expense updated successfully!");
+  const addIncome = (incomeItem: Omit<Income, 'id'>) => {
+    const id = income.length > 0 ? Math.max(...income.map(i => i.id)) + 1 : 1;
+    setIncome([...income, { ...incomeItem, id }]);
   };
 
-  // Delete expense
-  const deleteExpense = (id: string) => {
+  const addSaving = (saving: Omit<Saving, 'id'>) => {
+    const id = savings.length > 0 ? Math.max(...savings.map(s => s.id)) + 1 : 1;
+    setSavings([...savings, { ...saving, id }]);
+  };
+
+  // Delete functions
+  const deleteExpense = (id: number) => {
     setExpenses(expenses.filter(expense => expense.id !== id));
-    toast.success("Expense deleted successfully!");
   };
 
-  // Add new savings goal
-  const addSavingsGoal = (goal: Omit<SavingsGoal, 'id'>) => {
-    const newGoal = {
-      ...goal,
-      id: Date.now().toString(),
-    };
-    setSavingsGoals([...savingsGoals, newGoal]);
-    toast.success("Savings goal added!");
+  const deleteIncome = (id: number) => {
+    setIncome(income.filter(inc => inc.id !== id));
   };
 
-  // Add new income
-  const addIncome = (income: Omit<Income, 'id'>) => {
-    const newIncome = {
-      ...income,
-      id: Date.now().toString(),
-    };
-    setIncomes([...incomes, newIncome]);
-    toast.success("Income added successfully!");
-  };
-
-  // Update savings goal
-  const updateSavingsGoal = (id: string, amount: number) => {
-    setSavingsGoals(
-      savingsGoals.map((goal) => {
-        if (goal.id === id) {
-          const newAmount = goal.currentAmount + amount;
-          if (newAmount >= goal.targetAmount) {
-            toast.success("🎉 You've reached your savings goal!", {
-              description: `Congratulations on saving for ${goal.name}!`,
-            });
-          }
-          return {
-            ...goal,
-            currentAmount: Math.min(newAmount, goal.targetAmount),
-          };
-        }
-        return goal;
-      })
-    );
-  };
-  
-  // Set emergency fund
-  const setEmergencyFund = (fund: Omit<EmergencyFund, 'id'>) => {
-    const newFund = {
-      ...fund,
-      id: Date.now().toString(),
-    };
-    setEmergencyFundState(newFund);
-    toast.success("Emergency fund created!");
-  };
-  
-  // Update emergency fund
-  const updateEmergencyFund = (amount: number) => {
-    if (emergencyFund) {
-      const newAmount = emergencyFund.currentAmount + amount;
-      if (newAmount >= emergencyFund.targetAmount) {
-        toast.success("🎉 You've fully funded your emergency fund!", {
-          description: `Great job on reaching your emergency fund target!`,
-        });
-      }
-      setEmergencyFundState({
-        ...emergencyFund,
-        currentAmount: Math.min(newAmount, emergencyFund.targetAmount),
-        lastContribution: new Date().toISOString().split('T')[0]
-      });
-      toast.success("Emergency fund updated!");
-    } else {
-      toast.error("Please set up an emergency fund first!");
-    }
+  const deleteSaving = (id: number) => {
+    setSavings(savings.filter(saving => saving.id !== id));
   };
 
   return (
     <BudgetContext.Provider
       value={{
-        expenses,
-        savingsGoals,
-        incomes,
-        emergencyFund,
-        addExpense,
-        updateExpense,
-        deleteExpense,
-        addSavingsGoal,
-        addIncome,
-        updateSavingsGoal,
-        updateEmergencyFund,
-        setEmergencyFund,
-        totalIncome,
-        totalExpenses,
+        totalBudget,
         remainingBudget,
-        expensesByCategory,
+        expenses,
+        income,
+        savings,
+        addExpense,
+        addIncome,
+        addSaving,
+        deleteExpense,
+        deleteIncome,
+        deleteSaving,
       }}
     >
       {children}
     </BudgetContext.Provider>
   );
-};
-
-// Custom hook to use the budget context
-export const useBudget = (): BudgetContextType => {
-  const context = useContext(BudgetContext);
-  if (context === undefined) {
-    throw new Error('useBudget must be used within a BudgetProvider');
-  }
-  return context;
 };

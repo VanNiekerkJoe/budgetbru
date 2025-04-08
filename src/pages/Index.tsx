@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, Plus, ArrowUpRight, CreditCard, Landmark, Wallet, ChevronRight, Search, Bell, Settings } from 'lucide-react';
+import { Moon, Sun, ArrowUpRight, CreditCard, Landmark, Wallet, ChevronRight, Search, Bell, Settings, Clock, ArrowRight, Calendar, Bookmark, PanelRight, PanelLeft } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -22,6 +23,8 @@ import MapView from '@/components/map/MapView';
 import ParticleBackground from '@/components/ParticleBackground';
 import TutorialGuide from '@/components/TutorialGuide';
 import { useTutorial } from '@/services/TutorialService';
+import { QuickExpenseTracker } from '@/components/dashboard/QuickExpenseTracker';
+import { useBudget } from '@/contexts/BudgetContext';
 
 const WALLPAPERS = [
   {
@@ -60,6 +63,8 @@ const IndexPage: React.FC = () => {
   const [showMap, setShowMap] = useState(false);
   const [wallpaper, setWallpaper] = useState(WALLPAPERS[0].value);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showSidebar, setShowSidebar] = useState(false);
+  const { addExpense } = useBudget();
   
   const [transactions, setTransactions] = useState([
     { id: 1, type: 'expense', amount: 50, description: 'Textbooks', category: 'education', date: new Date(Date.now() - 3600000) },
@@ -69,6 +74,7 @@ const IndexPage: React.FC = () => {
   ]);
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [quickActions, setQuickActions] = useState([
     { id: 1, name: 'Add Expense', icon: 'expenses' as CategoryType, path: '/expenses' },
     { id: 2, name: 'Add Income', icon: 'income' as CategoryType, path: '/income' },
@@ -100,6 +106,20 @@ const IndexPage: React.FC = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (searchTerm.length > 1) {
+      // Generate search suggestions based on the search term
+      const suggestions = [
+        `Add expense for ${searchTerm}`,
+        `Find ${searchTerm} in transactions`,
+        `Budget for ${searchTerm}`,
+      ];
+      setSearchSuggestions(suggestions);
+    } else {
+      setSearchSuggestions([]);
+    }
+  }, [searchTerm]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -141,6 +161,20 @@ const IndexPage: React.FC = () => {
     } else {
       toast.error("Please enter a category name");
     }
+  };
+
+  const handleQuickExpense = (description: string, amount: number, category: string) => {
+    const newTransaction = {
+      id: Date.now(),
+      type: 'expense',
+      amount,
+      description,
+      category,
+      date: new Date()
+    };
+    setTransactions([newTransaction, ...transactions]);
+    addExpense({ amount, category, description });
+    toast.success(`Expense of R${amount} added!`);
   };
   
   const filteredTransactions = transactions.filter(
@@ -208,6 +242,8 @@ const IndexPage: React.FC = () => {
     { title: 'Transport Tips', category: 'Transport', icon: '🚗' },
   ];
 
+  const recentSearches = ["textbooks", "lunch", "data", "transport"];
+
   return (
     <div className={`min-h-screen pb-28 ${wallpaper} transition-all duration-500`}>
       <ParticleBackground count={20} className="opacity-30" />
@@ -216,6 +252,95 @@ const IndexPage: React.FC = () => {
       {showTutorial && (
         <TutorialGuide onComplete={handleTutorialComplete} onSkip={handleTutorialSkip} />
       )}
+
+      {/* Quick Access Sidebar */}
+      <AnimatePresence>
+        {showSidebar && (
+          <motion.div 
+            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 z-50 shadow-xl"
+            initial={{ x: -300 }}
+            animate={{ x: 0 }}
+            exit={{ x: -300 }}
+            transition={{ type: "spring", damping: 20 }}
+          >
+            <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
+              <LogoBadge size="sm" />
+              <h2 className="text-lg font-semibold ml-2">Quick Access</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)}>
+                <PanelLeft size={18} />
+              </Button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Recent Searches</h3>
+                <div className="flex flex-wrap gap-2">
+                  {recentSearches.map((search, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setSearchTerm(search)}
+                    >
+                      {search}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium mb-2">Quick Navigation</h3>
+                <div className="space-y-1">
+                  <Link to="/expenses" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <Wallet size={18} className="mr-2 text-theme-pink" />
+                    <span>Expenses</span>
+                  </Link>
+                  <Link to="/savings" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <CreditCard size={18} className="mr-2 text-theme-pink" />
+                    <span>Savings</span>
+                  </Link>
+                  <Link to="/insights" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <ArrowUpRight size={18} className="mr-2 text-theme-pink" />
+                    <span>Insights</span>
+                  </Link>
+                  <Link to="/map" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <Landmark size={18} className="mr-2 text-theme-pink" />
+                    <span>Campus Map</span>
+                  </Link>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium mb-2">Upcoming</h3>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md">
+                  <div className="flex items-center">
+                    <div className="bg-theme-pink/20 rounded-full p-2 mr-3">
+                      <Calendar size={16} className="text-theme-pink" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Night Market</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">This Friday</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium mb-2">Saved Items</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                    <Bookmark size={16} className="mr-2 text-theme-pink" />
+                    <span className="text-sm">Budget Planning Guide</span>
+                  </div>
+                  <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                    <Bookmark size={16} className="mr-2 text-theme-pink" />
+                    <span className="text-sm">Financial Aid Resources</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <motion.header 
         initial={{ opacity: 0, y: -50 }}
@@ -225,10 +350,20 @@ const IndexPage: React.FC = () => {
       >
         <div className="container mx-auto max-w-md flex justify-between items-center">
           <div className="flex items-center">
-            <LogoBadge size="md" />
-            <div className="ml-3">
-              <h1 className="text-xl font-bold gradient-heading">BudgetBru</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Student Finance Made Easy</p>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="mr-1" 
+              onClick={() => setShowSidebar(!showSidebar)}
+            >
+              {showSidebar ? <PanelRight size={18} /> : <PanelLeft size={18} />}
+            </Button>
+            <div className="flex items-center">
+              <LogoBadge size="md" />
+              <div className="ml-3">
+                <h1 className="text-xl font-bold gradient-heading">BudgetBru</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Student Finance Made Easy</p>
+              </div>
             </div>
           </div>
           
@@ -289,6 +424,35 @@ const IndexPage: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          
+          {/* Enhanced Search Suggestions */}
+          <AnimatePresence>
+            {searchSuggestions.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-20 overflow-hidden"
+              >
+                {searchSuggestions.map((suggestion, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="flex items-center p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    onClick={() => {
+                      setSearchTerm(suggestion);
+                      setSearchSuggestions([]);
+                    }}
+                  >
+                    <Search size={14} className="mr-2 text-gray-500" />
+                    <span className="text-sm">{suggestion}</span>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
         
         <motion.div 
@@ -299,6 +463,9 @@ const IndexPage: React.FC = () => {
         >
           <BalanceCard />
         </motion.div>
+
+        {/* Quick Expense Tracker */}
+        <QuickExpenseTracker onAddExpense={handleQuickExpense} />
         
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-3 mb-2">
@@ -358,7 +525,7 @@ const IndexPage: React.FC = () => {
                       className="text-xs text-theme-pink flex items-center gap-1 px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-900/20"
                       onClick={handleAddIncome}
                     >
-                      <Plus size={12} />
+                      <Plus size={12} className="inline-block" />
                       Add Income
                     </motion.button>
                   </div>
@@ -743,28 +910,6 @@ const IndexPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* Quick Add Button - Enhanced with spring animation */}
-      <motion.div
-        className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 260, 
-          damping: 20, 
-          delay: 1 
-        }}
-      >
-        <motion.button 
-          className="bg-theme-pink hover:bg-theme-pink/90 text-white rounded-full h-14 w-14 flex items-center justify-center shadow-lg"
-          whileHover={{ scale: 1.1, rotate: 90 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        >
-          <Plus size={24} />
-        </motion.button>
-      </motion.div>
       
       <EnhancedNavBar />
     </div>
