@@ -28,7 +28,8 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
   // Generate gradient style based on color prop
   const getGradientStyle = () => {
     return {
-      background: `linear-gradient(to right, ${color}10, ${color}05)`,
+      background: `linear-gradient(to right, ${color}20, ${color}05)`,
+      borderLeft: `3px solid ${color}`,
     };
   };
   
@@ -42,7 +43,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
   };
   
   return (
-    <Card className="overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
+    <Card className="overflow-hidden border border-white/20 bg-white/80 dark:bg-gray-800/75 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md">
       <div 
         className="cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -68,10 +69,12 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
               {percentage}%
             </Badge>
             
-            {isExpanded ? 
-              <ChevronDown size={18} /> : 
+            <motion.div
+              animate={{ rotate: isExpanded ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ChevronRight size={18} />
-            }
+            </motion.div>
           </div>
         </CardContent>
       </div>
@@ -84,7 +87,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="px-4 pb-4 pt-0 border-t border-gray-100 dark:border-gray-800">
+            <div className="px-4 pb-4 pt-1 border-t border-gray-100 dark:border-gray-800">
               {details}
             </div>
           </motion.div>

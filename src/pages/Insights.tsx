@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useBudget } from '@/contexts/BudgetContext';
 import EnhancedNavBar from '@/components/EnhancedNavBar';
@@ -29,17 +28,16 @@ import MascotHelper from '@/components/MascotHelper';
 import ParticleBackground from '@/components/ParticleBackground';
 import { toast } from 'sonner';
 import CategoryInsight from '@/components/insights/CategoryInsight';
+import IncomeExpensesChart from '@/components/insights/IncomeExpensesChart';
 
 const Insights: React.FC = () => {
   const { expenses, incomes, totalIncome, totalExpenses, remainingBudget } = useBudget();
   const [expandedInsight, setExpandedInsight] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   
-  // Calculate savings rate
   const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
   const formattedSavingsRate = Math.round(savingsRate * 10) / 10;
   
-  // Process expense data by category
   const categoryData = React.useMemo(() => {
     const categoryMap: Record<string, number> = {};
     
@@ -59,7 +57,6 @@ const Insights: React.FC = () => {
     })).sort((a, b) => b.value - a.value);
   }, [expenses, totalExpenses]);
   
-  // Weekly data
   const weeklyData = [
     { name: 'W1', expenses: 350 },
     { name: 'W2', expenses: 420 },
@@ -67,7 +64,6 @@ const Insights: React.FC = () => {
     { name: 'W4', expenses: totalExpenses - (350 + 420 + 280) > 0 ? totalExpenses - (350 + 420 + 280) : 100 },
   ];
   
-  // Financial health status
   const getFinancialStatus = () => {
     if (savingsRate >= 20) return { status: 'Excellent', color: 'text-green-500', icon: <TrendingUp className="h-5 w-5" /> };
     if (savingsRate >= 10) return { status: 'Good', color: 'text-blue-500', icon: <TrendingUp className="h-5 w-5" /> };
@@ -77,7 +73,6 @@ const Insights: React.FC = () => {
   
   const financialStatus = getFinancialStatus();
   
-  // Financial tips based on status
   const getFinancialTip = () => {
     if (savingsRate >= 20) return "Keep it up, bru! You're killing the savings game!";
     if (savingsRate >= 10) return "Solid work! Try to cut back on small expenses to save even more.";
@@ -85,10 +80,8 @@ const Insights: React.FC = () => {
     return "Eish, you're spending more than you earn. Let's look at cutting non-essential costs.";
   };
 
-  // Define colors for the chart
   const COLORS = ['#6E59A5', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#9966FF'];
   
-  // Helper function to get color for category
   function getCategoryColor(category: string): string {
     switch(category) {
       case 'rent': return '#FF6384';
@@ -103,7 +96,6 @@ const Insights: React.FC = () => {
     }
   }
   
-  // Helper function to get icon for category
   function getCategoryIcon(category: string) {
     switch(category) {
       case 'rent': return <DollarSign size={18} style={{ color: '#FF6384' }} />;
@@ -145,10 +137,16 @@ const Insights: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-theme-navy pb-28">
-      <ParticleBackground count={20} className="opacity-20" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-gray-900/90 dark:to-theme-navy/90 pb-28 backdrop-blur-sm">
+      <ParticleBackground count={20} className="opacity-30" />
       
-      <header className="bg-white dark:bg-gray-900/95 backdrop-blur-md shadow-lg py-6 px-4 relative overflow-hidden">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '8s'}} />
+        <div className="absolute top-1/4 -right-40 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '10s'}} />
+        <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-red-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s'}} />
+      </div>
+      
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg py-6 px-4 relative overflow-hidden">
         <motion.div 
           className="absolute -top-10 left-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-full blur-3xl"
           animate={{ 
@@ -214,7 +212,7 @@ const Insights: React.FC = () => {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-3 mb-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
             <TabsTrigger value="overview" className="flex items-center gap-1.5">
               <Info size={14} />
               <span>Overview</span>
@@ -237,7 +235,7 @@ const Insights: React.FC = () => {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4"
               >
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20">
                   <CardHeader className="bg-gradient-to-r from-purple-100/50 to-blue-100/50 dark:from-purple-900/20 dark:to-blue-900/20 pb-2">
                     <CardTitle className="text-lg flex items-center gap-2">
                       Financial Health
@@ -299,6 +297,8 @@ const Insights: React.FC = () => {
                   </CardContent>
                 </Card>
                 
+                <IncomeExpensesChart />
+                
                 <div className="grid grid-cols-2 gap-4">
                   <Card className="bg-gradient-to-br from-green-50/50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20 border border-green-200/40 dark:border-green-800/30">
                     <CardContent className="p-4">
@@ -330,7 +330,7 @@ const Insights: React.FC = () => {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4"
               >
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20">
                   <CardHeader className="bg-gradient-to-r from-purple-100/50 to-blue-100/50 dark:from-purple-900/20 dark:to-blue-900/20 pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg flex items-center gap-2">
@@ -414,7 +414,7 @@ const Insights: React.FC = () => {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4"
               >
-                <Card>
+                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20">
                   <CardHeader className="bg-gradient-to-r from-purple-100/50 to-blue-100/50 dark:from-purple-900/20 dark:to-blue-900/20 pb-2">
                     <CardTitle className="text-lg">Monthly Spending</CardTitle>
                     <CardDescription>Weekly breakdown</CardDescription>

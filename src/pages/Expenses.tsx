@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
@@ -96,10 +95,15 @@ const Expenses: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-theme-navy pb-28">
-      <ParticleBackground count={20} className="opacity-20" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-gray-900/90 dark:to-theme-navy/90 pb-28 backdrop-blur-sm">
+      <ParticleBackground count={20} className="opacity-30" />
       
-      <header className="bg-white dark:bg-gray-900/95 backdrop-blur-md shadow-lg py-6 px-4 relative overflow-hidden">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -left-20 w-96 h-96 bg-red-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '15s'}} />
+        <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-orange-400/10 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s'}} />
+      </div>
+      
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg py-6 px-4 relative overflow-hidden">
         <motion.div 
           className="absolute -top-10 left-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-orange-500/10 rounded-full blur-3xl"
           animate={{ 
@@ -157,10 +161,9 @@ const Expenses: React.FC = () => {
       <main className="container mx-auto px-4 py-4 space-y-4 max-w-md">
         <MascotHelper type="expenses" message={getMascotMessage()} />
         
-        {/* Quick Add Expense Component */}
         <QuickAddExpense />
         
-        <div className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-md p-3">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-md p-3 border border-white/20">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-grow">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -244,7 +247,7 @@ const Expenses: React.FC = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-md overflow-hidden"
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-md overflow-hidden border border-white/20"
             >
               <div className="divide-y dark:divide-gray-700">
                 {filteredExpenses.map((expense) => (
@@ -283,7 +286,7 @@ const Expenses: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-6 shadow-md text-center"
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-6 shadow-md text-center border border-white/20"
             >
               <TrendingDown size={40} className="mx-auto text-gray-400 mb-2" />
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">No Expenses Found</h3>
@@ -309,7 +312,7 @@ const Expenses: React.FC = () => {
       </main>
       
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add New Expense</DialogTitle>
           </DialogHeader>

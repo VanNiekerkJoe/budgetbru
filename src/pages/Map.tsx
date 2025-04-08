@@ -48,11 +48,17 @@ const Map: React.FC = () => {
     else if (mapStyle === 'satellite') setMapStyle('dark');
     else setMapStyle('default');
     
-    toast.success(`Map style changed to ${mapStyle}`);
+    toast.success(`Map style changed to ${mapStyle === 'default' ? 'satellite' : mapStyle === 'satellite' ? 'dark' : 'default'}`);
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-gray-900/90 dark:to-gray-800/90 backdrop-blur-sm">
+      {/* Background lighting effect */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '15s'}} />
+        <div className="absolute -bottom-20 left-1/4 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s'}} />
+      </div>
+      
       {/* Map Container */}
       <div className="relative w-full h-screen pb-28">
         {activeTab === 'map' ? (
@@ -63,7 +69,7 @@ const Map: React.FC = () => {
             onMarkerClick={handleMarkerClick}
           />
         ) : (
-          <div className="absolute inset-0 bg-white dark:bg-gray-900 opacity-95 z-10">
+          <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl z-10">
             <div className="h-full overflow-auto p-4 pb-24">
               <DiscountFinder onSelectLocation={handleSelectLocation} />
             </div>
@@ -79,7 +85,7 @@ const Map: React.FC = () => {
               exit={{ opacity: 0, y: 50 }}
               className="absolute bottom-36 left-0 right-0 mx-4 z-30"
             >
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-md mx-auto border border-gray-200 dark:border-gray-700">
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-lg shadow-lg p-4 max-w-md mx-auto border border-white/20">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-lg">{showEventDetails.name}</h3>
@@ -135,7 +141,7 @@ const Map: React.FC = () => {
             <Tabs 
               value={activeTab} 
               onValueChange={(value) => setActiveTab(value as 'map' | 'discounts')}
-              className="bg-white dark:bg-gray-800 p-1 rounded-full shadow-lg border border-gray-100 dark:border-gray-700"
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-1 rounded-full shadow-lg border border-white/20"
             >
               <TabsList className="grid grid-cols-2">
                 <TabsTrigger value="map" className="flex items-center gap-1.5 rounded-full">
@@ -161,7 +167,7 @@ const Map: React.FC = () => {
               <Button 
                 variant="secondary"
                 size="sm"
-                className="shadow-md flex items-center gap-1.5"
+                className="shadow-md flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
               >
                 <Home size={14} className="text-blue-500" />
                 <span>Home</span>
@@ -176,7 +182,7 @@ const Map: React.FC = () => {
                 <Button 
                   variant="secondary"
                   size="icon"
-                  className="shadow-md h-8 w-8"
+                  className="shadow-md h-8 w-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
                   onClick={() => setActiveTab(activeTab === 'map' ? 'discounts' : 'map')}
                 >
                   {activeTab === 'map' ? <Tag size={14} /> : <MapPin size={14} />}
@@ -190,7 +196,7 @@ const Map: React.FC = () => {
                 <Button 
                   variant="secondary"
                   size="icon"
-                  className="shadow-md h-8 w-8"
+                  className="shadow-md h-8 w-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
                   onClick={cycleMapStyle}
                 >
                   <Settings size={14} />
@@ -204,7 +210,7 @@ const Map: React.FC = () => {
                 <Button 
                   variant="secondary"
                   size="icon"
-                  className="shadow-md h-8 w-8"
+                  className="shadow-md h-8 w-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
                   onClick={() => window.location.href = '/receipts'}
                 >
                   <ReceiptIcon size={14} showAnimation={false} />
