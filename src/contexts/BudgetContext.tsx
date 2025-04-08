@@ -18,6 +18,7 @@ export type EmergencyFund = {
   targetAmount: number;
   currentAmount: number;
   lastUpdate?: Date;
+  monthlyContribution: number;
 };
 
 type BudgetContextType = {
@@ -58,6 +59,8 @@ export type Income = {
   source: string;
   description: string;
   date?: Date | string;
+  recurring?: boolean;
+  frequency?: string;
 };
 
 export type Saving = {
@@ -138,10 +141,11 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     },
   ]);
 
-  const [emergencyFund, setEmergencyFund] = useState<EmergencyFund>({
+  const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund>({
     targetAmount: 5000,
     currentAmount: 1200,
     lastUpdate: new Date(),
+    monthlyContribution: 500,
   });
 
   // Calculate totals
@@ -191,8 +195,12 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
     );
   };
 
+  const setEmergencyFund = (fund: EmergencyFund) => {
+    setEmergencyFundState(fund);
+  };
+
   const updateEmergencyFund = (amount: number) => {
-    setEmergencyFund(prev => ({
+    setEmergencyFundState(prev => ({
       ...prev,
       currentAmount: prev.currentAmount + amount,
       lastUpdate: new Date()
