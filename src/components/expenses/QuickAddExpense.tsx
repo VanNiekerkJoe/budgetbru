@@ -31,6 +31,7 @@ const QuickAddExpense: React.FC<QuickAddExpenseProps> = ({ onComplete }) => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategory>('other');
   const [showForm, setShowForm] = useState(false);
+  const [step, setStep] = useState<'category' | 'details'>('category');
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +57,7 @@ const QuickAddExpense: React.FC<QuickAddExpenseProps> = ({ onComplete }) => {
     setAmount('');
     setCategory('other');
     setShowForm(false);
+    setStep('category');
     
     if (onComplete) {
       onComplete();
@@ -65,22 +67,22 @@ const QuickAddExpense: React.FC<QuickAddExpenseProps> = ({ onComplete }) => {
   // Handle category selection
   const selectCategory = (selectedCategory: ExpenseCategory) => {
     setCategory(selectedCategory);
-    
-    // If not in form mode yet, show the form after icon selection
-    if (!showForm) {
-      setShowForm(true);
-    }
+    setStep('details');
+  };
+  
+  const handleBack = () => {
+    setStep('category');
   };
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 dark:bg-gray-800/75 backdrop-blur-xl rounded-xl shadow-md p-4 border border-white/20 relative overflow-hidden"
+      className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-xl shadow-md p-4 border border-white/20 relative overflow-hidden"
     >
       {/* Background lighting effects */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/10 rounded-full blur-3xl" />
+      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
       
       <div className="relative z-10">
         <div className="flex items-center mb-4">
@@ -90,32 +92,41 @@ const QuickAddExpense: React.FC<QuickAddExpenseProps> = ({ onComplete }) => {
           <h3 className="font-semibold text-gray-800 dark:text-gray-200">Quick Add Expense</h3>
         </div>
         
-        {!showForm ? (
-          <div className="grid grid-cols-3 gap-2">
-            {CATEGORY_OPTIONS.map((option) => (
-              <motion.div
-                key={option.value}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => selectCategory(option.value as ExpenseCategory)}
-                className="flex flex-col items-center justify-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
-              >
-                <span className="text-2xl mb-1">{option.emoji}</span>
-                <span className="text-xs text-gray-600 dark:text-gray-400">{option.label}</span>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <AnimatePresence>
+        <AnimatePresence mode="wait">
+          {step === 'category' ? (
+            <motion.div
+              key="categoryGrid"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="grid grid-cols-3 gap-2"
+            >
+              {CATEGORY_OPTIONS.map((option) => (
+                <motion.div
+                  key={option.value}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => selectCategory(option.value as ExpenseCategory)}
+                  className="flex flex-col items-center justify-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                >
+                  <span className="text-2xl mb-1">{option.emoji}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{option.label}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
             <motion.form 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              key="detailsForm"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
               onSubmit={handleSubmit} 
               className="space-y-3"
             >
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-10 h-10 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-lg">
+                <div className="w-10 h-10 flex-shrink-0 bg-white/70 dark:bg-gray-800/70 rounded-full flex items-center justify-center text-lg">
                   {getCategoryEmoji(category)}
                 </div>
                 <span className="font-medium capitalize">{category}</span>
@@ -156,13 +167,13 @@ const QuickAddExpense: React.FC<QuickAddExpenseProps> = ({ onComplete }) => {
                 type="button"
                 variant="ghost" 
                 className="mt-2 w-full text-sm"
-                onClick={() => setShowForm(false)}
+                onClick={handleBack}
               >
-                Cancel
+                Back
               </Button>
             </motion.form>
-          </AnimatePresence>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

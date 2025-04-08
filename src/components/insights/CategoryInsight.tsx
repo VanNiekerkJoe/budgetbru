@@ -28,7 +28,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
   // Generate gradient style based on color prop
   const getGradientStyle = () => {
     return {
-      background: `linear-gradient(to right, ${color}20, ${color}05)`,
+      background: `linear-gradient(to right, ${color}10, transparent)`,
       borderLeft: `3px solid ${color}`,
     };
   };
@@ -43,7 +43,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
   };
   
   return (
-    <Card className="overflow-hidden border border-white/20 bg-white/80 dark:bg-gray-800/75 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md">
+    <Card className="overflow-hidden border border-white/20 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md">
       <div 
         className="cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -51,7 +51,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
       >
         <CardContent className="p-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm">
+            <div className="p-2 rounded-full bg-white/70 dark:bg-gray-800/70 shadow-sm">
               {icon}
             </div>
             <div>
