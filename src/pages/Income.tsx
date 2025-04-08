@@ -30,6 +30,7 @@ import EnhancedNavBar from '@/components/EnhancedNavBar';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import MascotHelper from '@/components/MascotHelper';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type FormValues = {
   amount: number;
@@ -43,6 +44,7 @@ const Income = () => {
   const { addIncome, incomes, totalIncome } = useBudget();
   const [showRecurring, setShowRecurring] = useState(false);
   const [selectedFrequency, setSelectedFrequency] = useState<'weekly' | 'monthly' | 'once'>('monthly');
+  const [activeTab, setActiveTab] = useState<'add' | 'view'>('view');
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -76,6 +78,9 @@ const Income = () => {
       toast.success(`Income of ${formatCurrency(data.amount)} added!`, {
         description: showRecurring ? `Recurring ${selectedFrequency}` : 'One-time income',
       });
+      
+      // Switch to view tab after adding income
+      setActiveTab('view');
     } catch (error) {
       toast.error('Failed to add income');
     }
@@ -93,16 +98,23 @@ const Income = () => {
 
   const sourceOptions = ['Allowance', 'Scholarship', 'Part-time Job', 'Bursary', 'Tutoring', 'Side Hustle', 'Gift', 'Other'];
 
+  // Sort incomes by date (most recent first)
+  const sortedIncomes = [...incomes].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateB.getTime() - dateA.getTime();
+  });
+
   return (
-    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="pb-28 min-h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
       {/* Background decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-200/20 to-green-300/30 rounded-full blur-3xl" />
         <div className="absolute top-1/3 -left-40 w-80 h-80 bg-gradient-to-br from-blue-200/20 to-blue-300/30 rounded-full blur-3xl" />
       </div>
 
       {/* Header */}
-      <div className="relative px-4 pt-6 pb-4 flex justify-between items-center">
+      <div className="relative px-4 pt-6 pb-4 flex justify-between items-center bg-white dark:bg-gray-900 shadow-sm z-10">
         <Link to="/">
           <Button variant="ghost" className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
             <ArrowLeft size={18} />
@@ -113,11 +125,11 @@ const Income = () => {
         <div className="w-24"></div> {/* Spacer for balance */}
       </div>
 
-      <div className="px-4 py-2">
+      <div className="relative z-10 px-4 py-4 max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap gap-4 justify-center mb-8"
+          className="flex flex-wrap gap-4 justify-center mb-6"
         >
           <Card className="w-full border-green-500/20 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800/30">
             <CardHeader className="pb-2">
@@ -133,14 +145,18 @@ const Income = () => {
           </Card>
         </motion.div>
 
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Add Income Form */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="w-full md:w-1/2"
-          >
+        <MascotHelper 
+          type="finance" 
+          message="Regular income tracking helps you plan your budget better! Add all your income sources here." 
+        />
+
+        <Tabs defaultValue="view" value={activeTab} onValueChange={(v) => setActiveTab(v as 'add' | 'view')} className="mt-6">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="view">View Income</TabsTrigger>
+            <TabsTrigger value="add">Add Income</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="add" className="space-y-4">
             <Card className="border border-gray-200/80 dark:border-gray-700/50 shadow-sm">
               <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800">
                 <CardTitle className="text-xl flex items-center gap-2">
@@ -279,36 +295,39 @@ const Income = () => {
                 </Form>
               </CardContent>
             </Card>
-          </motion.div>
+          </TabsContent>
 
-          {/* Recent Income List */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="w-full md:w-1/2"
-          >
+          <TabsContent value="view" className="space-y-4">
             <Card className="border border-gray-200/80 dark:border-gray-700/50 shadow-sm">
               <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800">
                 <CardTitle className="text-xl flex items-center gap-2">
                   <Clock size={18} className="text-blue-500" />
-                  Recent Income
+                  Income History
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4 max-h-[400px] overflow-y-auto">
-                {incomes.length === 0 ? (
+                {sortedIncomes.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <p>No income entries yet</p>
-                    <p className="text-sm mt-2">Add your first income to get started</p>
+                    <p className="text-sm mt-2">
+                      Add your first income to get started
+                    </p>
+                    <Button 
+                      onClick={() => setActiveTab('add')} 
+                      variant="outline" 
+                      className="mt-4"
+                    >
+                      <Plus size={16} className="mr-2" /> Add Income
+                    </Button>
                   </div>
                 ) : (
                   <ul className="space-y-3">
-                    {[...incomes].reverse().map((income) => (
+                    {sortedIncomes.map((income) => (
                       <motion.li
                         key={income.id}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="p-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800"
+                        className="p-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                       >
                         <div className="flex justify-between items-center">
                           <div>
@@ -333,15 +352,8 @@ const Income = () => {
                 )}
               </CardContent>
             </Card>
-
-            <div className="mt-6">
-              <MascotHelper
-                type="finance"
-                message="Regular income streams are key to financial stability. Consider tracking all your income sources here, even small ones!"
-              />
-            </div>
-          </motion.div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Nav Bar */}

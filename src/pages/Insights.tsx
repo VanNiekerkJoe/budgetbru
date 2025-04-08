@@ -5,7 +5,21 @@ import EnhancedNavBar from '@/components/EnhancedNavBar';
 import { formatCurrency } from '@/utils/formatters';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, ChevronDown, BarChart3, PieChart as PieChartIcon, ArrowUpCircle, ArrowDownCircle, Lightbulb } from 'lucide-react';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  BarChart3, 
+  PieChart as PieChartIcon, 
+  ArrowUpCircle, 
+  ArrowDownCircle, 
+  Lightbulb,
+  Wallet,
+  DollarSign,
+  BadgePercent,
+  Calendar,
+  Info
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +28,7 @@ import { BadgeGlow } from '@/components/ui/badge-glow';
 import MascotHelper from '@/components/MascotHelper';
 import ParticleBackground from '@/components/ParticleBackground';
 import { toast } from 'sonner';
+import CategoryInsight from '@/components/insights/CategoryInsight';
 
 const Insights: React.FC = () => {
   const { expenses, incomes, totalIncome, totalExpenses, remainingBudget } = useBudget();
@@ -39,8 +54,10 @@ const Insights: React.FC = () => {
     return Object.entries(categoryMap).map(([name, value]) => ({
       name,
       value,
+      percentage: totalExpenses > 0 ? Math.round((value / totalExpenses) * 100) : 0,
+      color: getCategoryColor(name)
     })).sort((a, b) => b.value - a.value);
-  }, [expenses]);
+  }, [expenses, totalExpenses]);
   
   // Weekly data
   const weeklyData = [
@@ -68,8 +85,36 @@ const Insights: React.FC = () => {
     return "Eish, you're spending more than you earn. Let's look at cutting non-essential costs.";
   };
 
+  // Define colors for the chart
   const COLORS = ['#6E59A5', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#9966FF'];
   
+  // Helper function to get color for category
+  function getCategoryColor(category: string): string {
+    switch(category) {
+      case 'rent': return '#FF6384';
+      case 'groceries': return '#36A2EB';
+      case 'transport': return '#FFCE56';
+      case 'entertainment': return '#4BC0C0';
+      case 'utilities': return '#FF9F40';
+      case 'education': return '#9966FF';
+      case 'clothing': return '#6E59A5';
+      case 'health': return '#62DA91';
+      default: return '#888888';
+    }
+  }
+  
+  // Helper function to get icon for category
+  function getCategoryIcon(category: string) {
+    switch(category) {
+      case 'rent': return <DollarSign size={18} style={{ color: '#FF6384' }} />;
+      case 'groceries': return <Wallet size={18} style={{ color: '#36A2EB' }} />;
+      case 'transport': return <BadgePercent size={18} style={{ color: '#FFCE56' }} />; 
+      case 'entertainment': return <Calendar size={18} style={{ color: '#4BC0C0' }} />;
+      case 'utilities': return <Info size={18} style={{ color: '#FF9F40' }} />;
+      default: return <Wallet size={18} style={{ color: getCategoryColor(category) }} />;
+    }
+  }
+
   const toggleInsight = (insight: string) => {
     if (expandedInsight === insight) {
       setExpandedInsight(null);
@@ -170,9 +215,18 @@ const Insights: React.FC = () => {
           className="w-full"
         >
           <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="spending">Spending</TabsTrigger>
-            <TabsTrigger value="trends">Trends</TabsTrigger>
+            <TabsTrigger value="overview" className="flex items-center gap-1.5">
+              <Info size={14} />
+              <span>Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="spending" className="flex items-center gap-1.5">
+              <PieChartIcon size={14} />
+              <span>Spending</span>
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="flex items-center gap-1.5">
+              <BarChart3 size={14} />
+              <span>Trends</span>
+            </TabsTrigger>
           </TabsList>
           
           <AnimatePresence mode="wait">
@@ -245,68 +299,26 @@ const Insights: React.FC = () => {
                   </CardContent>
                 </Card>
                 
-                <div 
-                  className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-md overflow-hidden cursor-pointer"
-                  onClick={() => toggleInsight('income')}
-                >
-                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-100/50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/20">
-                    <h3 className="font-medium flex items-center">
-                      <ArrowUpCircle className="mr-2 text-green-600 dark:text-green-400" size={18} />
-                      Income vs. Expenses
-                    </h3>
-                    <Badge variant="outline" className="bg-white dark:bg-gray-700 border border-green-200 dark:border-green-800/40">
-                      {expandedInsight === 'income' ? 
-                        <ChevronDown size={14} /> : 
-                        <ChevronRight size={14} />
-                      }
-                    </Badge>
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card className="bg-gradient-to-br from-green-50/50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20 border border-green-200/40 dark:border-green-800/30">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col items-center text-center">
+                        <ArrowUpCircle className="h-8 w-8 text-green-500 mb-2" />
+                        <p className="text-sm text-green-700 dark:text-green-300">Income</p>
+                        <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(totalIncome)}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                   
-                  <AnimatePresence>
-                    {expandedInsight === 'income' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="p-4 space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between items-center">
-                              <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Total Income</p>
-                                <p className="text-xl font-semibold text-green-600 dark:text-green-400">{formatCurrency(totalIncome)}</p>
-                              </div>
-                              <div className="text-2xl">💰</div>
-                            </div>
-                            
-                            <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between items-center">
-                              <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Total Expenses</p>
-                                <p className="text-xl font-semibold text-red-600 dark:text-red-400">{formatCurrency(totalExpenses)}</p>
-                              </div>
-                              <div className="text-2xl">💸</div>
-                            </div>
-                          </div>
-                          
-                          {incomes.length > 0 && (
-                            <div>
-                              <p className="text-sm font-medium mb-2">Income Sources</p>
-                              <div className="space-y-2">
-                                {incomes.map((income) => (
-                                  <div key={income.id} className="flex justify-between text-sm bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md">
-                                    <span>{income.source}</span>
-                                    <span className="font-medium">{formatCurrency(income.amount)}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <Card className="bg-gradient-to-br from-red-50/50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/20 border border-red-200/40 dark:border-red-800/30">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col items-center text-center">
+                        <ArrowDownCircle className="h-8 w-8 text-red-500 mb-2" />
+                        <p className="text-sm text-red-700 dark:text-red-300">Expenses</p>
+                        <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(totalExpenses)}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </motion.div>
             </TabsContent>
@@ -344,10 +356,11 @@ const Insights: React.FC = () => {
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
+                                nameKey="name"
                                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                               >
                                 {categoryData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                  <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                                 ))}
                               </Pie>
                               <Tooltip formatter={(value) => formatCurrency(Number(value))} />
@@ -355,19 +368,30 @@ const Insights: React.FC = () => {
                           </ResponsiveContainer>
                         </div>
                         
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Top Categories</h4>
-                          {categoryData.slice(0, 4).map((category, index) => (
-                            <div key={index} className="flex justify-between items-center">
-                              <div className="flex items-center">
-                                <div 
-                                  className="w-3 h-3 rounded-full mr-2" 
-                                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                                />
-                                <span className="text-sm capitalize">{category.name}</span>
-                              </div>
-                              <span className="text-sm font-medium">{formatCurrency(category.value)}</span>
-                            </div>
+                        <div className="mt-4 space-y-3">
+                          {categoryData.map((category, index) => (
+                            <CategoryInsight
+                              key={category.name}
+                              categoryName={category.name}
+                              amount={category.value}
+                              icon={getCategoryIcon(category.name)}
+                              color={category.color}
+                              percentage={category.percentage}
+                              details={
+                                <div className="text-sm space-y-2">
+                                  <p className="text-gray-600 dark:text-gray-400">
+                                    You've spent {formatCurrency(category.value)} on {category.name}, 
+                                    which is {category.percentage}% of your total expenses.
+                                  </p>
+                                  {category.percentage > 30 && (
+                                    <div className="text-amber-600 dark:text-amber-400 flex items-start gap-2">
+                                      <AlertTriangle size={14} className="mt-0.5" />
+                                      <span>This category is taking a large portion of your budget.</span>
+                                    </div>
+                                  )}
+                                </div>
+                              }
+                            />
                           ))}
                         </div>
                       </div>

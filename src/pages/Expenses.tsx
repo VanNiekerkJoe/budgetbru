@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import ParticleBackground from '@/components/ParticleBackground';
 import MascotHelper from '@/components/MascotHelper';
 import { toast } from 'sonner';
+import QuickAddExpense from '@/components/expenses/QuickAddExpense';
 
 const Expenses: React.FC = () => {
   const { expenses, totalExpenses, addExpense } = useBudget();
@@ -155,6 +157,9 @@ const Expenses: React.FC = () => {
       <main className="container mx-auto px-4 py-4 space-y-4 max-w-md">
         <MascotHelper type="expenses" message={getMascotMessage()} />
         
+        {/* Quick Add Expense Component */}
+        <QuickAddExpense />
+        
         <div className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-md p-3">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-grow">
@@ -173,15 +178,60 @@ const Expenses: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="rent">Rent</SelectItem>
-                <SelectItem value="groceries">Groceries</SelectItem>
-                <SelectItem value="transport">Transport</SelectItem>
-                <SelectItem value="entertainment">Entertainment</SelectItem>
-                <SelectItem value="utilities">Utilities</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="clothing">Clothing</SelectItem>
-                <SelectItem value="health">Health</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="rent">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('rent')}</span>
+                    Rent
+                  </div>
+                </SelectItem>
+                <SelectItem value="groceries">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('groceries')}</span>
+                    Groceries
+                  </div>
+                </SelectItem>
+                <SelectItem value="transport">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('transport')}</span>
+                    Transport
+                  </div>
+                </SelectItem>
+                <SelectItem value="entertainment">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('entertainment')}</span>
+                    Entertainment
+                  </div>
+                </SelectItem>
+                <SelectItem value="utilities">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('utilities')}</span>
+                    Utilities
+                  </div>
+                </SelectItem>
+                <SelectItem value="education">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('education')}</span>
+                    Education
+                  </div>
+                </SelectItem>
+                <SelectItem value="clothing">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('clothing')}</span>
+                    Clothing
+                  </div>
+                </SelectItem>
+                <SelectItem value="health">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('health')}</span>
+                    Health
+                  </div>
+                </SelectItem>
+                <SelectItem value="other">
+                  <div className="flex items-center">
+                    <span className="mr-2">{getCategoryEmoji('other')}</span>
+                    Other
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -297,15 +347,60 @@ const Expenses: React.FC = () => {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="rent">Rent</SelectItem>
-                  <SelectItem value="groceries">Groceries</SelectItem>
-                  <SelectItem value="transport">Transport</SelectItem>
-                  <SelectItem value="entertainment">Entertainment</SelectItem>
-                  <SelectItem value="utilities">Utilities</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="clothing">Clothing</SelectItem>
-                  <SelectItem value="health">Health</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="rent">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('rent')}</span>
+                      Rent
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="groceries">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('groceries')}</span>
+                      Groceries
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="transport">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('transport')}</span>
+                      Transport
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="entertainment">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('entertainment')}</span>
+                      Entertainment
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="utilities">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('utilities')}</span>
+                      Utilities
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="education">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('education')}</span>
+                      Education
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="clothing">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('clothing')}</span>
+                      Clothing
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="health">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('health')}</span>
+                      Health
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="other">
+                    <div className="flex items-center">
+                      <span className="mr-2">{getCategoryEmoji('other')}</span>
+                      Other
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
