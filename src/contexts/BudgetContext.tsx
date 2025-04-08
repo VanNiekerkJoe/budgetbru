@@ -1,12 +1,16 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
+export type ExpenseCategory = 'food' | 'entertainment' | 'education' | 'transport' | 'utilities' | 'rent' | 'clothing' | 'health' | 'groceries' | 'other';
+
 type BudgetContextType = {
   totalBudget: number;
   remainingBudget: number;
   expenses: Expense[];
   income: Income[];
   savings: Saving[];
+  totalIncome: number;
+  totalExpenses: number;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
   addSaving: (saving: Omit<Saving, 'id'>) => void;
@@ -89,9 +93,9 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   ]);
 
   // Calculate totals
-  const totalBudget = income.reduce((sum, item) => sum + item.amount, 0);
+  const totalIncome = income.reduce((sum, item) => sum + item.amount, 0);
   const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
-  const remainingBudget = totalBudget - totalExpenses;
+  const remainingBudget = totalIncome - totalExpenses;
 
   // Add functions
   const addExpense = (expense: Omit<Expense, 'id'>) => {
@@ -130,6 +134,8 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
         expenses,
         income,
         savings,
+        totalIncome,
+        totalExpenses,
         addExpense,
         addIncome,
         addSaving,

@@ -1,8 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, ArrowUpRight, CreditCard, Landmark, Wallet, ChevronRight, Search, Bell, Settings, Clock, ArrowRight, Calendar, Bookmark, PanelRight, PanelLeft } from 'lucide-react';
+import { 
+  Moon, Sun, ArrowUpRight, CreditCard, Landmark, Wallet, ChevronRight, 
+  Search, Bell, Settings, Clock, ArrowRight, Calendar, Bookmark, 
+  PanelRight, PanelLeft, Plus
+} from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -109,7 +112,6 @@ const IndexPage: React.FC = () => {
 
   useEffect(() => {
     if (searchTerm.length > 1) {
-      // Generate search suggestions based on the search term
       const suggestions = [
         `Add expense for ${searchTerm}`,
         `Find ${searchTerm} in transactions`,
