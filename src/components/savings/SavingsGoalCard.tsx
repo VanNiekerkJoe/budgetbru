@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useBudget, SavingsGoal } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
@@ -19,14 +20,38 @@ const SavingsGoalCard: React.FC<SavingsGoalCardProps> = ({ goal }) => {
   const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
   const remaining = goal.targetAmount - goal.currentAmount;
   
-  // Format deadline (if exists)
+  // Format deadline (if exists) with better error handling
   const formattedDeadline = goal.deadline 
-    ? new Date(goal.deadline).toLocaleDateString() 
+    ? (() => {
+        try {
+          const date = new Date(goal.deadline);
+          // Check if date is valid
+          if (isNaN(date.getTime())) {
+            return 'No deadline set';
+          }
+          return date.toLocaleDateString();
+        } catch (e) {
+          console.error("Invalid date format:", e);
+          return 'No deadline set';
+        }
+      })() 
     : 'No deadline set';
   
-  // Calculate days remaining if deadline exists
+  // Calculate days remaining if deadline exists with better error handling
   const daysRemaining = goal.deadline 
-    ? Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) 
+    ? (() => {
+        try {
+          const deadlineDate = new Date(goal.deadline);
+          // Check if date is valid
+          if (isNaN(deadlineDate.getTime())) {
+            return null;
+          }
+          return Math.ceil((deadlineDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+        } catch (e) {
+          console.error("Error calculating days remaining:", e);
+          return null;
+        }
+      })() 
     : null;
   
   const handleContribute = () => {

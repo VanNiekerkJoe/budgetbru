@@ -29,7 +29,16 @@ const Expenses: React.FC = () => {
   const filteredExpenses = expenses
     .filter(expense => !expenseFilter || expense.category === expenseFilter)
     .filter(expense => !searchTerm || expense.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+        return 0;
+      }
+      
+      return dateB.getTime() - dateA.getTime();
+    });
   
   const categoryTotals = expenses.reduce((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;

@@ -9,14 +9,30 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-// Format a date as a readable string
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-ZA', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
+// Format a date as a readable string with better error handling
+export const formatDate = (dateString: string | Date): string => {
+  try {
+    // Handle null, undefined, or invalid date strings
+    if (!dateString) {
+      return 'Invalid date';
+    }
+    
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    return new Intl.DateTimeFormat('en-ZA', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
 };
 
 // Get category icon based on category name
