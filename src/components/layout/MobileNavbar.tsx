@@ -23,6 +23,7 @@ export const MobileNavbar: React.FC = () => {
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 z-50"
+      style={{ zIndex: 1000 }} // Ensure higher z-index to prevent overlap
     >
       <div className="flex justify-around py-2 px-1">
         {menuItems.map((item) => (

@@ -36,7 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </div>
         
-        {/* Mobile navigation */}
+        {/* Mobile navigation - only show if mobile */}
         {isMobile && <MobileNavbar />}
         
         {/* Chatbot (positioned differently on mobile vs desktop) */}
