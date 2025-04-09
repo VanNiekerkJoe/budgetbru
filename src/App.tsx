@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
+import ParticleBackground from "./components/ParticleBackground";
 
 // Pages
 import IndexPage from "./pages/Index";
@@ -46,28 +47,37 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <BudgetProvider>
             <TooltipProvider>
-              <Toaster />
-              <Sonner position="top-center" />
-              <Routes>
-                <Route path="/" element={<IndexPage />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/income" element={<Income />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/savings" element={<Savings />} />
-                <Route path="/insights" element={<Insights />} />
-                <Route path="/profile" element={<Profile />} />
+              <div className="relative min-h-screen">
+                {/* Global particle background for all pages */}
+                <div className="fixed inset-0 z-0">
+                  <ParticleBackground count={30} className="opacity-20" />
+                </div>
                 
-                <Route path="/emergency-fund" element={<EmergencyFund />} />
-                <Route path="/receipts" element={<DigitalReceipt />} />
-                
-                <Route path="/iou" element={<IOUPage />} />
-                <Route path="/tips" element={<TipsPage />} />
-                <Route path="/community" element={<CommunityPage />} />
-                <Route path="/planning" element={<PlanningPage />} />
-                <Route path="/vibes" element={<VibesHubPage />} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+                <div className="relative z-10">
+                  <Toaster />
+                  <Sonner position="top-center" />
+                  <Routes>
+                    <Route path="/" element={<IndexPage />} />
+                    <Route path="/expenses" element={<Expenses />} />
+                    <Route path="/income" element={<Income />} />
+                    <Route path="/map" element={<MapPage />} />
+                    <Route path="/savings" element={<Savings />} />
+                    <Route path="/insights" element={<Insights />} />
+                    <Route path="/profile" element={<Profile />} />
+                    
+                    <Route path="/emergency-fund" element={<EmergencyFund />} />
+                    <Route path="/receipts" element={<DigitalReceipt />} />
+                    
+                    <Route path="/iou" element={<IOUPage />} />
+                    <Route path="/tips" element={<TipsPage />} />
+                    <Route path="/community" element={<CommunityPage />} />
+                    <Route path="/planning" element={<PlanningPage />} />
+                    <Route path="/vibes" element={<VibesHubPage />} />
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+              </div>
             </TooltipProvider>
           </BudgetProvider>
         </QueryClientProvider>

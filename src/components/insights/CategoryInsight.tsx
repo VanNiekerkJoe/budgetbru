@@ -43,7 +43,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
   };
   
   return (
-    <Card className="overflow-hidden border border-white/20 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md">
+    <Card className="overflow-hidden border border-white/20 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md">
       <div 
         className="cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -51,9 +51,13 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
       >
         <CardContent className="p-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-full bg-white/70 dark:bg-gray-800/70 shadow-sm">
+            <motion.div 
+              className="p-2 rounded-full bg-white/50 dark:bg-gray-800/50 shadow-sm"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               {icon}
-            </div>
+            </motion.div>
             <div>
               <h3 className="font-medium capitalize">{categoryName}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">{formatCurrency(amount)}</p>
@@ -87,7 +91,7 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="px-4 pb-4 pt-1 border-t border-gray-100 dark:border-gray-800">
+            <div className="px-4 pb-4 pt-1 border-t border-gray-100/50 dark:border-gray-800/50">
               {details}
             </div>
           </motion.div>
