@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useBudget } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
-import { Home, ChartPie, CircleDollarSign, Wallet, User, Map, ArrowUp, ArrowDown, Users, Star } from 'lucide-react';
+import { Home, ChartPie, CircleDollarSign, Wallet, User, Map, ArrowUp, ArrowDown, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgeGlow } from './ui/badge-glow';
 import { toast } from 'sonner';
@@ -42,13 +42,11 @@ const EnhancedNavBar: React.FC = () => {
     });
   };
 
-  // Define menu items for better organization
+  // Define menu items for better organization - removed Planning and Vibes
   const menuItems = [
     { path: '/', icon: Home, label: 'Home', tooltip: "Dashboard" },
     { path: '/expenses', icon: Wallet, label: 'Expenses', tooltip: "Track spending" },
     { path: '/map', icon: Map, label: 'Map', tooltip: "Campus Map" },
-    { path: '/planning', icon: Users, label: 'Planning', tooltip: "Plan events", hasNew: true },
-    { path: '/vibes', icon: Star, label: 'Vibes', tooltip: "Campus vibes" },
     { path: '/savings', icon: CircleDollarSign, label: 'Savings', tooltip: "Save money" },
     { path: '/insights', icon: ChartPie, label: 'Insights', tooltip: "Financial insights" },
     { path: '/profile', icon: User, label: 'Profile', tooltip: "Your profile" },
@@ -73,9 +71,9 @@ const EnhancedNavBar: React.FC = () => {
   
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-t border-gray-200 dark:border-gray-800 z-30">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/40 dark:bg-gray-900/50 backdrop-blur-md shadow-lg border-t border-gray-200/30 dark:border-gray-800/30 z-30">
         <motion.div 
-          className="flex justify-around p-2"
+          className="flex justify-around p-2 relative z-10"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -84,7 +82,7 @@ const EnhancedNavBar: React.FC = () => {
             <motion.div key={item.path} variants={itemVariants}>
               <Link 
                 to={item.path} 
-                className={`nav-link relative flex flex-col items-center px-1 ${
+                className={`nav-link relative flex flex-col items-center px-3 py-2 ${
                   isActive(item.path) 
                     ? 'text-theme-pink active' 
                     : 'text-gray-500 dark:text-gray-400'
@@ -103,19 +101,6 @@ const EnhancedNavBar: React.FC = () => {
                     </BadgeGlow>
                   ) : (
                     <item.icon size={24} />
-                  )}
-                  
-                  {item.hasNew && !isActive(item.path) && (
-                    <motion.div 
-                      className="absolute -top-1 -right-1 w-2 h-2 bg-theme-pink rounded-full"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                      }}
-                    />
                   )}
                 </motion.div>
                 <span className="text-xs mt-1">{item.label}</span>

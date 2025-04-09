@@ -36,11 +36,11 @@ const NavBar: React.FC = () => {
   };
   
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10">
+    <div className="fixed bottom-0 left-0 right-0 z-40">
       <motion.div 
         className={`w-full py-1 px-4 text-xs flex items-center justify-center font-medium ${
-          remainingBudget >= 0 ? 'bg-green-500/10 text-green-800 dark:text-green-300' : 
-          'bg-red-500/10 text-red-800 dark:text-red-300'
+          remainingBudget >= 0 ? 'bg-green-500/30 text-green-800 dark:text-green-300' : 
+          'bg-red-500/30 text-red-800 dark:text-red-300'
         } backdrop-blur-md`}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ const NavBar: React.FC = () => {
         }
       </motion.div>
       
-      <div className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-lg border-t border-white/20 dark:border-gray-800/30 shadow-lg relative overflow-hidden">
+      <div className="bg-white/40 dark:bg-gray-900/50 backdrop-blur-lg border-t border-white/30 dark:border-gray-800/30 shadow-lg relative overflow-hidden">
         {/* Particle background for active tab */}
         <div className="absolute inset-0 z-0 opacity-30">
           <ParticleBackground count={20} theme="finances" className="opacity-40" />
@@ -113,9 +113,9 @@ const NavBar: React.FC = () => {
                 <item.icon size={24} />
                 {isActive(item.path) && (
                   <motion.div 
-                    className="absolute -inset-1 bg-theme-pink/10 rounded-full -z-10"
+                    className="absolute -inset-3 bg-theme-pink/10 rounded-full -z-10"
                     initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
+                    animate={{ scale: 1.2, opacity: 0.8 }}
                     exit={{ scale: 0.8, opacity: 0 }}
                     layoutId="activeTab"
                   />
@@ -125,8 +125,15 @@ const NavBar: React.FC = () => {
                   <motion.div 
                     className="absolute -top-1 -right-1"
                     initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2 }}
+                    animate={{ 
+                      scale: [1, 1.5, 1],
+                      rotate: [0, 10, 0]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1
+                    }}
                   >
                     <Sparkles size={10} className="text-theme-pink" />
                   </motion.div>

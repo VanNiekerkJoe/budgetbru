@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
 import ParticleBackground from "./components/ParticleBackground";
+import FloatingChatbot from "./components/FloatingChatbot";
 
 // Pages
 import IndexPage from "./pages/Index";
@@ -20,8 +21,6 @@ import MapPage from "./pages/Map";
 import NotFound from "./pages/NotFound";
 import IOUPage from "./pages/IOUPage";
 import TipsPage from "./pages/TipsPage";
-import PlanningPage from "./pages/PlanningPage";
-import VibesHubPage from "./pages/VibesHubPage";
 import CommunityPage from "./pages/CommunityPage";
 import EmergencyFund from "./pages/EmergencyFund";
 import DigitalReceipt from "./pages/DigitalReceipt";
@@ -47,10 +46,10 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <BudgetProvider>
             <TooltipProvider>
-              <div className="relative min-h-screen">
-                {/* Global particle background for all pages */}
+              <div className="relative min-h-screen bg-gradient-to-br from-white/20 to-purple-100/20 dark:from-gray-900/20 dark:to-indigo-950/20">
+                {/* Enhanced global particle background for all pages */}
                 <div className="fixed inset-0 z-0">
-                  <ParticleBackground count={30} className="opacity-20" />
+                  <ParticleBackground count={50} className="opacity-30" />
                 </div>
                 
                 <div className="relative z-10">
@@ -71,11 +70,12 @@ const App = () => {
                     <Route path="/iou" element={<IOUPage />} />
                     <Route path="/tips" element={<TipsPage />} />
                     <Route path="/community" element={<CommunityPage />} />
-                    <Route path="/planning" element={<PlanningPage />} />
-                    <Route path="/vibes" element={<VibesHubPage />} />
                     
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  
+                  {/* Add floating chatbot to all pages */}
+                  <FloatingChatbot />
                 </div>
               </div>
             </TooltipProvider>
