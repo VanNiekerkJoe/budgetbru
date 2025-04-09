@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
 import ParticleBackground from "./components/ParticleBackground";
-import FloatingChatbot from "./components/FloatingChatbot";
+import MainLayout from "./components/layout/MainLayout";
 
 // Pages
 import IndexPage from "./pages/Index";
@@ -46,44 +46,35 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <BudgetProvider>
             <TooltipProvider>
-              <div className="relative min-h-screen bg-gradient-to-br from-indigo-50/30 via-purple-50/30 to-pink-50/30 dark:from-gray-900/40 dark:via-indigo-950/30 dark:to-purple-950/40 overflow-hidden">
-                {/* Enhanced particle background with more subtle effects */}
+              <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+                <Toaster />
+                <Sonner position="top-center" />
+                
+                {/* Ambient background effects */}
                 <div className="fixed inset-0 z-0">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(155,135,245,0.1),transparent_70%)]" />
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,195,160,0.1),transparent_70%)]" />
-                  <ParticleBackground count={30} className="opacity-20" />
+                  <ParticleBackground count={20} className="opacity-20" />
                 </div>
                 
-                {/* Floating light orbs for ambient effect */}
-                <div className="fixed top-1/4 right-1/4 w-40 h-40 bg-purple-400/10 rounded-full blur-3xl" />
-                <div className="fixed bottom-1/3 left-1/3 w-60 h-60 bg-blue-300/10 rounded-full blur-3xl" />
-                <div className="fixed top-2/3 right-1/3 w-32 h-32 bg-pink-300/10 rounded-full blur-3xl" />
-                
-                <div className="relative z-10">
-                  <Toaster />
-                  <Sonner position="top-center" />
-                  <Routes>
-                    <Route path="/" element={<IndexPage />} />
-                    <Route path="/expenses" element={<Expenses />} />
-                    <Route path="/income" element={<Income />} />
-                    <Route path="/map" element={<MapPage />} />
-                    <Route path="/savings" element={<Savings />} />
-                    <Route path="/insights" element={<Insights />} />
-                    <Route path="/profile" element={<Profile />} />
-                    
-                    <Route path="/emergency-fund" element={<EmergencyFund />} />
-                    <Route path="/receipts" element={<DigitalReceipt />} />
-                    
-                    <Route path="/iou" element={<IOUPage />} />
-                    <Route path="/tips" element={<TipsPage />} />
-                    <Route path="/community" element={<CommunityPage />} />
-                    
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                <Routes>
+                  <Route path="/" element={<MainLayout><IndexPage /></MainLayout>} />
+                  <Route path="/expenses" element={<MainLayout><Expenses /></MainLayout>} />
+                  <Route path="/income" element={<MainLayout><Income /></MainLayout>} />
+                  <Route path="/map" element={<MainLayout><MapPage /></MainLayout>} />
+                  <Route path="/savings" element={<MainLayout><Savings /></MainLayout>} />
+                  <Route path="/insights" element={<MainLayout><Insights /></MainLayout>} />
+                  <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
                   
-                  {/* Add floating chatbot to all pages */}
-                  <FloatingChatbot />
-                </div>
+                  <Route path="/emergency-fund" element={<MainLayout><EmergencyFund /></MainLayout>} />
+                  <Route path="/receipts" element={<MainLayout><DigitalReceipt /></MainLayout>} />
+                  
+                  <Route path="/iou" element={<MainLayout><IOUPage /></MainLayout>} />
+                  <Route path="/tips" element={<MainLayout><TipsPage /></MainLayout>} />
+                  <Route path="/community" element={<MainLayout><CommunityPage /></MainLayout>} />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </div>
             </TooltipProvider>
           </BudgetProvider>

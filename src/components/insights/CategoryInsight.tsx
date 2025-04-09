@@ -26,45 +26,31 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   
-  // Generate gradient style based on color prop
-  const getGradientStyle = () => {
-    return {
-      background: isHovered 
-        ? `linear-gradient(to right, ${color}20, transparent)` 
-        : `linear-gradient(to right, ${color}10, transparent)`,
-      borderLeft: `3px solid ${color}${isHovered ? '' : '80'}`,
-      transition: 'all 0.3s ease',
-    };
-  };
-  
-  // Generate badge style based on color prop
-  const getBadgeStyle = () => {
-    return {
-      backgroundColor: `${color}15`,
-      color: color,
-      borderColor: `${color}30`,
-    };
-  };
-  
   return (
     <motion.div
-      whileHover={{ y: -5 }}
+      whileHover={{ y: -3 }}
       transition={{ duration: 0.2 }}
+      layout
     >
       <Card 
-        className="overflow-hidden border border-white/20 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md"
+        className="overflow-hidden border border-white/20 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-sm transition-all duration-200 hover:shadow-md"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div 
           className="cursor-pointer"
           onClick={() => setIsExpanded(!isExpanded)}
-          style={getGradientStyle()}
+          style={{ 
+            borderLeft: `3px solid ${color}`,
+            background: isHovered ? 
+              `linear-gradient(to right, ${color}15, transparent)` : 
+              `linear-gradient(to right, ${color}05, transparent)`
+          }}
         >
           <CardContent className="p-4 flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <motion.div 
-                className="p-2 rounded-full bg-gradient-to-br from-white/70 to-white/30 dark:from-gray-800/70 dark:to-gray-900/30 shadow-sm backdrop-blur-sm"
+                className="p-2 rounded-full bg-white/70 dark:bg-gray-700/70 shadow-sm backdrop-blur-sm flex items-center justify-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 animate={isHovered ? { rotate: [0, -5, 5, 0] } : {}}
@@ -83,7 +69,11 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
               <Badge 
                 variant="outline" 
                 className="flex items-center"
-                style={getBadgeStyle()}
+                style={{
+                  backgroundColor: `${color}15`,
+                  color: color,
+                  borderColor: `${color}30`,
+                }}
               >
                 {percentage}%
               </Badge>
