@@ -64,11 +64,12 @@ const CategoryInsight: React.FC<CategoryInsightProps> = ({
           <CardContent className="p-4 flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <motion.div 
-                className="p-2 rounded-full bg-white/50 dark:bg-gray-800/50 shadow-sm"
+                className="p-2 rounded-full bg-gradient-to-br from-white/70 to-white/30 dark:from-gray-800/70 dark:to-gray-900/30 shadow-sm backdrop-blur-sm"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 animate={isHovered ? { rotate: [0, -5, 5, 0] } : {}}
                 transition={{ duration: 0.5 }}
+                style={{ borderColor: `${color}40`, borderWidth: '1px' }}
               >
                 {icon}
               </motion.div>

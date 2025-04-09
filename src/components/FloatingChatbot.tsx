@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minimize2, Maximize2 } from 'lucide-react';
+import { Sparkles, X, Minimize2, Maximize2, Bot, MessageCircle } from 'lucide-react';
 import JoziBoetChatbot from './JoziBoetChatbot';
 
 const FloatingChatbot: React.FC = () => {
@@ -48,9 +48,9 @@ const FloatingChatbot: React.FC = () => {
               exit={{ opacity: 0, scale: 0.8, y: 50 }}
               className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-lg shadow-lg border border-gray-200/30 dark:border-gray-700/30 w-[350px] h-[500px] overflow-hidden"
             >
-              <div className="bg-theme-pink/80 backdrop-blur-sm text-white p-2 flex items-center justify-between">
+              <div className="bg-gradient-to-r from-purple-500/90 to-indigo-500/90 backdrop-blur-sm text-white p-2 flex items-center justify-between">
                 <div className="flex items-center">
-                  <MessageSquare size={18} className="mr-2" />
+                  <Bot size={18} className="mr-2" />
                   <h3 className="font-medium">JoziBoet Assistant</h3>
                 </div>
                 <div className="flex space-x-2">
@@ -71,10 +71,10 @@ const FloatingChatbot: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="bg-theme-pink/90 text-white px-4 py-2 rounded-full shadow-lg cursor-pointer flex items-center"
+              className="bg-gradient-to-r from-purple-500/90 to-indigo-500/90 text-white px-4 py-2 rounded-full shadow-lg cursor-pointer flex items-center"
               onClick={toggleChatbot}
             >
-              <MessageSquare size={16} className="mr-2" />
+              <Bot size={16} className="mr-2" />
               <span className="font-medium text-sm">JoziBoet Assistant</span>
               <Maximize2 size={14} className="ml-2" />
             </motion.div>
@@ -82,9 +82,20 @@ const FloatingChatbot: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="bg-theme-pink shadow-lg rounded-full w-14 h-14 flex items-center justify-center text-white"
+              className="bg-gradient-to-r from-purple-500 to-indigo-600 shadow-lg rounded-full w-14 h-14 flex items-center justify-center text-white relative overflow-hidden group"
               onClick={toggleChatbot}
             >
+              <motion.div 
+                className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"
+                animate={{
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+              />
+              
               <motion.div
                 animate={{ 
                   rotate: [0, 10, -10, 0],
@@ -94,8 +105,23 @@ const FloatingChatbot: React.FC = () => {
                   repeat: Infinity,
                   repeatDelay: 3
                 }}
+                className="relative z-10"
               >
-                <MessageSquare size={24} />
+                <Bot size={24} />
+                <motion.div 
+                  className="absolute -top-1 -right-1"
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0.8, 1.2, 0.8],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatDelay: 2
+                  }}
+                >
+                  <Sparkles size={10} className="text-yellow-300" />
+                </motion.div>
               </motion.div>
             </motion.button>
           )}

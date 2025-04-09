@@ -46,11 +46,18 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <BudgetProvider>
             <TooltipProvider>
-              <div className="relative min-h-screen bg-gradient-to-br from-white/20 to-purple-100/20 dark:from-gray-900/20 dark:to-indigo-950/20">
-                {/* Enhanced global particle background for all pages */}
+              <div className="relative min-h-screen bg-gradient-to-br from-indigo-50/30 via-purple-50/30 to-pink-50/30 dark:from-gray-900/40 dark:via-indigo-950/30 dark:to-purple-950/40 overflow-hidden">
+                {/* Enhanced particle background with more subtle effects */}
                 <div className="fixed inset-0 z-0">
-                  <ParticleBackground count={50} className="opacity-30" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(155,135,245,0.1),transparent_70%)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,195,160,0.1),transparent_70%)]" />
+                  <ParticleBackground count={30} className="opacity-20" />
                 </div>
+                
+                {/* Floating light orbs for ambient effect */}
+                <div className="fixed top-1/4 right-1/4 w-40 h-40 bg-purple-400/10 rounded-full blur-3xl" />
+                <div className="fixed bottom-1/3 left-1/3 w-60 h-60 bg-blue-300/10 rounded-full blur-3xl" />
+                <div className="fixed top-2/3 right-1/3 w-32 h-32 bg-pink-300/10 rounded-full blur-3xl" />
                 
                 <div className="relative z-10">
                   <Toaster />
