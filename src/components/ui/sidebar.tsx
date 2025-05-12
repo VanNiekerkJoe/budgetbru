@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { VariantProps, cva } from "class-variance-authority"
@@ -16,6 +17,7 @@ interface SidebarContext {
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
+  toggleSidebar: () => void // Added toggleSidebar to the interface
 }
 
 const SidebarContext = React.createContext<SidebarContext | undefined>(undefined)
@@ -72,6 +74,8 @@ const Sidebar = React.forwardRef<
 
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
+    const controlled = openProp !== undefined // Added this line to define 'controlled'
+    
     const setOpen = React.useCallback(
       (openState: boolean) => {
         if (setOpenProp) {
@@ -84,14 +88,14 @@ const Sidebar = React.forwardRef<
 
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
-      [setOpenProp, open]
+      [setOpenProp, controlled] // Fixed dependency array to include 'controlled'
     )
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
         ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile])
+        : setOpen(!open) // Fixed: passing boolean instead of function
+    }, [isMobile, setOpen, setOpenMobile, open])
 
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -116,8 +120,9 @@ const Sidebar = React.forwardRef<
         setOpen,
         openMobile,
         setOpenMobile,
+        toggleSidebar, // Added toggleSidebar to the context value
       }),
-      [open, setOpen, openMobile, setOpenMobile]
+      [open, setOpen, openMobile, setOpenMobile, toggleSidebar]
     )
 
     return (
