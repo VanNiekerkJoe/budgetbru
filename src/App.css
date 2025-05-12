@@ -57,7 +57,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Smooth page transitions */
+/* Smooth page transitions - using framer-motion instead */
 .page-transition {
   animation-duration: 0.3s;
   animation-fill-mode: both;
@@ -102,14 +102,36 @@
   text-shadow: 0 0 15px rgba(202, 82, 154, 0.5);
 }
 
-/* Improved card animations */
-.card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Skeleton loading animation */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.1)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-.card-hover:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 30, 30, 0.1),
+    rgba(60, 60, 60, 0.2),
+    rgba(30, 30, 30, 0.1)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Custom scroll behavior */
@@ -139,83 +161,36 @@
   box-shadow: 0 0 0 2px rgba(202, 82, 154, 0.5);
 }
 
-/* Bounce animation */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* Enhanced UI animations */
+.content-enter {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.bounce {
-  animation: bounce 2s ease infinite;
+.content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* Enhanced pulse animation */
-@keyframes pulse-soft {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+.content-exit {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.animate-pulse-soft {
-  animation: pulse-soft 2s infinite ease-in-out;
+.content-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
-/* New shimmer effect */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/* New glassmorphism cards */
+.glass-morph {
+  @apply backdrop-blur-xl bg-white/20 dark:bg-black/20 border border-white/20 dark:border-white/10 shadow-lg;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.shimmer {
-  background: linear-gradient(90deg, 
-    rgba(255,255,255,0) 0%, 
-    rgba(255,255,255,0.2) 50%, 
-    rgba(255,255,255,0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-.dark .shimmer {
-  background: linear-gradient(90deg, 
-    rgba(255,255,255,0) 0%, 
-    rgba(255,255,255,0.1) 50%, 
-    rgba(255,255,255,0) 100%);
-}
-
-/* Enhanced dark mode styles */
-.dark {
-  color-scheme: dark;
-}
-
-.dark *::selection {
-  background-color: rgba(202, 82, 154, 0.3);
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Color transitions for theme changes */
-body, body * {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+.glass-morph:hover {
+  @apply shadow-xl;
+  transform: translateY(-3px);
 }

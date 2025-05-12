@@ -2,12 +2,13 @@
 import * as React from "react"
 
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, Home, CreditCard, PiggyBank, BarChart, User, Settings } from "lucide-react"
 
 import { useMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar-expanded"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
@@ -17,7 +18,7 @@ interface SidebarContext {
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
-  toggleSidebar: () => void // Added toggleSidebar to the interface
+  toggleSidebar: () => void
 }
 
 const SidebarContext = React.createContext<SidebarContext | undefined>(undefined)
@@ -74,7 +75,7 @@ const Sidebar = React.forwardRef<
 
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
-    const controlled = openProp !== undefined // Added this line to define 'controlled'
+    const controlled = openProp !== undefined
     
     const setOpen = React.useCallback(
       (openState: boolean) => {
@@ -88,13 +89,13 @@ const Sidebar = React.forwardRef<
 
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
-      [setOpenProp, controlled] // Fixed dependency array to include 'controlled'
+      [setOpenProp, controlled]
     )
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen(!open) // Fixed: passing boolean instead of function
+        ? setOpenMobile((prevOpen) => !prevOpen)
+        : setOpen(!open)
     }, [isMobile, setOpen, setOpenMobile, open])
 
     React.useEffect(() => {
@@ -120,7 +121,7 @@ const Sidebar = React.forwardRef<
         setOpen,
         openMobile,
         setOpenMobile,
-        toggleSidebar, // Added toggleSidebar to the context value
+        toggleSidebar,
       }),
       [open, setOpen, openMobile, setOpenMobile, toggleSidebar]
     )
@@ -140,7 +141,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             className={cn(
-              "flex h-full w-full flex-col border-r bg-secondary text-secondary-foreground shadow-sm transition-all duration-300",
+              "flex h-full w-full flex-col border-r bg-sidebar text-sidebar-foreground shadow-sm transition-all duration-300",
               "group-data-[state=collapsed]:w-14 group-data-[state=expanded]:w-64"
             )}
           >
@@ -169,21 +170,30 @@ const SidebarTrigger = React.forwardRef<
 >(({ className, ...props }, ref) => {
   const { toggleSidebar } = useSidebarContext()
   return (
-    <Button
-      ref={ref}
-      variant="ghost"
-      size="sm"
-      className={cn(
-        "h-8 w-8 rounded-md p-0 lg:opacity-0 lg:group-data-[state=collapsed]:opacity-100",
-        className
-      )}
-      aria-label="Toggle Sidebar"
-      onClick={toggleSidebar}
-      {...props}
-    >
-      <PanelLeft className="h-4 w-4" />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            ref={ref}
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-8 w-8 rounded-md p-0 lg:opacity-0 lg:group-data-[state=collapsed]:opacity-100 hover:bg-sidebar-accent/50 transition-all",
+              className
+            )}
+            aria-label="Toggle Sidebar"
+            onClick={toggleSidebar}
+            {...props}
+          >
+            <PanelLeft className="h-4 w-4" />
+            <span className="sr-only">Toggle Sidebar</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <p>Toggle sidebar</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 })
 SidebarTrigger.displayName = "SidebarTrigger"
@@ -247,6 +257,40 @@ const SidebarSearch = React.forwardRef<
 ))
 SidebarSearch.displayName = "SidebarSearch"
 
+// New component for navigation items with icons
+const SidebarNavItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & {
+    icon: React.ElementType;
+    active?: boolean;
+  }
+>(({ className, children, icon: Icon, active, ...props }, ref) => {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <a
+            ref={ref}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all hover:bg-sidebar-accent/50",
+              active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+              className
+            )}
+            {...props}
+          >
+            <Icon className="h-4 w-4" />
+            <span className="group-data-[state=collapsed]:hidden">{children}</span>
+          </a>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="group-data-[state=expanded]:hidden">
+          <p>{children}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+})
+SidebarNavItem.displayName = "SidebarNavItem"
+
 export {
   Sidebar,
   SidebarTrigger,
@@ -254,4 +298,5 @@ export {
   SidebarHeader,
   SidebarFooter,
   SidebarSearch,
+  SidebarNavItem,
 }
