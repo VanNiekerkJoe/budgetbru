@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
-  Moon, Sun, ArrowUpRight, CreditCard, Landmark, Wallet, ChevronRight, 
-  Search, Bell, Settings, Clock, ArrowRight, Calendar, Bookmark, 
-  PanelRight, PanelLeft, Plus
+  Wallet, ChevronRight, 
+  Search, Plus
 } from 'lucide-react';
-import { Toggle } from '@/components/ui/toggle';
 import { toast } from 'sonner';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,46 +13,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { BadgeGlow } from '@/components/ui/badge-glow';
 
-import EnhancedNavBar from '@/components/EnhancedNavBar';
-import LogoBadge from '@/components/LogoBadge';
 import CategoryIcon, { CategoryType } from '@/components/CategoryIcon';
 import BalanceCard from '@/components/dashboard/BalanceCard';
 import EventPopup from '@/components/EventPopup';
-import JoziBoetChatbot from '@/components/JoziBoetChatbot';
 import MapView from '@/components/map/MapView';
-import ParticleBackground from '@/components/ParticleBackground';
 import TutorialGuide from '@/components/TutorialGuide';
 import { useTutorial } from '@/services/TutorialService';
 import { QuickExpenseTracker } from '@/components/dashboard/QuickExpenseTracker';
 import { useBudget } from '@/contexts/BudgetContext';
 
-const WALLPAPERS = [
-  {
-    name: "Blue Gradient",
-    value: "bg-gradient-to-br from-blue-100 to-blue-50 dark:from-theme-navy dark:to-theme-indigo/80"
-  },
-  {
-    name: "Pink Glow",
-    value: "bg-gradient-to-br from-pink-100 to-purple-100 dark:from-theme-pink/30 dark:to-theme-indigo/50"
-  },
-  {
-    name: "Teal Breeze",
-    value: "bg-gradient-to-br from-teal-100 to-blue-100 dark:from-theme-teal/30 dark:to-theme-navy"
-  },
-  {
-    name: "Default",
-    value: "bg-gray-50 dark:bg-gray-900"
-  }
-];
 
 const IndexPage: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true';
-    }
-    return false;
-  });
-  
   const [showEventPopup, setShowEventPopup] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<{
     title: string;
@@ -64,9 +32,7 @@ const IndexPage: React.FC = () => {
   } | null>(null);
   
   const [showMap, setShowMap] = useState(false);
-  const [wallpaper, setWallpaper] = useState(WALLPAPERS[0].value);
   const [activeTab, setActiveTab] = useState("overview");
-  const [showSidebar, setShowSidebar] = useState(false);
   const { addExpense } = useBudget();
   
   const [transactions, setTransactions] = useState([
@@ -89,13 +55,6 @@ const IndexPage: React.FC = () => {
   const [categoryName, setCategoryName] = useState("");
   
   const { showTutorial, completeTutorial, skipTutorial, resetTutorial } = useTutorial();
-  
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('darkMode', darkMode.toString());
-    }
-  }, [darkMode]);
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -123,23 +82,12 @@ const IndexPage: React.FC = () => {
     }
   }, [searchTerm]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-  
   const handleCloseEventPopup = () => {
     setShowEventPopup(false);
   };
   
   const toggleMap = () => {
     setShowMap(!showMap);
-  };
-  
-  const handleWallpaperChange = () => {
-    const currentIndex = WALLPAPERS.findIndex(wp => wp.value === wallpaper);
-    const nextIndex = (currentIndex + 1) % WALLPAPERS.length;
-    setWallpaper(WALLPAPERS[nextIndex].value);
-    toast.success(`Wallpaper changed to ${WALLPAPERS[nextIndex].name}`);
   };
   
   const handleAddIncome = () => {
@@ -244,174 +192,16 @@ const IndexPage: React.FC = () => {
     { title: 'Transport Tips', category: 'Transport', icon: '🚗' },
   ];
 
-  const recentSearches = ["textbooks", "lunch", "data", "transport"];
+  
 
   return (
-    <div className={`min-h-screen pb-28 ${wallpaper} transition-all duration-500`}>
-      <ParticleBackground count={20} className="opacity-30" />
-      
+    <div className="space-y-5">
       {/* Welcome Tutorial */}
       {showTutorial && (
         <TutorialGuide onComplete={handleTutorialComplete} onSkip={handleTutorialSkip} />
       )}
-
-      {/* Quick Access Sidebar */}
-      <AnimatePresence>
-        {showSidebar && (
-          <motion.div 
-            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 z-50 shadow-xl"
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ type: "spring", damping: 20 }}
-          >
-            <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
-              <LogoBadge size="sm" />
-              <h2 className="text-lg font-semibold ml-2">Quick Access</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)}>
-                <PanelLeft size={18} />
-              </Button>
-            </div>
-            <div className="p-4 space-y-4">
-              <div>
-                <h3 className="text-sm font-medium mb-2">Recent Searches</h3>
-                <div className="flex flex-wrap gap-2">
-                  {recentSearches.map((search, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="outline" 
-                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => setSearchTerm(search)}
-                    >
-                      {search}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Quick Navigation</h3>
-                <div className="space-y-1">
-                  <Link to="/expenses" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <Wallet size={18} className="mr-2 text-theme-pink" />
-                    <span>Expenses</span>
-                  </Link>
-                  <Link to="/savings" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <CreditCard size={18} className="mr-2 text-theme-pink" />
-                    <span>Savings</span>
-                  </Link>
-                  <Link to="/insights" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <ArrowUpRight size={18} className="mr-2 text-theme-pink" />
-                    <span>Insights</span>
-                  </Link>
-                  <Link to="/map" className="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <Landmark size={18} className="mr-2 text-theme-pink" />
-                    <span>Campus Map</span>
-                  </Link>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Upcoming</h3>
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md">
-                  <div className="flex items-center">
-                    <div className="bg-theme-pink/20 rounded-full p-2 mr-3">
-                      <Calendar size={16} className="text-theme-pink" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Night Market</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">This Friday</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Saved Items</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                    <Bookmark size={16} className="mr-2 text-theme-pink" />
-                    <span className="text-sm">Budget Planning Guide</span>
-                  </div>
-                  <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                    <Bookmark size={16} className="mr-2 text-theme-pink" />
-                    <span className="text-sm">Financial Aid Resources</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
-      <motion.header 
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className={`relative ${darkMode ? 'bg-theme-navy bg-opacity-60 backdrop-blur-lg' : 'bg-white bg-opacity-80 backdrop-blur-lg'} py-6 px-4 shadow-md`}
-      >
-        <div className="container mx-auto max-w-md flex justify-between items-center">
-          <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-1" 
-              onClick={() => setShowSidebar(!showSidebar)}
-            >
-              {showSidebar ? <PanelRight size={18} /> : <PanelLeft size={18} />}
-            </Button>
-            <div className="flex items-center">
-              <LogoBadge size="md" />
-              <div className="ml-3">
-                <h1 className="text-xl font-bold gradient-heading">BudgetBru</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Student Finance Made Easy</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="rounded-full p-2 bg-gray-100 dark:bg-gray-800 shadow-md text-gray-600 dark:text-gray-300"
-              onClick={() => resetTutorial()}
-              aria-label="Show tutorial"
-            >
-              <Bell size={18} />
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="rounded-full p-2 bg-gray-100 dark:bg-gray-800 shadow-md text-gray-600 dark:text-gray-300"
-              onClick={handleWallpaperChange}
-            >
-              <Landmark size={18} />
-            </motion.button>
-            
-            <Toggle 
-              className="p-2 rounded-full"
-              pressed={darkMode}
-              onPressedChange={toggleDarkMode}
-              aria-label="Toggle dark mode"
-            >
-              {darkMode ? <Sun size={18} className="animate-pulse-soft" /> : <Moon size={18} />}
-            </Toggle>
-            
-            <Link to="/profile">
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                <Avatar className="h-9 w-9 border-2 border-white dark:border-gray-800">
-                  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-xs">
-                    BP
-                  </AvatarFallback>
-                </Avatar>
-              </motion.div>
-            </Link>
-          </div>
-        </div>
-      </motion.header>
-      
-      <main className="container mx-auto px-4 py-4 space-y-5 max-w-md">
+      <div className="space-y-5">
         <motion.div 
           className="relative"
           initial={{ opacity: 0, y: 10 }}
@@ -827,7 +617,7 @@ const IndexPage: React.FC = () => {
             </TabsContent>
           </AnimatePresence>
         </Tabs>
-      </main>
+      </div>
       
       {/* Event Popup */}
       {showEventPopup && currentEvent && (
@@ -838,9 +628,6 @@ const IndexPage: React.FC = () => {
           onClose={handleCloseEventPopup}
         />
       )}
-      
-      {/* Jozi Boet Chatbot */}
-      <JoziBoetChatbot />
       
       {/* Full Map Modal */}
       <AnimatePresence>
@@ -882,12 +669,12 @@ const IndexPage: React.FC = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="text-xl font-semibold mb-3 text-theme-pink">New Category</h3>
+              <h3 className="text-xl font-semibold mb-3 text-primary">New Category</h3>
               <div className="mb-4">
                 <label className="block text-sm mb-1">Category Name</label>
                 <input 
                   type="text" 
-                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" 
+                  className="w-full px-3 py-2 border rounded-md bg-background border-border" 
                   placeholder="e.g. Entertainment"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
@@ -912,8 +699,6 @@ const IndexPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      <EnhancedNavBar />
     </div>
   );
 };
