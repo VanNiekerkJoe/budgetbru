@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
 import ParticleBackground from "./components/ParticleBackground";
@@ -12,22 +12,30 @@ import MainLayout from "./components/layout/MainLayout";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
 
-// Pages
+// Eager load critical pages
 import IndexPage from "./pages/Index";
 import Expenses from "./pages/Expenses";
-import Income from "./pages/Income";
-import Savings from "./pages/Savings";
-import Insights from "./pages/Insights";
-import Profile from "./pages/Profile";
-import MapPage from "./pages/Map";
-import NotFound from "./pages/NotFound";
-import IOUPage from "./pages/IOUPage";
-import TipsPage from "./pages/TipsPage";
-import CommunityPage from "./pages/CommunityPage";
-import EmergencyFund from "./pages/EmergencyFund";
-import DigitalReceipt from "./pages/DigitalReceipt";
+
+// Lazy load non-critical pages
+const Income = lazy(() => import("./pages/Income"));
+const Savings = lazy(() => import("./pages/Savings"));
+const Insights = lazy(() => import("./pages/Insights"));
+const Profile = lazy(() => import("./pages/Profile"));
+const MapPage = lazy(() => import("./pages/Map"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const IOUPage = lazy(() => import("./pages/IOUPage"));
+const TipsPage = lazy(() => import("./pages/TipsPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
+const EmergencyFund = lazy(() => import("./pages/EmergencyFund"));
+const DigitalReceipt = lazy(() => import("./pages/DigitalReceipt"));
 
 const queryClient = new QueryClient();
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Route wrapper for animations
 const AnimatedRoutes = () => {
@@ -35,24 +43,23 @@ const AnimatedRoutes = () => {
   
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<MainLayout><IndexPage /></MainLayout>} />
-        <Route path="/expenses" element={<MainLayout><Expenses /></MainLayout>} />
-        <Route path="/income" element={<MainLayout><Income /></MainLayout>} />
-        <Route path="/map" element={<MainLayout><MapPage /></MainLayout>} />
-        <Route path="/savings" element={<MainLayout><Savings /></MainLayout>} />
-        <Route path="/insights" element={<MainLayout><Insights /></MainLayout>} />
-        <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
-        
-        <Route path="/emergency-fund" element={<MainLayout><EmergencyFund /></MainLayout>} />
-        <Route path="/receipts" element={<MainLayout><DigitalReceipt /></MainLayout>} />
-        
-        <Route path="/iou" element={<MainLayout><IOUPage /></MainLayout>} />
-        <Route path="/tips" element={<MainLayout><TipsPage /></MainLayout>} />
-        <Route path="/community" element={<MainLayout><CommunityPage /></MainLayout>} />
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={<MainLayout><PageLoader /></MainLayout>}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<MainLayout><IndexPage /></MainLayout>} />
+          <Route path="/expenses" element={<MainLayout><Expenses /></MainLayout>} />
+          <Route path="/income" element={<MainLayout><Income /></MainLayout>} />
+          <Route path="/map" element={<MainLayout><MapPage /></MainLayout>} />
+          <Route path="/savings" element={<MainLayout><Savings /></MainLayout>} />
+          <Route path="/insights" element={<MainLayout><Insights /></MainLayout>} />
+          <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
+          <Route path="/emergency-fund" element={<MainLayout><EmergencyFund /></MainLayout>} />
+          <Route path="/receipts" element={<MainLayout><DigitalReceipt /></MainLayout>} />
+          <Route path="/iou" element={<MainLayout><IOUPage /></MainLayout>} />
+          <Route path="/tips" element={<MainLayout><TipsPage /></MainLayout>} />
+          <Route path="/community" element={<MainLayout><CommunityPage /></MainLayout>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 };
@@ -77,15 +84,15 @@ const App = () => {
           <QueryClientProvider client={queryClient}>
             <BudgetProvider>
               <TooltipProvider>
-                <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+                <div className="min-h-screen bg-background">
                   <Toaster />
                   <Sonner position="top-center" />
                   
-                  {/* Ambient background effects */}
-                  <div className="fixed inset-0 z-0">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(155,135,245,0.1),transparent_70%)]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,195,160,0.1),transparent_70%)]" />
-                    <ParticleBackground count={20} className="opacity-20" />
+                  {/* Lightweight ambient background */}
+                  <div className="fixed inset-0 z-0 pointer-events-none">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(155,135,245,0.08),transparent_70%)]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,195,160,0.08),transparent_70%)]" />
+                    <ParticleBackground count={12} className="opacity-15" />
                   </div>
                   
                   <AnimatedRoutes />
