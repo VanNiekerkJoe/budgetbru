@@ -130,7 +130,7 @@ const Sidebar = React.forwardRef<
       <SidebarContext.Provider value={contextValue}>
         <div
           className={cn(
-            "group relative flex h-full shrink-0 overflow-hidden transition-all duration-300",
+            "group relative flex h-full shrink-0 transition-all duration-300",
             sidebarVariants({ orientation }),
             className
           )}
@@ -141,7 +141,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             className={cn(
-              "flex h-full w-full flex-col border-r bg-sidebar text-sidebar-foreground shadow-sm transition-all duration-300",
+              "flex h-full flex-col border-r bg-sidebar text-sidebar-foreground shadow-sm transition-all duration-300 overflow-hidden",
               "group-data-[state=collapsed]:w-14 group-data-[state=expanded]:w-64"
             )}
           >
