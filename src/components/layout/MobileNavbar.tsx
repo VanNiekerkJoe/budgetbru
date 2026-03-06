@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Home, ChartPie, CircleDollarSign, Wallet, User, Map } from 'lucide-react';
 
 export const MobileNavbar: React.FC = () => {
@@ -19,39 +18,28 @@ export const MobileNavbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
   
   return (
-    <motion.div
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 z-50"
-      style={{ zIndex: 1000 }} // Ensure higher z-index to prevent overlap
+    <div
+      className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-xl border-t border-border/50 z-50 safe-area-bottom"
     >
       <div className="flex justify-around py-2 px-1">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className="flex flex-col items-center justify-center px-2 py-1 text-center"
+            className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-2 py-1 rounded-lg transition-colors ${
+              isActive(item.path)
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            }`}
           >
-            <motion.div
-              className={`p-1.5 rounded-full ${
-                isActive(item.path)
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-gray-600 dark:text-gray-400'
-              }`}
-              whileTap={{ scale: 0.9 }}
-            >
-              <item.icon className="h-5 w-5" />
-            </motion.div>
-            <span className="text-xs mt-0.5">{item.label}</span>
+            <item.icon className="h-5 w-5" />
+            <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
             {isActive(item.path) && (
-              <motion.div
-                className="absolute bottom-0 w-1 h-1 bg-primary rounded-full"
-                layoutId="activeIndicatorMobile"
-              />
+              <div className="w-1 h-1 bg-primary rounded-full mt-0.5" />
             )}
           </Link>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 };

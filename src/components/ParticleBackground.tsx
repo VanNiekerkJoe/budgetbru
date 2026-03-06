@@ -1,6 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, memo } from 'react';
 
 interface Particle {
   x: number;
@@ -17,8 +16,8 @@ interface ParticleBackgroundProps {
   className?: string;
 }
 
-const ParticleBackground: React.FC<ParticleBackgroundProps> = ({ 
-  count = 50, 
+const ParticleBackground: React.FC<ParticleBackgroundProps> = memo(({ 
+  count = 15, 
   theme = 'default',
   className = ""
 }) => {
@@ -26,26 +25,28 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
   const particles = useRef<Particle[]>([]);
   const animationFrameId = useRef<number | null>(null);
   
-  // Get color based on theme
   const getThemeColors = () => {
     switch(theme) {
       case 'finances':
-        return ['#CA529A', '#CA529A80', '#CA529A40'];
+        return ['#CA529A', '#CA529A80'];
       case 'jols':
-        return ['#106A94', '#106A9480', '#106A9440'];
+        return ['#106A94', '#106A9480'];
       default:
         return ['#CA529A', '#304575', '#106A94'];
     }
   };
   
   useEffect(() => {
+    // Respect reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas to full width/height
     const handleResize = () => {
       if (canvas) {
         canvas.width = canvas.offsetWidth;
@@ -56,60 +57,32 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
     window.addEventListener('resize', handleResize);
     handleResize();
     
-    // Create initial particles
     const colors = getThemeColors();
     particles.current = Array.from({ length: count }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 3 + 0.5,
-      speedX: (Math.random() - 0.5) * 0.5,
-      speedY: (Math.random() - 0.5) * 0.5,
+      size: Math.random() * 2.5 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.3,
+      speedY: (Math.random() - 0.5) * 0.3,
       color: colors[Math.floor(Math.random() * colors.length)]
     }));
     
-    // Animation loop
     const animate = () => {
       if (!ctx || !canvas) return;
       
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      particles.current.forEach((particle, i) => {
-        // Update particle position
+      particles.current.forEach((particle) => {
         particle.x += particle.speedX;
         particle.y += particle.speedY;
         
-        // Bounce off edges
-        if (particle.x < 0 || particle.x > canvas.width) {
-          particle.speedX *= -1;
-        }
+        if (particle.x < 0 || particle.x > canvas.width) particle.speedX *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.speedY *= -1;
         
-        if (particle.y < 0 || particle.y > canvas.height) {
-          particle.speedY *= -1;
-        }
-        
-        // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fillStyle = particle.color;
         ctx.fill();
-        
-        // Connect nearby particles with lines
-        particles.current.forEach((otherParticle, j) => {
-          if (i === j) return;
-          
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < 70) {
-            ctx.beginPath();
-            ctx.strokeStyle = `${particle.color}${Math.floor((1 - distance / 70) * 255).toString(16).padStart(2, '0')}`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.stroke();
-          }
-        });
       });
       
       animationFrameId.current = requestAnimationFrame(animate);
@@ -126,14 +99,14 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
   }, [count, theme]);
   
   return (
-    <motion.canvas 
+    <canvas 
       ref={canvasRef}
       className={`absolute inset-0 z-0 ${className}`}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 0.8 }}
-      transition={{ duration: 1 }}
+      style={{ willChange: 'auto', opacity: 0.6 }}
     />
   );
-};
+});
+
+ParticleBackground.displayName = 'ParticleBackground';
 
 export default ParticleBackground;
