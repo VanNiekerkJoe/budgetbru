@@ -130,6 +130,9 @@ const DigitalReceipt = () => {
   const [note, setNote] = useState('');
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [activeTab, setActiveTab] = useState('scan');
+  const [autoBreakdown, setAutoBreakdown] = useState<boolean>(() => {
+    try { return localStorage.getItem('receiptAutoBreakdown') !== 'false'; } catch { return true; }
+  });
 
   const [amount, setAmount] = useState<number>(0);
   const [description, setDescription] = useState('');
