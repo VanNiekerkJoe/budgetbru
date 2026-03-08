@@ -291,9 +291,11 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
 
   // ─── Mutations ───
   const addExpense = (expense: Omit<Expense, 'id'>) => {
-    const id = expenses.length > 0 ? Math.max(...expenses.map(e => e.id)) + 1 : 1;
-    const newExp = { ...expense, id, date: expense.date || new Date().toISOString() };
-    setExpenses(prev => [newExp, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    setExpenses(prev => {
+      const id = prev.length > 0 ? Math.max(...prev.map(e => e.id)) + 1 : 1;
+      const newExp = { ...expense, id, date: expense.date || new Date().toISOString() };
+      return [newExp, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
   };
 
   const addIncome = (incomeItem: Omit<Income, 'id'>) => {
