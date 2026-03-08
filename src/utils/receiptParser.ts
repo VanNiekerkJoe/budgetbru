@@ -250,37 +250,47 @@ function extractLineItems(lines: string[]): LineItem[] {
     const lower = line.toLowerCase();
     if (SKIP_KEYWORDS.some(kw => lower.includes(kw))) continue;
     if (line.length < 4) continue;
-    // Skip lines that are purely dates, phone numbers, or addresses
     if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(line)) continue;
     if (/^(tel|phone|fax|vat|tax|addr)/i.test(line)) continue;
 
-    // Pattern: description followed by R amount or just amount at end
-    // e.g. "2L WATER R50.00" or "BREAD 12.99" or "R 25.00 MILK"
     let match: RegExpMatchArray | null;
 
-    // "description R amount" or "description ZAR amount"
-    match = line.match(/^(.+?)\s+(?:R|ZAR)\s*(\d+[.,]\d{2})\s*$/i);
-    if (match) {
-      items.push({ name: match[1].trim(), amount: parseFloat(match[2].replace(',', '.')), raw: line });
+    // "description R amount" or "description ZAR amount" — with or without decimals
+    // e.g. "2L WATER R50.00", "BREAD R8", "MILK R12.50"
+    match = line.match(/^(.+?)\s+(?:R|ZAR)\s*(\d+(?:[.,]\d{1,2})?)\s*$/i);
+    if (match && match[1].trim().length >= 2) {
+      const amt = cleanAmount(match[2]);
+      items.push({ name: match[1].trim(), amount: amt, raw: line });
       continue;
     }
 
-    // "R amount description"
-    match = line.match(/^(?:R|ZAR)\s*(\d+[.,]\d{2})\s+(.+)$/i);
-    if (match) {
-      items.push({ name: match[2].trim(), amount: parseFloat(match[1].replace(',', '.')), raw: line });
+    // "R amount description" — e.g. "R 25.00 MILK" or "R8 BREAD"
+    match = line.match(/^(?:R|ZAR)\s*(\d+(?:[.,]\d{1,2})?)\s+(.+)$/i);
+    if (match && match[2].trim().length >= 2) {
+      const amt = cleanAmount(match[1]);
+      items.push({ name: match[2].trim(), amount: amt, raw: line });
       continue;
     }
 
-    // "description amount" (number at end, no currency symbol)
+    // "description amount" (number at end, no currency symbol) — require decimal for safety
     match = line.match(/^(.{3,}?)\s+(\d+[.,]\d{2})\s*$/);
     if (match) {
       const name = match[1].trim();
-      // Skip if name is just numbers
       if (/[a-zA-Z]/.test(name)) {
-        items.push({ name, amount: parseFloat(match[2].replace(',', '.')), raw: line });
+        const amt = cleanAmount(match[2]);
+        items.push({ name, amount: amt, raw: line });
         continue;
       }
+    }
+
+    // "qty x description amount" — e.g. "2 x BREAD 25.00"
+    match = line.match(/^(\d+)\s*[xX]\s+(.+?)\s+(?:R?\s*)?(\d+(?:[.,]\d{1,2})?)\s*$/);
+    if (match && match[2].trim().length >= 2) {
+      const amt = cleanAmount(match[3]);
+      const qty = parseInt(match[1]);
+      const name = qty > 1 ? `${qty}x ${match[2].trim()}` : match[2].trim();
+      items.push({ name, amount: amt, raw: line });
+      continue;
     }
   }
 
