@@ -11,6 +11,7 @@ interface MapViewProps {
   flyToZoom?: number;
   selectedId?: number | null;
   userLocation?: [number, number] | null;
+  onTilesLoaded?: () => void;
 }
 
 const TILE_URLS: Record<string, { url: string; attr: string }> = {
@@ -41,7 +42,6 @@ const createMarkerHTML = (loc: MapLocation, isSelected: boolean) => {
   const isUni = loc.category === 'university';
 
   if (isUni) {
-    // University markers: larger, prominent pin shape
     const s = isSelected ? 48 : 42;
     return {
       html: `<div class="uni-marker${isSelected ? ' selected' : ''}" style="--c:${color}">
@@ -54,7 +54,6 @@ const createMarkerHTML = (loc: MapLocation, isSelected: boolean) => {
     };
   }
 
-  // POI markers: clean circles with emoji
   const s = isSelected ? 38 : 30;
   return {
     html: `<div class="poi-marker${isSelected ? ' selected' : ''}" style="--c:${color}">
@@ -72,12 +71,14 @@ const MapView: React.FC<MapViewProps> = ({
   flyToZoom = 14,
   selectedId,
   userLocation,
+  onTilesLoaded,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const tilesLoadedRef = useRef(false);
 
   // Init
   useEffect(() => {
@@ -97,18 +98,33 @@ const MapView: React.FC<MapViewProps> = ({
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     const tile = TILE_URLS[mapStyle];
-    tileRef.current = L.tileLayer(tile.url, {
+    const tileLayer = L.tileLayer(tile.url, {
       attribution: tile.attr,
       maxZoom: 18,
     }).addTo(map);
 
+    tileLayer.on('load', () => {
+      if (!tilesLoadedRef.current) {
+        tilesLoadedRef.current = true;
+        onTilesLoaded?.();
+      }
+    });
+
+    tileRef.current = tileLayer;
     markersRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
-    // Multiple invalidateSize calls to handle various mount timing issues
     map.invalidateSize();
     setTimeout(() => map.invalidateSize(), 100);
     setTimeout(() => map.invalidateSize(), 500);
+
+    // Fallback: fire onTilesLoaded after 2s even if tiles haven't loaded
+    setTimeout(() => {
+      if (!tilesLoadedRef.current) {
+        tilesLoadedRef.current = true;
+        onTilesLoaded?.();
+      }
+    }, 2000);
 
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,20 +137,20 @@ const MapView: React.FC<MapViewProps> = ({
     tileRef.current.setUrl(tile.url);
   }, [mapStyle]);
 
-  // Markers
+  // Markers with staggered animation
   useEffect(() => {
     const map = mapRef.current;
     const group = markersRef.current;
     if (!map || !group) return;
     group.clearLayers();
 
-    locations.forEach(loc => {
+    locations.forEach((loc, index) => {
       const isSelected = loc.id === selectedId;
       const { html, size } = createMarkerHTML(loc, isSelected);
 
       const icon = L.divIcon({
         className: 'lm-marker',
-        html,
+        html: `<div class="marker-animate" style="animation-delay:${Math.min(index * 30, 600)}ms">${html}</div>`,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
         popupAnchor: [0, -size / 2],
@@ -145,7 +161,6 @@ const MapView: React.FC<MapViewProps> = ({
         zIndexOffset: isSelected ? 1000 : loc.category === 'university' ? 500 : 0,
       }).addTo(group);
 
-      // Tooltip
       const ratingStr = loc.rating ? ` · ★ ${loc.rating}` : '';
       const priceStr = loc.priceLevel ? ` · ${'R'.repeat(loc.priceLevel)}` : '';
       marker.bindTooltip(
@@ -191,10 +206,18 @@ const MapView: React.FC<MapViewProps> = ({
   return (
     <>
       <style>{`
-        /* Reset leaflet marker defaults */
         .lm-marker { background: none !important; border: none !important; }
 
-        /* University pin markers */
+        /* Staggered fade-in for markers */
+        .marker-animate {
+          opacity: 0;
+          animation: markerFadeIn 0.4s ease-out forwards;
+        }
+        @keyframes markerFadeIn {
+          from { opacity: 0; transform: scale(0.6) translateY(8px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
         .uni-marker {
           display: flex; flex-direction: column; align-items: center; gap: 2px;
           cursor: pointer; transition: transform 0.25s cubic-bezier(.4,0,.2,1);
@@ -220,7 +243,6 @@ const MapView: React.FC<MapViewProps> = ({
           max-width: 70px; overflow: hidden; text-overflow: ellipsis;
         }
 
-        /* POI circle markers */
         .poi-marker {
           width: 30px; height: 30px; border-radius: 50%;
           background: var(--c); border: 2px solid white;
@@ -237,7 +259,6 @@ const MapView: React.FC<MapViewProps> = ({
           box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent), 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        /* User location dot */
         .user-dot {
           width: 16px; height: 16px; border-radius: 50%;
           background: hsl(217, 91%, 60%); border: 3px solid white;
@@ -254,7 +275,6 @@ const MapView: React.FC<MapViewProps> = ({
           100% { transform: scale(2.2); opacity: 0; }
         }
 
-        /* Tooltip */
         .map-tooltip {
           background: hsl(var(--card)) !important;
           color: hsl(var(--foreground)) !important;
@@ -267,18 +287,7 @@ const MapView: React.FC<MapViewProps> = ({
         }
         .map-tooltip::before { border-top-color: hsl(var(--card)) !important; }
 
-        /* Leaflet controls */
-        .leaflet-control-zoom { border: none !important; overflow: hidden; border-radius: 12px !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important; }
-        .leaflet-control-zoom a {
-          background: hsl(var(--card)) !important;
-          color: hsl(var(--foreground)) !important;
-          border: none !important;
-          border-bottom: 1px solid hsl(var(--border)) !important;
-          width: 36px !important; height: 36px !important; line-height: 36px !important;
-          font-size: 16px !important;
-        }
-        .leaflet-control-zoom a:last-child { border-bottom: none !important; }
-        .leaflet-control-zoom a:hover { background: hsl(var(--muted)) !important; }
+        .leaflet-control-zoom { border: none !important; overflow: hidden; border-radius: 12px !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important; display: none !important; }
         .leaflet-control-attribution { font-size: 9px !important; opacity: 0.5; }
       `}</style>
       <div ref={containerRef} className="absolute inset-0 w-full h-full z-0" />
