@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MobileNavbar } from './MobileNavbar';
-import ChatbotButton from './ChatbotButton';
+
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Bell } from 'lucide-react';

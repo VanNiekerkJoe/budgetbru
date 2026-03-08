@@ -245,10 +245,6 @@ const IndexPage: React.FC = () => {
         ))}
       </motion.div>
       
-      {/* Event Popup */}
-      {showEventPopup && currentEvent && (
-        <EventPopup title={currentEvent.title} description={currentEvent.description} date={currentEvent.date} onClose={() => setShowEventPopup(false)} />
-      )}
     </div>
   );
 };
