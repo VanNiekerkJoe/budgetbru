@@ -18,25 +18,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen relative">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-border/30">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-14">
+      <div className="sticky top-0 z-30 bg-background/60 backdrop-blur-2xl border-b border-border/10">
+        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/20">
-              <span className="text-primary-foreground font-extrabold text-xs tracking-tight">B</span>
-              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 border-2 border-card" />
+          <div className="flex items-center gap-2">
+            <div className="relative w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+              <span className="text-primary font-black text-[11px]">B</span>
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-sm text-foreground leading-tight tracking-tight">BudgetBru</span>
-              <span className="text-[9px] text-muted-foreground leading-tight font-medium">Smart Finance</span>
-            </div>
+            <span className="font-bold text-[13px] text-foreground tracking-tight">BudgetBru</span>
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full">
-              <Bell size={17} className="text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive" />
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60">
+              <Bell size={15} className="text-muted-foreground" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
             </Button>
             <ThemeToggle />
           </div>
