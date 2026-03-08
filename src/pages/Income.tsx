@@ -168,7 +168,7 @@ const Income: React.FC = () => {
           <TabsContent value="overview">
             <AnimatePresence mode="wait">
               <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mt-3">
-                {/* Quick Add */}
+                {/* Inline Quick Add — 2 steps, no modal */}
                 <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-4 relative overflow-hidden">
                   <div className="absolute -top-20 -right-20 w-40 h-40 bg-success/5 rounded-full blur-3xl pointer-events-none" />
                   <div className="relative z-10">
@@ -177,17 +177,50 @@ const Income: React.FC = () => {
                         <Zap size={14} className="text-success" />
                       </div>
                       <h3 className="text-sm font-semibold text-foreground">Quick Add Income</h3>
+                      <div className="flex-1" />
+                      <button onClick={() => setShowAddForm(true)} className="text-[11px] text-primary hover:underline">Full form →</button>
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {SOURCE_OPTIONS.slice(0, 6).map(s => (
-                        <motion.button key={s.value} whileTap={{ scale: 0.95 }}
-                          onClick={() => { setNewIncome({ ...newIncome, source: s.value }); setShowAddForm(true); }}
-                          className="flex flex-col items-center p-2.5 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-                          <span className="text-xl">{s.emoji}</span>
-                          <span className="text-[10px] text-muted-foreground mt-0.5">{s.value}</span>
-                        </motion.button>
-                      ))}
-                    </div>
+
+                    <AnimatePresence mode="wait">
+                      {!quickSource ? (
+                        <motion.div key="pick" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
+                          <p className="text-[11px] text-muted-foreground mb-2">Tap a source:</p>
+                          <div className="grid grid-cols-5 gap-1.5">
+                            {SOURCE_OPTIONS.map(s => (
+                              <motion.button key={s.value} whileTap={{ scale: 0.93 }}
+                                onClick={() => setQuickSource(s.value)}
+                                className="flex flex-col items-center p-2 bg-muted/30 rounded-xl hover:bg-success/10 transition-colors">
+                                <span className="text-xl">{s.emoji}</span>
+                                <span className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{s.value}</span>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.form key="amount" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.15 }}
+                          onSubmit={(e) => { e.preventDefault(); handleQuickAdd(); }}
+                          className="space-y-2.5"
+                        >
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => setQuickSource(null)} className="w-8 h-8 rounded-lg bg-muted/30 flex items-center justify-center hover:bg-muted/50 transition-colors flex-shrink-0">
+                              <ChevronDown size={14} className="text-muted-foreground rotate-90" />
+                            </button>
+                            <span className="text-lg">{getSourceEmoji(quickSource)}</span>
+                            <span className="text-sm font-medium text-foreground">{quickSource}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R</span>
+                              <Input type="number" placeholder="Amount" step="0.01" min="0" value={quickAmount} onChange={e => setQuickAmount(e.target.value)}
+                                className="pl-7 bg-background/50 border-border h-10 text-base" autoFocus />
+                            </div>
+                            <Button type="submit" className="bg-success hover:bg-success/90 text-success-foreground h-10 px-5">
+                              <Plus size={16} className="mr-1" /> Add
+                            </Button>
+                          </div>
+                        </motion.form>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
