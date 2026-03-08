@@ -67,6 +67,7 @@ const IndexPage: React.FC = () => {
       
       {/* Hero Balance Card */}
       <motion.div 
+        data-tutorial="tutorial-balance"
         initial={{ opacity: 0, y: -8 }} 
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(var(--secondary))] to-[hsl(var(--accent))] p-5 text-white shadow-lg"
