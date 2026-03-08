@@ -156,9 +156,9 @@ const Map: React.FC = () => {
   }, [baseLocations]);
 
   const handleMarkerClick = useCallback((loc: MapLocation) => {
-    // If clicking a university on the national view, zoom into that campus
     if (loc.category === 'university' && !focusedCampusId) {
       setFocusedCampusId(loc.id);
+      setFlyToZoom(15);
       setFlyTo([loc.lng, loc.lat]);
       setSelectedPlace(null);
       setActiveCategories(new Set());
@@ -167,6 +167,7 @@ const Map: React.FC = () => {
       return;
     }
     setSelectedPlace(loc);
+    setFlyToZoom(16);
     setFlyTo([loc.lng, loc.lat]);
   }, [focusedCampusId]);
 
