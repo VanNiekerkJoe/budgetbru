@@ -232,6 +232,7 @@ const Map: React.FC = () => {
         mapStyle={mapStyle}
         onMarkerClick={handleMarkerClick}
         flyTo={flyTo}
+        flyToZoom={flyToZoom}
         selectedId={selectedPlace?.id ?? null}
         userLocation={userLocation}
       />
