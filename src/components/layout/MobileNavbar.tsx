@@ -38,14 +38,69 @@ const SOCIAL_ITEMS = [
   { path: '/profile', icon: User, label: 'Profile' },
 ];
 
+const EXPENSE_CATEGORIES = [
+  { id: 'food', label: 'Food', emoji: '🍔' },
+  { id: 'transport', label: 'Transport', emoji: '🚗' },
+  { id: 'education', label: 'Study', emoji: '📚' },
+  { id: 'entertainment', label: 'Fun', emoji: '🎬' },
+  { id: 'utilities', label: 'Bills', emoji: '💡' },
+  { id: 'groceries', label: 'Groceries', emoji: '🛒' },
+];
+
+const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500];
+
 export const MobileNavbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { addExpense, addIncome } = useBudget();
   const [showMore, setShowMore] = useState(false);
   const [showFAB, setShowFAB] = useState(false);
+  
+  // FAB flow state
+  const [fabStep, setFabStep] = useState<'type' | 'category' | 'amount' | 'custom'>('type');
+  const [fabType, setFabType] = useState<'expense' | 'income'>('expense');
+  const [fabCategory, setFabCategory] = useState<string | null>(null);
+  const [fabAmount, setFabAmount] = useState('');
 
   const isActive = (path: string) => location.pathname === path;
   const isMoreActive = [...FINANCE_ITEMS, ...SOCIAL_ITEMS].some(item => isActive(item.path));
+
+  const resetFAB = () => {
+    setShowFAB(false);
+    setFabStep('type');
+    setFabType('expense');
+    setFabCategory(null);
+    setFabAmount('');
+  };
+
+  const handleFabConfirm = (amount: number) => {
+    if (fabType === 'expense' && fabCategory) {
+      const cat = EXPENSE_CATEGORIES.find(c => c.id === fabCategory);
+      addExpense({
+        amount,
+        category: fabCategory as any,
+        description: cat?.label || fabCategory,
+        date: new Date().toISOString().split('T')[0],
+      });
+      toast.success(`${cat?.emoji} R${amount} expense added`);
+    } else if (fabType === 'income') {
+      addIncome({ amount, source: 'Quick add', date: new Date().toISOString().split('T')[0] });
+      toast.success(`💰 R${amount} income added`);
+    }
+    resetFAB();
+  };
+
+  const fabBack = () => {
+    if (fabStep === 'custom') setFabStep('amount');
+    else if (fabStep === 'amount') {
+      if (fabType === 'expense') setFabStep('category');
+      else setFabStep('type');
+    }
+    else if (fabStep === 'category') setFabStep('type');
+    else resetFAB();
+  };
+
+  const selectedCat = EXPENSE_CATEGORIES.find(c => c.id === fabCategory);
 
   return (
     <>
@@ -56,8 +111,8 @@ export const MobileNavbar: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50"
-            onClick={() => setShowFAB(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            onClick={resetFAB}
           >
             <motion.div
               initial={{ y: '100%' }}
@@ -65,35 +120,162 @@ export const MobileNavbar: React.FC = () => {
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute bottom-0 left-0 right-0 bg-card rounded-t-2xl border-t border-border pb-safe"
+              className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl border-t border-border pb-safe"
             >
-              <div className="w-10 h-1 bg-muted rounded-full mx-auto mt-3 mb-4" />
-              <div className="px-5 pb-8 space-y-3">
-                <h3 className="font-semibold text-base text-foreground">Quick Add</h3>
-                <button
-                  onClick={() => { setShowFAB(false); navigate('/expenses'); }}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-destructive/10 hover:bg-destructive/15 transition-colors active:scale-[0.98]"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-destructive/20 flex items-center justify-center">
-                    <Wallet size={20} className="text-destructive" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-sm text-foreground">Add Expense</p>
-                    <p className="text-xs text-muted-foreground">Track what you spent</p>
-                  </div>
+              {/* Drag handle */}
+              <div className="w-10 h-1 bg-muted-foreground/20 rounded-full mx-auto mt-3" />
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-3 pb-2">
+                <div className="flex items-center gap-2">
+                  {fabStep !== 'type' && (
+                    <motion.button
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onClick={fabBack}
+                      className="w-8 h-8 rounded-xl bg-muted/60 flex items-center justify-center active:bg-muted"
+                    >
+                      <ChevronLeft size={16} className="text-muted-foreground" />
+                    </motion.button>
+                  )}
+                  <h3 className="font-bold text-base text-foreground">
+                    {fabStep === 'type' && 'Quick Add'}
+                    {fabStep === 'category' && 'Pick Category'}
+                    {fabStep === 'amount' && `${fabType === 'expense' ? selectedCat?.emoji : '💰'} How much?`}
+                    {fabStep === 'custom' && `${fabType === 'expense' ? selectedCat?.emoji : '💰'} Enter Amount`}
+                  </h3>
+                </div>
+                <button onClick={resetFAB} className="w-8 h-8 rounded-xl bg-muted/60 flex items-center justify-center active:bg-muted">
+                  <X size={16} className="text-muted-foreground" />
                 </button>
-                <button
-                  onClick={() => { setShowFAB(false); navigate('/income'); }}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors active:scale-[0.98]"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                    <CircleDollarSign size={20} className="text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-sm text-foreground">Add Income</p>
-                    <p className="text-xs text-muted-foreground">Record your earnings</p>
-                  </div>
-                </button>
+              </div>
+
+              <div className="px-5 pb-8 pt-1">
+                <AnimatePresence mode="wait">
+                  {/* Step 1: Choose type */}
+                  {fabStep === 'type' && (
+                    <motion.div
+                      key="type"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="grid grid-cols-2 gap-3"
+                    >
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => { setFabType('expense'); setFabStep('category'); }}
+                        className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-destructive/8 border-2 border-destructive/15 active:border-destructive/30 transition-all"
+                      >
+                        <div className="w-14 h-14 rounded-2xl bg-destructive/15 flex items-center justify-center">
+                          <Wallet size={24} className="text-destructive" />
+                        </div>
+                        <div className="text-center">
+                          <p className="font-bold text-sm text-foreground">Expense</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Track spending</p>
+                        </div>
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => { setFabType('income'); setFabStep('amount'); }}
+                        className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-emerald-500/8 border-2 border-emerald-500/15 active:border-emerald-500/30 transition-all"
+                      >
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 flex items-center justify-center">
+                          <TrendingUp size={24} className="text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div className="text-center">
+                          <p className="font-bold text-sm text-foreground">Income</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Add earnings</p>
+                        </div>
+                      </motion.button>
+                    </motion.div>
+                  )}
+
+                  {/* Step 2: Pick category (expense only) */}
+                  {fabStep === 'category' && (
+                    <motion.div
+                      key="category"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="grid grid-cols-3 gap-2"
+                    >
+                      {EXPENSE_CATEGORIES.map((cat) => (
+                        <motion.button
+                          key={cat.id}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => { setFabCategory(cat.id); setFabStep('amount'); }}
+                          className="flex flex-col items-center gap-1.5 py-4 rounded-xl bg-muted/40 border border-border/40 active:bg-muted transition-all"
+                        >
+                          <span className="text-2xl">{cat.emoji}</span>
+                          <span className="text-[11px] font-semibold text-foreground">{cat.label}</span>
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  )}
+
+                  {/* Step 3: Pick preset amount */}
+                  {fabStep === 'amount' && (
+                    <motion.div
+                      key="amount"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-3"
+                    >
+                      <div className="grid grid-cols-3 gap-2">
+                        {QUICK_AMOUNTS.map((preset) => (
+                          <motion.button
+                            key={preset}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleFabConfirm(preset)}
+                            className="flex items-center justify-center py-4 rounded-xl bg-primary/5 border border-primary/10 active:bg-primary/15 transition-all"
+                          >
+                            <span className="text-base font-bold text-foreground">R{preset}</span>
+                          </motion.button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setFabStep('custom')}
+                        className="w-full py-3 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground active:bg-muted/50 transition-colors"
+                      >
+                        Enter custom amount
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {/* Step 3b: Custom amount */}
+                  {fabStep === 'custom' && (
+                    <motion.form
+                      key="custom"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      onSubmit={(e) => { e.preventDefault(); if (Number(fabAmount) > 0) handleFabConfirm(Number(fabAmount)); }}
+                      className="flex gap-2"
+                    >
+                      <div className="relative flex-1">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base font-semibold">R</span>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={fabAmount}
+                          onChange={(e) => setFabAmount(e.target.value)}
+                          autoFocus
+                          className="w-full h-12 pl-8 pr-3 text-xl font-bold rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring/30 transition-all"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="h-12 rounded-xl px-6 text-sm font-bold"
+                        disabled={!fabAmount || Number(fabAmount) <= 0}
+                      >
+                        <Check size={18} className="mr-1.5" />
+                        Add
+                      </Button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </motion.div>
