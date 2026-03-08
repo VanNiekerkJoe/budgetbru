@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bell, TrendingUp, TrendingDown, AlertTriangle, Gift, 
-  Target, Users, CheckCircle2, Clock, Trash2, Check
+  Target, Users, Clock, Trash2, Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +27,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     icon: <AlertTriangle size={16} />,
     iconBg: 'bg-destructive/10 text-destructive',
     title: 'Budget limit reached',
-    description: 'You've spent 95% of your Food & Groceries budget this month.',
+    description: "You've spent 95% of your Food & Groceries budget this month.",
     time: '2 min ago',
     read: false,
   },
@@ -38,7 +37,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     icon: <TrendingDown size={16} />,
     iconBg: 'bg-destructive/10 text-destructive',
     title: 'Large expense detected',
-    description: 'R1,250 spent at Woolworths — that's higher than your usual grocery run.',
+    description: "R1,250 spent at Woolworths — that's higher than your usual grocery run.",
     time: '1 hr ago',
     read: false,
   },
@@ -47,8 +46,8 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     type: 'goals',
     icon: <Target size={16} />,
     iconBg: 'bg-primary/10 text-primary',
-    title: 'Savings goal on track 🎯',
-    description: 'You're 68% towards your "New Laptop" goal. Keep it up!',
+    title: 'Savings goal on track',
+    description: "You're 68% towards your New Laptop goal. Keep it up!",
     time: '3 hrs ago',
     read: false,
   },
@@ -77,8 +76,8 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     type: 'goals',
     icon: <Gift size={16} />,
     iconBg: 'bg-primary/10 text-primary',
-    title: 'Achievement unlocked! 🏆',
-    description: 'You completed "7-Day No Spend Challenge". Nice one!',
+    title: 'Achievement unlocked!',
+    description: 'You completed the 7-Day No Spend Challenge. Nice one!',
     time: '2 days ago',
     read: true,
   },
@@ -181,7 +180,7 @@ const Notifications = () => {
             >
               <Bell size={32} className="mb-3 opacity-30" />
               <p className="text-sm font-medium">No notifications</p>
-              <p className="text-xs opacity-60">You're all caught up!</p>
+              <p className="text-xs opacity-60">You are all caught up!</p>
             </motion.div>
           ) : (
             filtered.map((n, i) => (
@@ -199,17 +198,14 @@ const Notifications = () => {
                     : 'bg-card border border-primary/10 shadow-sm'
                 }`}
               >
-                {/* Unread dot */}
                 {!n.read && (
                   <div className="absolute top-4 left-1 w-1.5 h-1.5 rounded-full bg-primary" />
                 )}
 
-                {/* Icon */}
                 <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${n.iconBg}`}>
                   {n.icon}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <p className={`text-[13px] leading-tight ${n.read ? 'font-medium text-foreground/80' : 'font-semibold text-foreground'}`}>
                     {n.title}
@@ -220,7 +216,6 @@ const Notifications = () => {
                   <p className="text-[10px] text-muted-foreground/60 mt-1.5 font-medium">{n.time}</p>
                 </div>
 
-                {/* Delete */}
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
                   className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
