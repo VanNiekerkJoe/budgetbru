@@ -28,6 +28,8 @@ const TipsPage = lazy(() => import("./pages/TipsPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const EmergencyFund = lazy(() => import("./pages/EmergencyFund"));
 const DigitalReceipt = lazy(() => import("./pages/DigitalReceipt"));
+const VibesHubPage = lazy(() => import("./pages/VibesHubPage"));
+const PlanningPage = lazy(() => import("./pages/PlanningPage"));
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,8 @@ const AnimatedRoutes = () => {
           <Route path="/iou" element={<MainLayout><IOUPage /></MainLayout>} />
           <Route path="/tips" element={<MainLayout><TipsPage /></MainLayout>} />
           <Route path="/community" element={<MainLayout><CommunityPage /></MainLayout>} />
+          <Route path="/vibes" element={<MainLayout><VibesHubPage /></MainLayout>} />
+          <Route path="/planning" element={<MainLayout><PlanningPage /></MainLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
