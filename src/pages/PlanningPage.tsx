@@ -5,7 +5,7 @@ import { Calendar, Plus, Trash2, Users, Award, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { Button } from '@/components/ui/button';
 import ParticleBackground from '@/components/ParticleBackground';
 import { Card, CardContent } from '@/components/ui/card';
