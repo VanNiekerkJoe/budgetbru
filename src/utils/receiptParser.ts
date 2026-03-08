@@ -84,35 +84,71 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
 
 function extractAmount(text: string): { value: number | null; confidence: 'high' | 'medium' | 'low' } {
   // Try patterns from most to least specific
+  // Allow amounts like R8, R80, R8.00, R80.00, R800.50
   const patterns = [
-    // "TOTAL" or "GRAND TOTAL" or "AMOUNT DUE" followed by currency
-    /(?:grand\s*total|total\s*due|amount\s*due|balance\s*due|total\s*payable|nett\s*total)\s*[:\s]*R?\s*(\d[\d\s,.]*\d)/i,
-    /(?:total)\s*[:\s]*R?\s*(\d[\d\s,.]*\d)/i,
-    // ZAR or R prefix amounts
-    /(?:ZAR|R)\s*(\d[\d\s,.]*\d)/i,
-    // Standalone large number on a line (fallback)
-    /^\s*R?\s*(\d{2,}[.,]\d{2})\s*$/m,
+    // "GRAND TOTAL" / "TOTAL DUE" / "AMOUNT DUE" followed by currency — highest confidence
+    /(?:grand\s*total|total\s*due|amount\s*due|balance\s*due|total\s*payable|nett\s*total)\s*[:\s]*R?\s*(\d[\d\s,.]*)/i,
+    // "TOTAL" followed by currency
+    /(?:total)\s*[:\s]*R?\s*(\d[\d\s,.]*)/i,
+    // ZAR or R prefix amounts (word boundary to avoid matching inside words like "R8oad")
+    /(?:ZAR|R)\s*(\d+(?:[.,]\d{1,2})?)\b/i,
+    // Standalone number on a line (fallback)
+    /^\s*R?\s*(\d+[.,]\d{2})\s*$/m,
   ];
 
   for (let i = 0; i < patterns.length; i++) {
+    // For total-related patterns, find ALL matches and pick the largest (likely the grand total)
+    if (i <= 1) {
+      const allMatches: number[] = [];
+      let m: RegExpExecArray | null;
+      const regex = new RegExp(patterns[i].source, 'gi');
+      while ((m = regex.exec(text)) !== null) {
+        const val = cleanAmount(m[1]);
+        if (val !== null && val > 0 && val < 1000000) allMatches.push(val);
+      }
+      if (allMatches.length > 0) {
+        const best = Math.max(...allMatches);
+        return { value: best, confidence: i === 0 ? 'high' : 'high' };
+      }
+      continue;
+    }
+
     const matches = text.match(patterns[i]);
     if (matches?.[1]) {
-      const cleaned = matches[1].replace(/\s/g, '').replace(/,/g, '.');
-      // Take last decimal point as the decimal separator
-      const lastDot = cleaned.lastIndexOf('.');
-      let numStr = cleaned;
-      if (lastDot > 0) {
-        numStr = cleaned.substring(0, lastDot).replace(/\./g, '') + '.' + cleaned.substring(lastDot + 1);
-      }
-      const val = parseFloat(numStr);
-      if (!isNaN(val) && val > 0 && val < 1000000) {
-        const confidence = i === 0 ? 'high' : i === 1 ? 'high' : i === 2 ? 'medium' : 'low';
-        return { value: Math.round(val * 100) / 100, confidence };
+      const val = cleanAmount(matches[1]);
+      if (val !== null && val > 0 && val < 1000000) {
+        const confidence = i === 2 ? 'medium' : 'low';
+        return { value: val, confidence };
       }
     }
   }
 
   return { value: null, confidence: 'low' };
+}
+
+/** Clean a captured amount string into a number. Handles "80", "80.00", "1,200.50", "1 200.50" */
+function cleanAmount(raw: string): number | null {
+  let cleaned = raw.trim().replace(/\s/g, '');
+  // If there are both commas and dots, treat last one as decimal separator
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+
+  if (lastComma > lastDot) {
+    // Comma is the decimal separator (European style): 1.200,50
+    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+  } else if (lastDot > lastComma) {
+    // Dot is the decimal separator: 1,200.50
+    cleaned = cleaned.replace(/,/g, '');
+  } else {
+    // Only one or neither — just remove commas
+    cleaned = cleaned.replace(/,/g, '.');
+  }
+
+  // Handle trailing dot (e.g. "80.")
+  if (cleaned.endsWith('.')) cleaned = cleaned.slice(0, -1);
+
+  const val = parseFloat(cleaned);
+  return isNaN(val) ? null : Math.round(val * 100) / 100;
 }
 
 function extractStoreName(lines: string[]): { value: string; confidence: 'high' | 'medium' | 'low' } {
