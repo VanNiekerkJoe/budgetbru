@@ -576,17 +576,27 @@ const Insights: React.FC = () => {
                         </ResponsiveContainer>
                       </div>
 
-                      {/* Week insights */}
-                      <div className="mt-3 space-y-2">
-                        <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-success/5">
-                          <TrendingDown size={13} className="text-success shrink-0" />
-                          <span className="text-muted-foreground">Week 3 was your best — <span className="font-medium text-foreground">R280</span> spent</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-warning/5">
-                          <TrendingUp size={13} className="text-warning shrink-0" />
-                          <span className="text-muted-foreground">Week 2 was the highest at <span className="font-medium text-foreground">R420</span></span>
-                        </div>
-                      </div>
+                      {/* Week insights — dynamic */}
+                      {(() => {
+                        const best = weeklyData.reduce((b, w) => w.spent > 0 && w.spent < b.spent ? w : b, weeklyData.find(w => w.spent > 0) || weeklyData[0]);
+                        const worst = weeklyData.reduce((b, w) => w.spent > b.spent ? w : b, weeklyData[0]);
+                        return (
+                          <div className="mt-3 space-y-2">
+                            {best.spent > 0 && (
+                              <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-success/5">
+                                <TrendingDown size={13} className="text-success shrink-0" />
+                                <span className="text-muted-foreground">{best.week} was your best — <span className="font-medium text-foreground">{formatCurrency(best.spent)}</span> spent</span>
+                              </div>
+                            )}
+                            {worst.spent > 0 && worst.week !== best.week && (
+                              <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-warning/5">
+                                <TrendingUp size={13} className="text-warning shrink-0" />
+                                <span className="text-muted-foreground">{worst.week} was the highest at <span className="font-medium text-foreground">{formatCurrency(worst.spent)}</span></span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </motion.div>
