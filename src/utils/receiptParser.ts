@@ -22,39 +22,39 @@ export interface ParsedReceipt {
 const CATEGORY_KEYWORDS: Record<string, { category: ExpenseCategory; keywords: string[] }> = {
   groceries: {
     category: 'groceries',
-    keywords: ['checkers', 'pick n pay', 'pick-n-pay', 'shoprite', 'woolworths', 'spar', 'food lover', 'foodlovers', 'makro', 'game', 'grocery', 'supermarket', 'fruit', 'veg'],
+    keywords: ['checkers', 'pick n pay', 'pick-n-pay', 'shoprite', 'woolworths', 'spar', 'food lover', 'foodlovers', 'makro', 'game', 'grocery', 'supermarket', 'fruit', 'veg', 'bakery', 'butchery', 'meat', 'dairy', 'fresh', 'frozen', 'household', 'usave', 'boxer', 'massmart', 'cambridge food'],
   },
   transport: {
     category: 'transport',
-    keywords: ['uber', 'bolt', 'lyft', 'taxi', 'petrol', 'fuel', 'engen', 'shell', 'caltex', 'sasol', 'bp', 'garage', 'parking', 'toll'],
+    keywords: ['uber', 'bolt', 'lyft', 'taxi', 'petrol', 'fuel', 'engen', 'shell', 'caltex', 'sasol', 'bp', 'garage', 'parking', 'toll', 'petrol station', 'total energies', 'totalenergies', 'astron', 'e-toll', 'etoll', 'gautrain', 'prasa', 'metrorail', 'litre', 'l/price', 'pump', 'fuel levy', 'diesel', 'unleaded'],
   },
   food: {
     category: 'food',
-    keywords: ['restaurant', 'cafe', 'coffee', 'kfc', 'mcdonalds', 'nandos', 'steers', 'burger', 'pizza', 'sushi', 'wimpy', 'mugg & bean', 'ocean basket', 'debonairs'],
+    keywords: ['restaurant', 'cafe', 'coffee', 'kfc', 'mcdonalds', 'nandos', 'steers', 'burger', 'pizza', 'sushi', 'wimpy', 'mugg & bean', 'ocean basket', 'debonairs', 'fishaways', 'rocomamas', 'vida e caffe', 'seattle coffee'],
   },
   entertainment: {
     category: 'entertainment',
-    keywords: ['cinema', 'movie', 'ster-kinekor', 'nu metro', 'netflix', 'showmax', 'dstv', 'game', 'concert', 'ticket'],
+    keywords: ['cinema', 'movie', 'ster-kinekor', 'nu metro', 'netflix', 'showmax', 'dstv', 'game', 'concert', 'ticket', 'spotify', 'apple music', 'youtube', 'gaming', 'multichoice'],
   },
   health: {
     category: 'health',
-    keywords: ['pharmacy', 'clicks', 'dis-chem', 'dischem', 'doctor', 'medical', 'hospital', 'clinic', 'dentist', 'optometrist', 'medicine'],
+    keywords: ['pharmacy', 'clicks', 'dis-chem', 'dischem', 'doctor', 'medical', 'hospital', 'clinic', 'dentist', 'optometrist', 'medicine', 'script', 'prescription', 'vitamins', 'supplement', 'medirite'],
   },
   clothing: {
     category: 'clothing',
-    keywords: ['mr price', 'truworths', 'edgars', 'foschini', 'cotton on', 'zara', 'h&m', 'clothing', 'shoes', 'fashion', 'ackermans', 'pep'],
+    keywords: ['mr price', 'truworths', 'edgars', 'foschini', 'cotton on', 'zara', 'h&m', 'clothing', 'shoes', 'fashion', 'ackermans', 'pep', 'sportscene', 'totalsports', 'markham', 'jet', 'identity', 'exact'],
   },
   education: {
     category: 'education',
-    keywords: ['university', 'college', 'school', 'tuition', 'textbook', 'stationery', 'cna', 'exclusive books', 'bookstore'],
+    keywords: ['university', 'college', 'school', 'tuition', 'textbook', 'stationery', 'cna', 'exclusive books', 'bookstore', 'study', 'wits', 'uct', 'unisa', 'tut', 'uj', 'nsfas', 'bursary', 'exam', 'semester', 'varsity', 'takealot books'],
   },
   utilities: {
     category: 'utilities',
-    keywords: ['electricity', 'water', 'internet', 'wifi', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'airtime', 'data'],
+    keywords: ['electricity', 'water', 'internet', 'wifi', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'airtime', 'data', 'prepaid', 'eskom', 'municipality', 'rates', 'rain', 'afrihost'],
   },
   rent: {
     category: 'rent',
-    keywords: ['rent', 'lease', 'accommodation', 'housing', 'landlord'],
+    keywords: ['rent', 'lease', 'accommodation', 'housing', 'landlord', 'property', 'flat', 'apartment'],
   },
 };
 

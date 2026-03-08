@@ -368,6 +368,33 @@ const DigitalReceipt = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-3"
                       >
+                        {/* Auto-detected category banner */}
+                        {parsedResult && parsedResult.categoryConfidence !== 'low' && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className={`flex items-center justify-between rounded-xl px-4 py-3 border ${
+                              parsedResult.categoryConfidence === 'high'
+                                ? 'bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/30'
+                                : 'bg-amber-500/10 border-amber-500/30'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-lg">{getCategoryEmoji(category)}</span>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  Auto-detected: {category.charAt(0).toUpperCase() + category.slice(1)}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {parsedResult.categoryConfidence === 'high' ? 'High confidence match' : 'Tap category below to change'}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge variant={parsedResult.categoryConfidence === 'high' ? 'default' : 'secondary'} className="text-[10px]">
+                              {parsedResult.categoryConfidence === 'high' ? '✓ Auto' : '? Review'}
+                            </Badge>
+                          </motion.div>
+                        )}
                         {/* Amount — prominent */}
                         <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
                           <div className="flex items-center justify-between mb-2">
