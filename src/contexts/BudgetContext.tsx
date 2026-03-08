@@ -319,7 +319,29 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   };
 
   const updateSavingsGoal = (id: number, amount: number) => {
-    setSavingsGoals(prev => prev.map(g => g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g));
+    setSavingsGoals(prev => {
+      const updated = prev.map(g => g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g);
+      const goal = updated.find(g => g.id === id);
+      if (goal && goal.currentAmount >= goal.targetAmount) {
+        createNotification({
+          type: 'goals',
+          title: 'Savings goal reached! 🎉',
+          description: `You've reached your "${goal.name}" goal of R${goal.targetAmount}!`,
+          icon_type: 'achievement',
+        });
+      } else if (goal) {
+        const pct = Math.round((goal.currentAmount / goal.targetAmount) * 100);
+        if (pct >= 50 && pct - Math.round(((goal.currentAmount - amount) / goal.targetAmount) * 100) < 50) {
+          createNotification({
+            type: 'goals',
+            title: 'Savings goal halfway there!',
+            description: `You're ${pct}% towards "${goal.name}". Keep going!`,
+            icon_type: 'goal',
+          });
+        }
+      }
+      return updated;
+    });
   };
 
   const setEmergencyFund = (fund: EmergencyFund) => setEmergencyFundState(fund);
