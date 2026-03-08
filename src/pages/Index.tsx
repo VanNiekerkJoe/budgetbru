@@ -26,14 +26,18 @@ const IndexPage: React.FC = () => {
     date?: string;
   } | null>(null);
   
-  const { addExpense, totalIncome, totalExpenses, remainingBudget } = useBudget();
+  const { addExpense, totalIncome, totalExpenses, remainingBudget, expenses } = useBudget();
   
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: 'expense', amount: 50, description: 'Textbooks', category: 'education', date: new Date(Date.now() - 3600000) },
-    { id: 2, type: 'income', amount: 300, description: 'Money from Mom', category: 'other', date: new Date(Date.now() - 86400000) },
-    { id: 3, type: 'expense', amount: 35, description: 'Lunch with friends', category: 'food', date: new Date(Date.now() - 172800000) },
-    { id: 4, type: 'expense', amount: 80, description: 'Phone data', category: 'utilities', date: new Date(Date.now() - 259200000) }
-  ]);
+  // Use real recent transactions from context
+  const recentTransactions = useMemo(() => {
+    const allItems = [
+      ...expenses.slice(0, 10).map(e => ({
+        id: e.id, type: 'expense' as const, amount: e.amount,
+        description: e.description, category: e.category, date: new Date(e.date),
+      })),
+    ];
+    return allItems.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
+  }, [expenses]);
 
   const { showTutorial, completeTutorial, skipTutorial } = useTutorial();
   
@@ -50,8 +54,7 @@ const IndexPage: React.FC = () => {
   }, []);
 
   const handleQuickExpense = (description: string, amount: number, category: string) => {
-    setTransactions(prev => [{ id: Date.now(), type: 'expense', amount, description, category, date: new Date() }, ...prev]);
-    addExpense({ amount, category, description });
+    addExpense({ amount, category, description, date: new Date().toISOString() });
     toast.success(`Expense of R${amount} added!`);
   };
 
