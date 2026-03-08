@@ -1,121 +1,178 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Zap, ChevronLeft } from 'lucide-react';
+import { Check, ChevronLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface QuickExpenseTrackerProps {
   onAddExpense: (description: string, amount: number, category: string) => void;
 }
 
 const QUICK_EXPENSE_CATEGORIES = [
-  { id: 'food', label: 'Food', emoji: '🍔', color: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300' },
-  { id: 'transport', label: 'Transport', emoji: '🚗', color: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300' },
-  { id: 'education', label: 'Study', emoji: '📚', color: 'bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300' },
-  { id: 'entertainment', label: 'Fun', emoji: '🎬', color: 'bg-pink-100 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300' },
-  { id: 'utilities', label: 'Utils', emoji: '💡', color: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300' },
+  { id: 'food', label: 'Food', emoji: '🍔' },
+  { id: 'transport', label: 'Transport', emoji: '🚗' },
+  { id: 'education', label: 'Study', emoji: '📚' },
+  { id: 'entertainment', label: 'Fun', emoji: '🎬' },
+  { id: 'utilities', label: 'Bills', emoji: '💡' },
+  { id: 'groceries', label: 'Groceries', emoji: '🛒' },
 ];
+
+const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500];
 
 export function QuickExpenseTracker({ onAddExpense }: QuickExpenseTrackerProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
-  
-  const handleConfirm = () => {
-    if (selectedCategory && Number(amount) > 0) {
+  const [customAmount, setCustomAmount] = useState(false);
+
+  const handleConfirm = (finalAmount?: number) => {
+    const val = finalAmount || Number(amount);
+    if (selectedCategory && val > 0) {
       const cat = QUICK_EXPENSE_CATEGORIES.find(c => c.id === selectedCategory);
-      onAddExpense(cat?.label || selectedCategory, Number(amount), selectedCategory);
+      onAddExpense(cat?.label || selectedCategory, val, selectedCategory);
       resetForm();
     }
   };
-  
+
   const resetForm = () => {
     setSelectedCategory(null);
     setAmount('');
+    setCustomAmount(false);
   };
 
+  const goBack = () => {
+    if (customAmount) {
+      setCustomAmount(false);
+      setAmount('');
+    } else if (selectedCategory) {
+      setSelectedCategory(null);
+    }
+  };
+
+  const selectedCat = QUICK_EXPENSE_CATEGORIES.find(c => c.id === selectedCategory);
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
-      className="bg-card rounded-xl shadow-sm border border-border/50 overflow-hidden"
+      className="bg-card rounded-xl border border-border/50 overflow-hidden"
     >
-      <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
-        <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Zap size={12} className="text-primary" />
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-3 pb-1">
+        <div className="flex items-center gap-2">
+          {selectedCategory && (
+            <motion.button
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              type="button"
+              onClick={goBack}
+              className="w-7 h-7 rounded-lg bg-muted/60 flex items-center justify-center active:bg-muted transition-colors"
+            >
+              <ChevronLeft size={14} className="text-muted-foreground" />
+            </motion.button>
+          )}
+          <h3 className="text-xs font-semibold text-card-foreground">
+            {!selectedCategory
+              ? 'Quick Add'
+              : customAmount
+                ? `${selectedCat?.emoji} Custom Amount`
+                : `${selectedCat?.emoji} ${selectedCat?.label} — How much?`}
+          </h3>
         </div>
-        <h3 className="text-xs font-semibold text-card-foreground">Quick Add Expense</h3>
+        {selectedCategory && !customAmount && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            type="button"
+            onClick={() => setCustomAmount(true)}
+            className="text-[10px] font-medium text-primary active:text-primary/70 transition-colors"
+          >
+            Custom
+          </motion.button>
+        )}
       </div>
-      
-      <div className="px-3 pb-3">
+
+      <div className="px-3 pb-3 pt-1">
         <AnimatePresence mode="wait">
-          {!selectedCategory ? (
-            <motion.div 
-              key="pick"
+          {/* Step 1: Pick category */}
+          {!selectedCategory && (
+            <motion.div
+              key="categories"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.15 }}
+              className="grid grid-cols-3 gap-2"
             >
-              <p className="text-[10px] text-muted-foreground mb-2">Tap a category:</p>
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                {QUICK_EXPENSE_CATEGORIES.map((category) => (
-                  <motion.button
-                    key={category.id}
-                    whileTap={{ scale: 0.93 }}
-                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap ${category.color} transition-all min-w-0`}
-                    onClick={() => setSelectedCategory(category.id)}
-                  >
-                    <span>{category.emoji}</span>
-                    <span>{category.label}</span>
-                  </motion.button>
-                ))}
-              </div>
+              {QUICK_EXPENSE_CATEGORIES.map((category) => (
+                <motion.button
+                  key={category.id}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col items-center gap-1 py-3 rounded-xl bg-muted/40 border border-border/30 active:bg-muted transition-all"
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  <span className="text-xl">{category.emoji}</span>
+                  <span className="text-[11px] font-medium text-foreground">{category.label}</span>
+                </motion.button>
+              ))}
             </motion.div>
-          ) : (
-            <motion.form 
-              key="amount"
+          )}
+
+          {/* Step 2: Pick amount (preset grid) */}
+          {selectedCategory && !customAmount && (
+            <motion.div
+              key="amounts"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.15 }}
+              className="grid grid-cols-3 gap-2"
+            >
+              {QUICK_AMOUNTS.map((preset) => (
+                <motion.button
+                  key={preset}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center justify-center py-3 rounded-xl bg-primary/5 border border-primary/10 active:bg-primary/15 transition-all"
+                  onClick={() => handleConfirm(preset)}
+                >
+                  <span className="text-sm font-bold text-foreground">R{preset}</span>
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Step 2b: Custom amount input */}
+          {selectedCategory && customAmount && (
+            <motion.form
+              key="custom"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.15 }}
               onSubmit={(e) => { e.preventDefault(); handleConfirm(); }}
-              className="space-y-2"
+              className="flex gap-2"
             >
-              <div className="flex items-center gap-2">
-                <button 
-                  type="button" 
-                  onClick={resetForm}
-                  className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors flex-shrink-0"
-                >
-                  <ChevronLeft size={14} className="text-muted-foreground" />
-                </button>
-                <span className="text-lg">{QUICK_EXPENSE_CATEGORIES.find(c => c.id === selectedCategory)?.emoji}</span>
-                <span className="text-xs font-medium text-foreground">{QUICK_EXPENSE_CATEGORIES.find(c => c.id === selectedCategory)?.label}</span>
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  autoFocus
+                  className="w-full h-11 pl-7 pr-3 text-lg font-bold rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/30 transition-all"
+                />
               </div>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R</span>
-                  <Input 
-                    type="number" 
-                    placeholder="Amount" 
-                    value={amount} 
-                    onChange={(e) => setAmount(e.target.value)} 
-                    className="pl-6 text-sm rounded-xl h-9"
-                    autoFocus
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  size="sm" 
-                  className="text-xs h-9 rounded-xl px-4" 
-                  disabled={!amount || Number(amount) <= 0}
-                >
-                  <Check size={14} className="mr-1" />
-                  Add
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                size="sm"
+                className="h-11 rounded-xl px-5 text-sm font-semibold"
+                disabled={!amount || Number(amount) <= 0}
+              >
+                <Check size={16} className="mr-1" />
+                Add
+              </Button>
             </motion.form>
           )}
         </AnimatePresence>
