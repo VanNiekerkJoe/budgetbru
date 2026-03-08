@@ -43,6 +43,8 @@ const Income: React.FC = () => {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
+  const [quickSource, setQuickSource] = useState<string | null>(null);
+  const [quickAmount, setQuickAmount] = useState('');
 
   const [newIncome, setNewIncome] = useState({
     amount: '', source: '', date: new Date().toISOString().split('T')[0], frequency: 'monthly' as 'weekly' | 'monthly' | 'once'
