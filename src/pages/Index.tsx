@@ -274,7 +274,7 @@ const IndexPage: React.FC = () => {
                 whileTap={{ scale: 0.99 }}
                 onClick={() => setShowMap(true)}
               >
-                <MapView compact />
+                <MapView locations={[]} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10 flex items-end p-4">
                   <div className="flex items-center justify-between w-full">
                     <div>
