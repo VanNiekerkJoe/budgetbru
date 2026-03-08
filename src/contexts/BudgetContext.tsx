@@ -262,6 +262,35 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
       const newExp = { ...expense, id, date: expense.date || new Date().toISOString() };
       return [newExp, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     });
+
+    // Create notification for the expense
+    const amount = expense.amount;
+    if (amount >= 500) {
+      createNotification({
+        type: 'finance',
+        title: 'Large expense detected',
+        description: `R${amount} spent on ${expense.category} — "${expense.description}"`,
+        icon_type: 'expense',
+      });
+    } else {
+      createNotification({
+        type: 'finance',
+        title: 'Expense added',
+        description: `R${amount} for ${expense.description}`,
+        icon_type: 'expense',
+      });
+    }
+
+    // Check if approaching budget limit
+    const newTotal = totalExpenses + amount;
+    if (totalIncome > 0 && newTotal / totalIncome >= 0.9) {
+      createNotification({
+        type: 'alerts',
+        title: 'Budget limit approaching!',
+        description: `You've spent ${Math.round((newTotal / totalIncome) * 100)}% of your income this month.`,
+        icon_type: 'alert',
+      });
+    }
   };
 
   const addIncome = (incomeItem: Omit<Income, 'id'>) => {
