@@ -695,12 +695,32 @@ const DigitalReceipt = () => {
                               />
                             </div>
 
-                            {/* Optional breakdown */}
+                            {/* Auto Breakdown Toggle */}
+                            <div className="flex items-center justify-between rounded-xl bg-muted/30 border border-border/50 px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <List size={14} className="text-primary" />
+                                <Label htmlFor="auto-breakdown" className="text-sm font-medium cursor-pointer">
+                                  Auto Item Breakdown
+                                </Label>
+                              </div>
+                              <Switch
+                                id="auto-breakdown"
+                                checked={autoBreakdown}
+                                onCheckedChange={(checked) => {
+                                  setAutoBreakdown(checked);
+                                  localStorage.setItem('receiptAutoBreakdown', String(checked));
+                                }}
+                              />
+                            </div>
+
+                            {/* Item Breakdown */}
                             <Collapsible open={showBreakdown} onOpenChange={setShowBreakdown}>
                               <CollapsibleTrigger asChild>
                                 <button className="w-full flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors py-2">
                                   <List size={14} />
-                                  {showBreakdown ? 'Hide' : 'Show'} Item Breakdown
+                                  {autoBreakdown && lineItems.length > 0
+                                    ? `Item Breakdown (auto)`
+                                    : showBreakdown ? 'Hide Item Breakdown' : 'Add Item Breakdown'}
                                   {lineItems.length > 0 && (
                                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">{lineItems.length} items</Badge>
                                   )}
