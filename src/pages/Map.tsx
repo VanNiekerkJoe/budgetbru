@@ -70,6 +70,7 @@ const Map: React.FC = () => {
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('dark');
   const [selectedPlace, setSelectedPlace] = useState<MapLocation | null>(null);
   const [flyTo, setFlyTo] = useState<[number, number] | null>(null);
+  const [flyToZoom, setFlyToZoom] = useState(14);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sortByDistance, setSortByDistance] = useState(false);
