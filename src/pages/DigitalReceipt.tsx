@@ -285,6 +285,26 @@ const DigitalReceipt = () => {
                     </Collapsible>
                   )}
 
+                  {/* Line items breakdown */}
+                  {parsedResult && parsedResult.lineItems.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium flex items-center gap-2">
+                        <FileText size={14} className="text-primary" />
+                        Receipt Breakdown ({parsedResult.lineItems.length} items)
+                      </h3>
+                      <div className="rounded-md border border-border divide-y divide-border max-h-48 overflow-auto">
+                        {parsedResult.lineItems.map((item, i) => (
+                          <div key={i} className="flex items-center justify-between px-3 py-2 text-sm">
+                            <span className="text-foreground truncate mr-2">{item.name}</span>
+                            <span className="font-medium text-foreground whitespace-nowrap">
+                              {item.amount !== null ? formatCurrency(item.amount) : '—'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Editable form */}
                   {isDone && (
                     <div className="pt-2 space-y-3">
