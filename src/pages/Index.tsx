@@ -17,12 +17,6 @@ import { formatCurrency } from '@/utils/formatters';
 
 const IndexPage: React.FC = () => {
   const navigate = useNavigate();
-  const [showEventPopup, setShowEventPopup] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState<{
-    title: string;
-    description: string;
-    date?: string;
-  } | null>(null);
   
   const { addExpense, totalIncome, totalExpenses, remainingBudget, expenses } = useBudget();
   
