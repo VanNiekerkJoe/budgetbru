@@ -33,7 +33,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60">
+            <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60" onClick={() => navigate('/notifications')}>
               <Bell size={15} className="text-muted-foreground" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
             </Button>
