@@ -152,7 +152,9 @@ const IndexPage: React.FC = () => {
       </motion.div>
 
       {/* Quick Add Expense */}
-      <QuickExpenseTracker onAddExpense={handleQuickExpense} />
+      <div data-tutorial="tutorial-quick-expense">
+        <QuickExpenseTracker onAddExpense={handleQuickExpense} />
+      </div>
 
       {/* Recent Transactions */}
       <motion.div 
