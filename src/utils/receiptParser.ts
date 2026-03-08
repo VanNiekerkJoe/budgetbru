@@ -1,5 +1,11 @@
 import { ExpenseCategory } from '@/contexts/BudgetContext';
 
+export interface LineItem {
+  name: string;
+  amount: number | null;
+  raw: string;
+}
+
 export interface ParsedReceipt {
   amount: number | null;
   amountConfidence: 'high' | 'medium' | 'low';
@@ -9,6 +15,7 @@ export interface ParsedReceipt {
   dateConfidence: 'high' | 'medium' | 'low';
   category: ExpenseCategory;
   categoryConfidence: 'high' | 'medium' | 'low';
+  lineItems: LineItem[];
   rawText: string;
 }
 
