@@ -396,7 +396,7 @@ const Map: React.FC = () => {
       </div>
 
       {/* Floating controls */}
-      <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2">
+      <div className="absolute right-3 bottom-6 z-20 flex flex-col gap-2">
         <motion.div whileTap={{ scale: 0.9 }}>
           <Button
             size="icon"
