@@ -59,6 +59,8 @@ const AnimatedRoutes = () => {
           <Route path="/iou" element={<MainLayout><IOUPage /></MainLayout>} />
           <Route path="/tips" element={<MainLayout><TipsPage /></MainLayout>} />
           <Route path="/community" element={<MainLayout><CommunityPage /></MainLayout>} />
+          <Route path="/vibes" element={<MainLayout><VibesHubPage /></MainLayout>} />
+          <Route path="/planning" element={<MainLayout><PlanningPage /></MainLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
