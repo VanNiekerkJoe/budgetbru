@@ -16,9 +16,18 @@ import { useBudget } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
 import { TIPS, type TipCategory, type TipDifficulty, type Tip } from '@/data/tips';
 import { getTodaysQuote, DAILY_QUOTES } from '@/data/dailyQuotes';
-  // === BUDGETING ===
-  {
-    id: '1', title: 'The 50/30/20 Rule', emoji: '📊',
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  difficulty: string;
+  emoji: string;
+  progress: number;
+  target: number;
+  reward: string;
+}
     content: 'Split your income: 50% for needs (rent, food, transport), 30% for wants (entertainment, dining out), and 20% for savings. This simple framework keeps your budget balanced without being restrictive. Used by millions worldwide, it\'s the simplest starting point for any budget.',
     category: 'budgeting', difficulty: 'beginner', isFeatured: true, potentialSaving: 500,
     actionSteps: ['Calculate your monthly income after tax', 'List all fixed expenses (needs) — rent, groceries, transport', 'Set a fun-money limit (wants) — dining, entertainment', 'Automate your 20% savings transfer on payday'],
