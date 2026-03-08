@@ -62,11 +62,20 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
   const textLower = rawText.toLowerCase();
 
-  const amountResult = extractAmount(rawText);
+  const amountResult = extractAmount(rawText, lines);
   const storeResult = extractStoreName(lines);
   const dateResult = extractDate(rawText);
   const categoryResult = determineCategory(textLower);
   const lineItems = extractLineItems(lines);
+
+  // Cross-validate: if line items sum is close to detected total, boost confidence
+  if (amountResult.value && lineItems.length >= 2) {
+    const itemSum = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const roundedSum = Math.round(itemSum * 100) / 100;
+    if (Math.abs(roundedSum - amountResult.value) < 1) {
+      amountResult.confidence = 'high';
+    }
+  }
 
   return {
     amount: amountResult.value,
@@ -82,7 +91,7 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
   };
 }
 
-function extractAmount(text: string): { value: number | null; confidence: 'high' | 'medium' | 'low' } {
+function extractAmount(text: string, _lines?: string[]): { value: number | null; confidence: 'high' | 'medium' | 'low' } {
   // Try patterns from most to least specific
   // Allow amounts like R8, R80, R8.00, R80.00, R800.50
   const patterns = [

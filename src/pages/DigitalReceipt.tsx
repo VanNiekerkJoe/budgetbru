@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Camera, Upload, Receipt, FileText, X, Check, AlertCircle, Loader2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBudget, ExpenseCategory } from '@/contexts/BudgetContext';
-import { parseReceiptText, ParsedReceipt, generateDescription } from '@/utils/receiptParser';
+import { parseReceiptText, ParsedReceipt } from '@/utils/receiptParser';
 import { formatCurrency } from '@/utils/formatters';
 import Tesseract from 'tesseract.js';
 
@@ -119,7 +119,7 @@ const DigitalReceipt = () => {
 
       // Pre-fill form
       if (parsed.amount !== null) setAmount(parsed.amount);
-      setDescription(generateDescription(parsed.storeName, parsed.lineItems));
+      if (parsed.storeName) setDescription(parsed.storeName);
       setCategory(parsed.category);
       if (parsed.date) setDate(parsed.date);
 
@@ -285,25 +285,6 @@ const DigitalReceipt = () => {
                     </Collapsible>
                   )}
 
-                  {/* Line items breakdown */}
-                  {parsedResult && parsedResult.lineItems.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium flex items-center gap-2">
-                        <FileText size={14} className="text-primary" />
-                        Receipt Breakdown ({parsedResult.lineItems.length} items)
-                      </h3>
-                      <div className="rounded-md border border-border divide-y divide-border max-h-48 overflow-auto">
-                        {parsedResult.lineItems.map((item, i) => (
-                          <div key={i} className="flex items-center justify-between px-3 py-2 text-sm">
-                            <span className="text-foreground truncate mr-2">{item.name}</span>
-                            <span className="font-medium text-foreground whitespace-nowrap">
-                              {item.amount !== null ? formatCurrency(item.amount) : '—'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Editable form */}
                   {isDone && (
