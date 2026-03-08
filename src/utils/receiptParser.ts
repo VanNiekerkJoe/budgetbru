@@ -84,35 +84,71 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
 
 function extractAmount(text: string): { value: number | null; confidence: 'high' | 'medium' | 'low' } {
   // Try patterns from most to least specific
+  // Allow amounts like R8, R80, R8.00, R80.00, R800.50
   const patterns = [
-    // "TOTAL" or "GRAND TOTAL" or "AMOUNT DUE" followed by currency
-    /(?:grand\s*total|total\s*due|amount\s*due|balance\s*due|total\s*payable|nett\s*total)\s*[:\s]*R?\s*(\d[\d\s,.]*\d)/i,
-    /(?:total)\s*[:\s]*R?\s*(\d[\d\s,.]*\d)/i,
-    // ZAR or R prefix amounts
-    /(?:ZAR|R)\s*(\d[\d\s,.]*\d)/i,
-    // Standalone large number on a line (fallback)
-    /^\s*R?\s*(\d{2,}[.,]\d{2})\s*$/m,
+    // "GRAND TOTAL" / "TOTAL DUE" / "AMOUNT DUE" followed by currency — highest confidence
+    /(?:grand\s*total|total\s*due|amount\s*due|balance\s*due|total\s*payable|nett\s*total)\s*[:\s]*R?\s*(\d[\d\s,.]*)/i,
+    // "TOTAL" followed by currency
+    /(?:total)\s*[:\s]*R?\s*(\d[\d\s,.]*)/i,
+    // ZAR or R prefix amounts (word boundary to avoid matching inside words like "R8oad")
+    /(?:ZAR|R)\s*(\d+(?:[.,]\d{1,2})?)\b/i,
+    // Standalone number on a line (fallback)
+    /^\s*R?\s*(\d+[.,]\d{2})\s*$/m,
   ];
 
   for (let i = 0; i < patterns.length; i++) {
+    // For total-related patterns, find ALL matches and pick the largest (likely the grand total)
+    if (i <= 1) {
+      const allMatches: number[] = [];
+      let m: RegExpExecArray | null;
+      const regex = new RegExp(patterns[i].source, 'gi');
+      while ((m = regex.exec(text)) !== null) {
+        const val = cleanAmount(m[1]);
+        if (val !== null && val > 0 && val < 1000000) allMatches.push(val);
+      }
+      if (allMatches.length > 0) {
+        const best = Math.max(...allMatches);
+        return { value: best, confidence: i === 0 ? 'high' : 'high' };
+      }
+      continue;
+    }
+
     const matches = text.match(patterns[i]);
     if (matches?.[1]) {
-      const cleaned = matches[1].replace(/\s/g, '').replace(/,/g, '.');
-      // Take last decimal point as the decimal separator
-      const lastDot = cleaned.lastIndexOf('.');
-      let numStr = cleaned;
-      if (lastDot > 0) {
-        numStr = cleaned.substring(0, lastDot).replace(/\./g, '') + '.' + cleaned.substring(lastDot + 1);
-      }
-      const val = parseFloat(numStr);
-      if (!isNaN(val) && val > 0 && val < 1000000) {
-        const confidence = i === 0 ? 'high' : i === 1 ? 'high' : i === 2 ? 'medium' : 'low';
-        return { value: Math.round(val * 100) / 100, confidence };
+      const val = cleanAmount(matches[1]);
+      if (val !== null && val > 0 && val < 1000000) {
+        const confidence = i === 2 ? 'medium' : 'low';
+        return { value: val, confidence };
       }
     }
   }
 
   return { value: null, confidence: 'low' };
+}
+
+/** Clean a captured amount string into a number. Handles "80", "80.00", "1,200.50", "1 200.50" */
+function cleanAmount(raw: string): number | null {
+  let cleaned = raw.trim().replace(/\s/g, '');
+  // If there are both commas and dots, treat last one as decimal separator
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+
+  if (lastComma > lastDot) {
+    // Comma is the decimal separator (European style): 1.200,50
+    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+  } else if (lastDot > lastComma) {
+    // Dot is the decimal separator: 1,200.50
+    cleaned = cleaned.replace(/,/g, '');
+  } else {
+    // Only one or neither — just remove commas
+    cleaned = cleaned.replace(/,/g, '.');
+  }
+
+  // Handle trailing dot (e.g. "80.")
+  if (cleaned.endsWith('.')) cleaned = cleaned.slice(0, -1);
+
+  const val = parseFloat(cleaned);
+  return isNaN(val) ? null : Math.round(val * 100) / 100;
 }
 
 function extractStoreName(lines: string[]): { value: string; confidence: 'high' | 'medium' | 'low' } {
@@ -214,37 +250,47 @@ function extractLineItems(lines: string[]): LineItem[] {
     const lower = line.toLowerCase();
     if (SKIP_KEYWORDS.some(kw => lower.includes(kw))) continue;
     if (line.length < 4) continue;
-    // Skip lines that are purely dates, phone numbers, or addresses
     if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(line)) continue;
     if (/^(tel|phone|fax|vat|tax|addr)/i.test(line)) continue;
 
-    // Pattern: description followed by R amount or just amount at end
-    // e.g. "2L WATER R50.00" or "BREAD 12.99" or "R 25.00 MILK"
     let match: RegExpMatchArray | null;
 
-    // "description R amount" or "description ZAR amount"
-    match = line.match(/^(.+?)\s+(?:R|ZAR)\s*(\d+[.,]\d{2})\s*$/i);
-    if (match) {
-      items.push({ name: match[1].trim(), amount: parseFloat(match[2].replace(',', '.')), raw: line });
+    // "description R amount" or "description ZAR amount" — with or without decimals
+    // e.g. "2L WATER R50.00", "BREAD R8", "MILK R12.50"
+    match = line.match(/^(.+?)\s+(?:R|ZAR)\s*(\d+(?:[.,]\d{1,2})?)\s*$/i);
+    if (match && match[1].trim().length >= 2) {
+      const amt = cleanAmount(match[2]);
+      items.push({ name: match[1].trim(), amount: amt, raw: line });
       continue;
     }
 
-    // "R amount description"
-    match = line.match(/^(?:R|ZAR)\s*(\d+[.,]\d{2})\s+(.+)$/i);
-    if (match) {
-      items.push({ name: match[2].trim(), amount: parseFloat(match[1].replace(',', '.')), raw: line });
+    // "R amount description" — e.g. "R 25.00 MILK" or "R8 BREAD"
+    match = line.match(/^(?:R|ZAR)\s*(\d+(?:[.,]\d{1,2})?)\s+(.+)$/i);
+    if (match && match[2].trim().length >= 2) {
+      const amt = cleanAmount(match[1]);
+      items.push({ name: match[2].trim(), amount: amt, raw: line });
       continue;
     }
 
-    // "description amount" (number at end, no currency symbol)
+    // "description amount" (number at end, no currency symbol) — require decimal for safety
     match = line.match(/^(.{3,}?)\s+(\d+[.,]\d{2})\s*$/);
     if (match) {
       const name = match[1].trim();
-      // Skip if name is just numbers
       if (/[a-zA-Z]/.test(name)) {
-        items.push({ name, amount: parseFloat(match[2].replace(',', '.')), raw: line });
+        const amt = cleanAmount(match[2]);
+        items.push({ name, amount: amt, raw: line });
         continue;
       }
+    }
+
+    // "qty x description amount" — e.g. "2 x BREAD 25.00"
+    match = line.match(/^(\d+)\s*[xX]\s+(.+?)\s+(?:R?\s*)?(\d+(?:[.,]\d{1,2})?)\s*$/);
+    if (match && match[2].trim().length >= 2) {
+      const amt = cleanAmount(match[3]);
+      const qty = parseInt(match[1]);
+      const name = qty > 1 ? `${qty}x ${match[2].trim()}` : match[2].trim();
+      items.push({ name, amount: amt, raw: line });
+      continue;
     }
   }
 
