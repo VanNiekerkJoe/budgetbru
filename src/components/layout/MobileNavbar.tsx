@@ -22,20 +22,20 @@ const RIGHT_ITEMS = [
 ];
 
 const FINANCE_ITEMS = [
-  { path: '/income', icon: CircleDollarSign, label: 'Income' },
-  { path: '/insights', icon: ChartPie, label: 'Insights' },
-  { path: '/iou', icon: CreditCard, label: 'IOUs' },
-  { path: '/receipts', icon: Receipt, label: 'Receipts' },
-  { path: '/emergency-fund', icon: Shield, label: 'Emergency' },
+  { path: '/income', icon: CircleDollarSign, label: 'Income', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { path: '/insights', icon: ChartPie, label: 'Insights', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+  { path: '/iou', icon: CreditCard, label: 'IOUs', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+  { path: '/receipts', icon: Receipt, label: 'Receipts', color: 'text-violet-500', bg: 'bg-violet-500/10' },
+  { path: '/emergency-fund', icon: Shield, label: 'Emergency', color: 'text-red-500', bg: 'bg-red-500/10' },
 ];
 
 const SOCIAL_ITEMS = [
-  { path: '/community', icon: MessageSquare, label: 'Community' },
-  { path: '/vibes', icon: Zap, label: 'Vibes Hub' },
-  { path: '/planning', icon: Calendar, label: 'Planning' },
-  { path: '/map', icon: Map, label: 'Map' },
-  { path: '/tips', icon: Lightbulb, label: 'Tips' },
-  { path: '/profile', icon: User, label: 'Profile' },
+  { path: '/community', icon: MessageSquare, label: 'Community', color: 'text-sky-500', bg: 'bg-sky-500/10' },
+  { path: '/vibes', icon: Zap, label: 'Vibes Hub', color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+  { path: '/planning', icon: Calendar, label: 'Planning', color: 'text-pink-500', bg: 'bg-pink-500/10' },
+  { path: '/map', icon: Map, label: 'Map', color: 'text-teal-500', bg: 'bg-teal-500/10' },
+  { path: '/tips', icon: Lightbulb, label: 'Tips', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  { path: '/profile', icon: User, label: 'Profile', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
 ];
 
 const EXPENSE_CATEGORIES = [
