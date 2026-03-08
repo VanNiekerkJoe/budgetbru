@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { formatCurrency, formatDate, getCategoryEmoji } from '@/utils/formatters';
 import { BadgeGlow } from '@/components/ui/badge-glow';
 import { Plus, Filter, Wallet, ArrowDownCircle, TrendingDown, Search } from 'lucide-react';
