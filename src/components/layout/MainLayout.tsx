@@ -14,6 +14,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen relative">
