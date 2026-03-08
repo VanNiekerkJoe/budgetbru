@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      bill_reminders: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          frequency: string | null
+          id: string
+          is_paid: boolean
+          is_recurring: boolean
+          notification_days: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date: string
+          frequency?: string | null
+          id?: string
+          is_paid?: boolean
+          is_recurring?: boolean
+          notification_days?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          frequency?: string | null
+          id?: string
+          is_paid?: boolean
+          is_recurring?: boolean
+          notification_days?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
