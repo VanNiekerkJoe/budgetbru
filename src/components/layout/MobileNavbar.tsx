@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { 
   Home, Wallet, CircleDollarSign, Plus, Check,
   ChartPie, User, Map, MessageSquare, Calendar, 
-  Zap, Lightbulb, Receipt, Shield, CreditCard, 
+  Zap, Lightbulb, Receipt, Shield, CreditCard, Heart, 
   MoreHorizontal, X, PiggyBank, ChevronLeft, TrendingUp
 } from 'lucide-react';
 import { useBudget } from '@/contexts/BudgetContext';
