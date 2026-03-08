@@ -21,11 +21,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className="sticky top-0 z-30 bg-background/60 backdrop-blur-2xl border-b border-border/10">
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="relative w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-              <span className="text-primary font-black text-[11px]">B</span>
+          <div className="flex items-center gap-2.5">
+            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-sm shadow-primary/15">
+              <span className="text-primary-foreground font-black text-sm leading-none">B</span>
             </div>
-            <span className="font-bold text-[13px] text-foreground tracking-tight">BudgetBru</span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="font-black text-sm text-foreground tracking-tight">Budget</span>
+              <span className="font-black text-sm text-primary tracking-tight">Bru</span>
+            </div>
           </div>
 
           {/* Right actions */}
