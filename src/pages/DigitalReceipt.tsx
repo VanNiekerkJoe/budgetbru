@@ -66,6 +66,10 @@ const DigitalReceipt = () => {
   const [ocrProgress, setOcrProgress] = useState(0);
   const [parsedResult, setParsedResult] = useState<ParsedReceipt | null>(null);
   const [showRawText, setShowRawText] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [lineItems, setLineItems] = useState<LineItem[]>([]);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemAmount, setNewItemAmount] = useState('');
 
   const [amount, setAmount] = useState<number>(0);
   const [description, setDescription] = useState('');
