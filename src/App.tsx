@@ -28,6 +28,8 @@ const TipsPage = lazy(() => import("./pages/TipsPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const EmergencyFund = lazy(() => import("./pages/EmergencyFund"));
 const DigitalReceipt = lazy(() => import("./pages/DigitalReceipt"));
+const VibesHubPage = lazy(() => import("./pages/VibesHubPage"));
+const PlanningPage = lazy(() => import("./pages/PlanningPage"));
 
 const queryClient = new QueryClient();
 
