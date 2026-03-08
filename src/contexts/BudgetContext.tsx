@@ -95,15 +95,51 @@ const STORAGE_KEYS = {
   emergencyFund: 'bb_emergencyFund',
 };
 
-// Clear all old data so users start fresh
-const DATA_VERSION = 'bb_v3';
-if (!localStorage.getItem(DATA_VERSION)) {
-  Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
-  localStorage.removeItem('bb_v2');
-  localStorage.setItem(DATA_VERSION, '1');
-}
+const RESET_VERSION_KEY = 'bb_reset_v4';
+const LEGACY_BUDGET_KEYS = [
+  'expenses',
+  'income',
+  'savings',
+  'savingsGoals',
+  'emergencyFund',
+  'budget_expenses',
+  'budget_income',
+  'budget_savings',
+  'budget_savingsGoals',
+  'budget_emergencyFund',
+];
+
+const DEFAULT_EMERGENCY_FUND: EmergencyFund = {
+  targetAmount: 10000,
+  currentAmount: 0,
+  lastUpdate: new Date().toISOString(),
+  monthlyContribution: 0,
+};
+
+const isBrowser = typeof window !== 'undefined';
+
+const clearAllBudgetStorage = () => {
+  if (!isBrowser) return;
+
+  const exactKeys = new Set([...Object.values(STORAGE_KEYS), ...LEGACY_BUDGET_KEYS]);
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('bb_') || exactKeys.has(key)) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
+const shouldForceResetBudget = (() => {
+  if (!isBrowser) return false;
+  if (localStorage.getItem(RESET_VERSION_KEY)) return false;
+
+  clearAllBudgetStorage();
+  localStorage.setItem(RESET_VERSION_KEY, '1');
+  return true;
+})();
 
 function loadFromStorage<T>(key: string, fallback: T): T {
+  if (!isBrowser) return fallback;
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
@@ -113,6 +149,7 @@ function loadFromStorage<T>(key: string, fallback: T): T {
 }
 
 function saveToStorage<T>(key: string, data: T) {
+  if (!isBrowser) return;
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch {
@@ -124,29 +161,36 @@ type BudgetProviderProps = { children: ReactNode };
 
 export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   const [expenses, setExpenses] = useState<Expense[]>(() =>
-    loadFromStorage(STORAGE_KEYS.expenses, [])
+    shouldForceResetBudget ? [] : loadFromStorage(STORAGE_KEYS.expenses, [])
   );
 
   const [income, setIncome] = useState<Income[]>(() =>
-    loadFromStorage(STORAGE_KEYS.income, [])
+    shouldForceResetBudget ? [] : loadFromStorage(STORAGE_KEYS.income, [])
   );
 
   const [savings, setSavings] = useState<Saving[]>(() =>
-    loadFromStorage(STORAGE_KEYS.savings, [])
+    shouldForceResetBudget ? [] : loadFromStorage(STORAGE_KEYS.savings, [])
   );
 
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(() =>
-    loadFromStorage(STORAGE_KEYS.savingsGoals, [])
+    shouldForceResetBudget ? [] : loadFromStorage(STORAGE_KEYS.savingsGoals, [])
   );
 
   const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund>(() =>
-    loadFromStorage(STORAGE_KEYS.emergencyFund, {
-      targetAmount: 10000,
-      currentAmount: 0,
-      lastUpdate: new Date().toISOString(),
-      monthlyContribution: 0,
-    })
+    shouldForceResetBudget
+      ? DEFAULT_EMERGENCY_FUND
+      : loadFromStorage(STORAGE_KEYS.emergencyFund, DEFAULT_EMERGENCY_FUND)
   );
+
+  useEffect(() => {
+    if (!shouldForceResetBudget) return;
+
+    setExpenses([]);
+    setIncome([]);
+    setSavings([]);
+    setSavingsGoals([]);
+    setEmergencyFundState(DEFAULT_EMERGENCY_FUND);
+  }, []);
 
   // Persist on changes
   useEffect(() => { saveToStorage(STORAGE_KEYS.expenses, expenses); }, [expenses]);
