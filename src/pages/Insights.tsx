@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useBudget } from '@/contexts/BudgetContext';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { formatCurrency } from '@/utils/formatters';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
