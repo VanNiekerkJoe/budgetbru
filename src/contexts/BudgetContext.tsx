@@ -1,14 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';
 
 export type ExpenseCategory = 'food' | 'entertainment' | 'education' | 'transport' | 'utilities' | 'rent' | 'clothing' | 'health' | 'groceries' | 'other';
 
-// Define SavingsGoal type and export it
 export type SavingsGoal = {
   id: number;
   name: string;
   targetAmount: number;
   currentAmount: number;
-  deadline?: Date | string;
+  deadline?: string;
   category: 'short' | 'medium' | 'long';
   iconName?: string;
 };
@@ -16,8 +15,35 @@ export type SavingsGoal = {
 export type EmergencyFund = {
   targetAmount: number;
   currentAmount: number;
-  lastUpdate?: Date | string;
+  lastUpdate?: string;
   monthlyContribution: number;
+};
+
+export type Expense = {
+  id: number;
+  amount: number;
+  category: string;
+  description: string;
+  date: string; // ISO string
+};
+
+export type Income = {
+  id: number;
+  amount: number;
+  source: string;
+  description?: string;
+  date: string; // ISO string
+  recurring?: boolean;
+  frequency?: string;
+};
+
+export type Saving = {
+  id: number;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline?: string;
+  iconName?: string;
 };
 
 type BudgetContextType = {
@@ -42,33 +68,12 @@ type BudgetContextType = {
   updateSavingsGoal: (id: number, amount: number) => void;
   setEmergencyFund: (fund: EmergencyFund) => void;
   updateEmergencyFund: (amount: number) => void;
-};
-
-export type Expense = {
-  id: number;
-  amount: number;
-  category: string;
-  description: string;
-  date?: Date | string;
-};
-
-export type Income = {
-  id: number;
-  amount: number;
-  source: string;
-  description?: string;
-  date?: Date | string;
-  recurring?: boolean;
-  frequency?: string;
-};
-
-export type Saving = {
-  id: number;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  deadline?: Date | string;
-  iconName?: string;
+  // New helpers for insights
+  getExpensesForMonth: (year: number, month: number) => Expense[];
+  getIncomeForMonth: (year: number, month: number) => Income[];
+  getExpensesForDateRange: (start: Date, end: Date) => Expense[];
+  currentMonthExpenses: Expense[];
+  currentMonthIncome: Income[];
 };
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
@@ -81,165 +86,256 @@ export const useBudget = () => {
   return context;
 };
 
-type BudgetProviderProps = {
-  children: ReactNode;
+// ─── localStorage helpers ───
+const STORAGE_KEYS = {
+  expenses: 'bb_expenses',
+  income: 'bb_income',
+  savings: 'bb_savings',
+  savingsGoals: 'bb_savingsGoals',
+  emergencyFund: 'bb_emergencyFund',
 };
 
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveToStorage<T>(key: string, data: T) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // storage full — silently fail
+  }
+}
+
+// ─── Realistic seed data with dates spanning the last 6 months ───
+function generateSeedExpenses(): Expense[] {
+  const now = new Date();
+  const items: Expense[] = [];
+  let id = 1;
+
+  const templates = [
+    { category: 'food', descriptions: ['KFC', 'Nandos', 'Lunch at res', 'Uber Eats', 'Spur', 'Pizza', 'Coffee', 'Snacks'] },
+    { category: 'transport', descriptions: ['Uber ride', 'Bus fare', 'Petrol', 'Bolt ride', 'Taxi'] },
+    { category: 'entertainment', descriptions: ['Movies', 'Netflix', 'Spotify', 'Night out', 'Games', 'Concert'] },
+    { category: 'education', descriptions: ['Textbooks', 'Printing', 'Course materials', 'Stationery'] },
+    { category: 'utilities', descriptions: ['Electricity', 'Phone data', 'WiFi', 'Water'] },
+    { category: 'groceries', descriptions: ['Checkers', 'Pick n Pay', 'Woolworths', 'Shoprite'] },
+    { category: 'health', descriptions: ['Pharmacy', 'Gym membership', 'Doctor visit'] },
+    { category: 'clothing', descriptions: ['Mr Price', 'Shein order', 'Shoes'] },
+  ];
+
+  const amountRanges: Record<string, [number, number]> = {
+    food: [25, 180], transport: [15, 120], entertainment: [30, 200],
+    education: [50, 400], utilities: [80, 350], groceries: [150, 600],
+    health: [50, 300], clothing: [100, 500],
+  };
+
+  // Generate 8-15 expenses per month for the last 6 months
+  for (let m = 5; m >= 0; m--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+    const count = 8 + Math.floor(Math.random() * 8);
+
+    for (let i = 0; i < count; i++) {
+      const tmpl = templates[Math.floor(Math.random() * templates.length)];
+      const desc = tmpl.descriptions[Math.floor(Math.random() * tmpl.descriptions.length)];
+      const [min, max] = amountRanges[tmpl.category] || [20, 200];
+      const amount = Math.round(min + Math.random() * (max - min));
+      const day = Math.min(1 + Math.floor(Math.random() * daysInMonth), m === 0 ? now.getDate() : daysInMonth);
+      const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+
+      items.push({ id: id++, amount, category: tmpl.category, description: desc, date: date.toISOString() });
+    }
+  }
+
+  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+function generateSeedIncome(): Income[] {
+  const now = new Date();
+  const items: Income[] = [];
+  let id = 1;
+
+  for (let m = 5; m >= 0; m--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    // Main income on the 25th
+    items.push({
+      id: id++, amount: 2000, source: 'part-time',
+      description: 'Part-time job salary',
+      date: new Date(monthDate.getFullYear(), monthDate.getMonth(), Math.min(25, new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate())).toISOString(),
+      recurring: true, frequency: 'monthly',
+    });
+    // Allowance on the 1st
+    items.push({
+      id: id++, amount: 500, source: 'allowance',
+      description: 'Monthly allowance',
+      date: new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).toISOString(),
+      recurring: true, frequency: 'monthly',
+    });
+    // Random side income some months
+    if (Math.random() > 0.5) {
+      const sideAmounts = [150, 200, 300, 250, 100];
+      const sideSources = ['Freelance gig', 'Sold textbooks', 'Tutoring', 'Cash gift', 'Side hustle'];
+      const idx = Math.floor(Math.random() * sideSources.length);
+      items.push({
+        id: id++, amount: sideAmounts[idx], source: 'other',
+        description: sideSources[idx],
+        date: new Date(monthDate.getFullYear(), monthDate.getMonth(), 10 + Math.floor(Math.random() * 15)).toISOString(),
+      });
+    }
+  }
+
+  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+type BudgetProviderProps = { children: ReactNode };
+
 export const BudgetProvider = ({ children }: BudgetProviderProps) => {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { id: 1, amount: 350, category: 'food', description: 'Groceries' },
-    { id: 2, amount: 150, category: 'entertainment', description: 'Movies' },
-    { id: 3, amount: 200, category: 'education', description: 'Books' },
-    { id: 4, amount: 80, category: 'transport', description: 'Bus fare' },
-    { id: 5, amount: 120, category: 'utilities', description: 'Electricity' },
-  ]);
+  const [expenses, setExpenses] = useState<Expense[]>(() =>
+    loadFromStorage(STORAGE_KEYS.expenses, generateSeedExpenses())
+  );
 
-  const [income, setIncome] = useState<Income[]>([
-    { id: 1, amount: 2000, source: 'part-time', description: 'Part-time job' },
-    { id: 2, amount: 500, source: 'allowance', description: 'Monthly allowance from parents' },
-  ]);
+  const [income, setIncome] = useState<Income[]>(() =>
+    loadFromStorage(STORAGE_KEYS.income, generateSeedIncome())
+  );
 
-  const [savings, setSavings] = useState<Saving[]>([
-    { 
-      id: 1, 
-      name: 'New Laptop', 
-      targetAmount: 1200, 
-      currentAmount: 400, 
-      deadline: new Date('2023-12-01'),
-      iconName: 'laptop',
-    },
-    { 
-      id: 2, 
-      name: 'Spring Break Trip', 
-      targetAmount: 500, 
-      currentAmount: 250,
-      deadline: new Date('2023-10-15'),
-      iconName: 'palmtree',
-    },
-  ]);
+  const [savings, setSavings] = useState<Saving[]>(() =>
+    loadFromStorage(STORAGE_KEYS.savings, [
+      { id: 1, name: 'New Laptop', targetAmount: 12000, currentAmount: 4000, deadline: '2026-08-01', iconName: 'laptop' },
+      { id: 2, name: 'Spring Break Trip', targetAmount: 5000, currentAmount: 2500, deadline: '2026-10-15', iconName: 'palmtree' },
+    ])
+  );
 
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([
-    { 
-      id: 1, 
-      name: 'New Laptop', 
-      targetAmount: 1200, 
-      currentAmount: 400, 
-      deadline: new Date('2023-12-01'),
-      category: 'medium',
-      iconName: 'laptop',
-    },
-    { 
-      id: 2, 
-      name: 'Spring Break Trip', 
-      targetAmount: 500, 
-      currentAmount: 250,
-      deadline: new Date('2023-10-15'),
-      category: 'short',
-      iconName: 'palmtree',
-    },
-  ]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(() =>
+    loadFromStorage(STORAGE_KEYS.savingsGoals, [
+      { id: 1, name: 'New Laptop', targetAmount: 12000, currentAmount: 4000, deadline: '2026-08-01', category: 'medium' as const, iconName: 'laptop' },
+      { id: 2, name: 'Spring Break Trip', targetAmount: 5000, currentAmount: 2500, deadline: '2026-10-15', category: 'short' as const, iconName: 'palmtree' },
+    ])
+  );
 
-  const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund>({
-    targetAmount: 5000,
-    currentAmount: 1200,
-    lastUpdate: new Date(),
-    monthlyContribution: 500,
-  });
+  const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund>(() =>
+    loadFromStorage(STORAGE_KEYS.emergencyFund, {
+      targetAmount: 10000,
+      currentAmount: 2400,
+      lastUpdate: new Date().toISOString(),
+      monthlyContribution: 500,
+    })
+  );
 
-  const totalIncome = income.reduce((sum, item) => sum + item.amount, 0);
-  const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
+  // Persist on changes
+  useEffect(() => { saveToStorage(STORAGE_KEYS.expenses, expenses); }, [expenses]);
+  useEffect(() => { saveToStorage(STORAGE_KEYS.income, income); }, [income]);
+  useEffect(() => { saveToStorage(STORAGE_KEYS.savings, savings); }, [savings]);
+  useEffect(() => { saveToStorage(STORAGE_KEYS.savingsGoals, savingsGoals); }, [savingsGoals]);
+  useEffect(() => { saveToStorage(STORAGE_KEYS.emergencyFund, emergencyFund); }, [emergencyFund]);
+
+  // ─── Current month helpers ───
+  const now = new Date();
+  const currentMonthExpenses = useMemo(() =>
+    expenses.filter(e => {
+      const d = new Date(e.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }),
+    [expenses]
+  );
+
+  const currentMonthIncome = useMemo(() =>
+    income.filter(i => {
+      const d = new Date(i.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }),
+    [income]
+  );
+
+  const totalIncome = useMemo(() => currentMonthIncome.reduce((s, i) => s + i.amount, 0), [currentMonthIncome]);
+  const totalExpenses = useMemo(() => currentMonthExpenses.reduce((s, e) => s + e.amount, 0), [currentMonthExpenses]);
   const remainingBudget = totalIncome - totalExpenses;
   const totalBudget = totalIncome;
 
-  const expensesByCategory = expenses.reduce((acc, expense) => {
-    const category = expense.category;
-    if (!acc[category]) {
-      acc[category] = 0;
-    }
-    acc[category] += expense.amount;
-    return acc;
-  }, {} as Record<string, number>);
+  const expensesByCategory = useMemo(() =>
+    currentMonthExpenses.reduce((acc, e) => {
+      acc[e.category] = (acc[e.category] || 0) + e.amount;
+      return acc;
+    }, {} as Record<string, number>),
+    [currentMonthExpenses]
+  );
 
+  const getExpensesForMonth = useCallback((year: number, month: number) =>
+    expenses.filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === year && d.getMonth() === month;
+    }),
+    [expenses]
+  );
+
+  const getIncomeForMonth = useCallback((year: number, month: number) =>
+    income.filter(i => {
+      const d = new Date(i.date);
+      return d.getFullYear() === year && d.getMonth() === month;
+    }),
+    [income]
+  );
+
+  const getExpensesForDateRange = useCallback((start: Date, end: Date) =>
+    expenses.filter(e => {
+      const d = new Date(e.date);
+      return d >= start && d <= end;
+    }),
+    [expenses]
+  );
+
+  // ─── Mutations ───
   const addExpense = (expense: Omit<Expense, 'id'>) => {
     const id = expenses.length > 0 ? Math.max(...expenses.map(e => e.id)) + 1 : 1;
-    setExpenses([...expenses, { ...expense, id }]);
+    const newExp = { ...expense, id, date: expense.date || new Date().toISOString() };
+    setExpenses(prev => [newExp, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 
   const addIncome = (incomeItem: Omit<Income, 'id'>) => {
     const id = income.length > 0 ? Math.max(...income.map(i => i.id)) + 1 : 1;
-    setIncome([...income, { ...incomeItem, id, description: incomeItem.description || incomeItem.source }]);
+    const newInc = { ...incomeItem, id, date: incomeItem.date || new Date().toISOString(), description: incomeItem.description || incomeItem.source };
+    setIncome(prev => [newInc, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 
   const addSaving = (saving: Omit<Saving, 'id'>) => {
     const id = savings.length > 0 ? Math.max(...savings.map(s => s.id)) + 1 : 1;
-    setSavings([...savings, { ...saving, id }]);
+    setSavings(prev => [...prev, { ...saving, id }]);
   };
 
   const addSavingsGoal = (goal: Omit<SavingsGoal, 'id'>) => {
     const id = savingsGoals.length > 0 ? Math.max(...savingsGoals.map(g => g.id)) + 1 : 1;
-    setSavingsGoals([...savingsGoals, { ...goal, id }]);
+    setSavingsGoals(prev => [...prev, { ...goal, id }]);
   };
 
   const updateSavingsGoal = (id: number, amount: number) => {
-    setSavingsGoals(prevGoals => 
-      prevGoals.map(goal => 
-        goal.id === id 
-          ? { ...goal, currentAmount: goal.currentAmount + amount } 
-          : goal
-      )
-    );
+    setSavingsGoals(prev => prev.map(g => g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g));
   };
 
-  const setEmergencyFund = (fund: EmergencyFund) => {
-    setEmergencyFundState(fund);
-  };
+  const setEmergencyFund = (fund: EmergencyFund) => setEmergencyFundState(fund);
 
   const updateEmergencyFund = (amount: number) => {
-    setEmergencyFundState(prev => ({
-      ...prev,
-      currentAmount: prev.currentAmount + amount,
-      lastUpdate: new Date()
-    }));
+    setEmergencyFundState(prev => ({ ...prev, currentAmount: prev.currentAmount + amount, lastUpdate: new Date().toISOString() }));
   };
 
-  const deleteExpense = (id: number) => {
-    setExpenses(expenses.filter(expense => expense.id !== id));
-  };
-
-  const deleteIncome = (id: number) => {
-    setIncome(income.filter(inc => inc.id !== id));
-  };
-
-  const deleteSaving = (id: number) => {
-    setSavings(savings.filter(saving => saving.id !== id));
-  };
-
-  const incomes = income;
+  const deleteExpense = (id: number) => setExpenses(prev => prev.filter(e => e.id !== id));
+  const deleteIncome = (id: number) => setIncome(prev => prev.filter(i => i.id !== id));
+  const deleteSaving = (id: number) => setSavings(prev => prev.filter(s => s.id !== id));
 
   return (
     <BudgetContext.Provider
       value={{
-        totalBudget,
-        remainingBudget,
-        expenses,
-        income,
-        savings,
-        savingsGoals,
-        totalIncome,
-        totalExpenses,
-        expensesByCategory,
-        emergencyFund,
-        incomes,
-        addExpense,
-        addIncome,
-        addSaving,
-        deleteExpense,
-        deleteIncome,
-        deleteSaving,
-        addSavingsGoal,
-        updateSavingsGoal,
-        setEmergencyFund,
-        updateEmergencyFund,
+        totalBudget, remainingBudget, expenses, income, savings, savingsGoals,
+        totalIncome, totalExpenses, expensesByCategory, emergencyFund,
+        incomes: income,
+        addExpense, addIncome, addSaving, deleteExpense, deleteIncome, deleteSaving,
+        addSavingsGoal, updateSavingsGoal, setEmergencyFund, updateEmergencyFund,
+        getExpensesForMonth, getIncomeForMonth, getExpensesForDateRange,
+        currentMonthExpenses, currentMonthIncome,
       }}
     >
       {children}

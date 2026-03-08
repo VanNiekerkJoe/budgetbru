@@ -41,32 +41,53 @@ function getCategoryEmoji(category: string): string {
 const CHART_COLORS = ['#f87171', '#60a5fa', '#fbbf24', '#34d399', '#fb923c', '#a78bfa', '#818cf8'];
 
 const Insights: React.FC = () => {
-  const { expenses, incomes, totalIncome, totalExpenses, remainingBudget, savingsGoals, emergencyFund } = useBudget();
+  const {
+    expenses, incomes, totalIncome, totalExpenses, remainingBudget,
+    savingsGoals, emergencyFund, getExpensesForMonth, getIncomeForMonth,
+    currentMonthExpenses,
+  } = useBudget();
   const [activeTab, setActiveTab] = useState('overview');
 
   const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
-  const dailyAvg = totalExpenses / 30;
+  const dailyAvg = totalExpenses / Math.max(new Date().getDate(), 1);
 
-  // ─── Financial health score (0-100) ───
+  // ─── Financial health score (0-100) — real calculation ───
   const healthScore = useMemo(() => {
     let score = 50;
-    if (savingsRate >= 20) score += 30;
-    else if (savingsRate >= 10) score += 20;
-    else if (savingsRate >= 0) score += 10;
+    // Savings rate scoring
+    if (savingsRate >= 20) score += 25;
+    else if (savingsRate >= 10) score += 15;
+    else if (savingsRate >= 0) score += 5;
     else score -= 20;
-    if (emergencyFund.currentAmount >= emergencyFund.targetAmount * 0.5) score += 10;
-    if (expenses.length > 0) score += 5;
-    if (totalExpenses < totalIncome * 0.8) score += 5;
-    return Math.min(100, Math.max(0, score));
-  }, [savingsRate, emergencyFund, expenses, totalExpenses, totalIncome]);
+
+    // Emergency fund progress
+    const efPct = emergencyFund.targetAmount > 0 ? emergencyFund.currentAmount / emergencyFund.targetAmount : 0;
+    if (efPct >= 1) score += 10;
+    else if (efPct >= 0.5) score += 7;
+    else if (efPct >= 0.25) score += 3;
+
+    // Expense diversity (not blowing all on one category)
+    const cats = Object.values(currentMonthExpenses.reduce((acc, e) => {
+      acc[e.category] = (acc[e.category] || 0) + e.amount;
+      return acc;
+    }, {} as Record<string, number>));
+    const maxCatPct = totalExpenses > 0 ? Math.max(...cats) / totalExpenses : 0;
+    if (maxCatPct < 0.4) score += 5;
+
+    // Spending under income
+    if (totalExpenses < totalIncome * 0.7) score += 10;
+    else if (totalExpenses < totalIncome * 0.9) score += 5;
+
+    return Math.min(100, Math.max(0, Math.round(score)));
+  }, [savingsRate, emergencyFund, currentMonthExpenses, totalExpenses, totalIncome]);
 
   const healthGrade = healthScore >= 80 ? 'A' : healthScore >= 60 ? 'B' : healthScore >= 40 ? 'C' : 'D';
   const healthColor = healthScore >= 80 ? 'hsl(var(--success))' : healthScore >= 60 ? 'hsl(var(--primary))' : healthScore >= 40 ? 'hsl(var(--warning))' : 'hsl(var(--destructive))';
 
-  // ─── Category breakdown ───
+  // ─── Category breakdown (from real current month data) ───
   const categoryData = useMemo(() => {
     const map: Record<string, number> = {};
-    expenses.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount; });
+    currentMonthExpenses.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount; });
     return Object.entries(map)
       .map(([name, value]) => ({
         name,
@@ -76,41 +97,57 @@ const Insights: React.FC = () => {
         emoji: getCategoryEmoji(name),
       }))
       .sort((a, b) => b.value - a.value);
-  }, [expenses, totalExpenses]);
+  }, [currentMonthExpenses, totalExpenses]);
 
-  // ─── Weekly trend data ───
-  const weeklyData = [
-    { week: 'W1', spent: 350, budget: 625 },
-    { week: 'W2', spent: 420, budget: 625 },
-    { week: 'W3', spent: 280, budget: 625 },
-    { week: 'W4', spent: Math.max(totalExpenses - 1050, 100), budget: 625 },
-  ];
-
-  // ─── Monthly trend (6 months) ───
-  const monthlyTrend = useMemo(() => {
-    const today = new Date();
-    return Array.from({ length: 6 }, (_, i) => {
-      const d = new Date();
-      d.setMonth(today.getMonth() - (5 - i));
-      const month = d.toLocaleString('default', { month: 'short' });
-      // Simulate trend with some variance around current data
-      const factor = 0.7 + Math.random() * 0.6;
-      const inc = i === 5 ? totalIncome : Math.round(totalIncome * factor);
-      const exp = i === 5 ? totalExpenses : Math.round(totalExpenses * factor);
-      return { month, income: inc, expenses: exp, savings: inc - exp };
+  // ─── Weekly trend data (real, from current month) ───
+  const weeklyData = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const weekBudget = totalIncome > 0 ? Math.round(totalIncome / 4) : 0;
+    const weeks = [
+      { week: 'W1', start: 1, end: 7 },
+      { week: 'W2', start: 8, end: 14 },
+      { week: 'W3', start: 15, end: 21 },
+      { week: 'W4', start: 22, end: 31 },
+    ];
+    return weeks.map(w => {
+      const spent = currentMonthExpenses
+        .filter(e => {
+          const d = new Date(e.date).getDate();
+          return d >= w.start && d <= w.end;
+        })
+        .reduce((s, e) => s + e.amount, 0);
+      return { week: w.week, spent: Math.round(spent), budget: weekBudget };
     });
-  }, [totalIncome, totalExpenses]);
+  }, [currentMonthExpenses, totalIncome]);
 
-  // ─── Spending insights ───
+  // ─── Monthly trend (6 months, from real data) ───
+  const monthlyTrend = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const monthLabel = d.toLocaleString('default', { month: 'short' });
+      const monthExpenses = getExpensesForMonth(year, month);
+      const monthIncomes = getIncomeForMonth(year, month);
+      const inc = monthIncomes.reduce((s, i) => s + i.amount, 0);
+      const exp = monthExpenses.reduce((s, e) => s + e.amount, 0);
+      return { month: monthLabel, income: inc, expenses: exp, savings: inc - exp };
+    });
+  }, [getExpensesForMonth, getIncomeForMonth]);
+
+  // ─── Spending insights (real) ───
   const topCategory = categoryData[0];
-  const biggestExpense = expenses.length > 0
-    ? expenses.reduce((max, e) => e.amount > max.amount ? e : max, expenses[0])
+  const biggestExpense = currentMonthExpenses.length > 0
+    ? currentMonthExpenses.reduce((max, e) => e.amount > max.amount ? e : max, currentMonthExpenses[0])
     : null;
 
-  // ─── Projected end-of-month ───
-  const daysInMonth = 30;
+  // ─── Projected end-of-month (real) ───
   const dayOfMonth = new Date().getDate();
-  const projectedTotal = dayOfMonth > 0 ? (totalExpenses / dayOfMonth) * daysInMonth : totalExpenses;
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+  const projectedTotal = dayOfMonth > 0 ? Math.round((totalExpenses / dayOfMonth) * daysInMonth) : totalExpenses;
   const projectedSavings = totalIncome - projectedTotal;
 
   const getFinancialTip = () => {
@@ -539,17 +576,27 @@ const Insights: React.FC = () => {
                         </ResponsiveContainer>
                       </div>
 
-                      {/* Week insights */}
-                      <div className="mt-3 space-y-2">
-                        <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-success/5">
-                          <TrendingDown size={13} className="text-success shrink-0" />
-                          <span className="text-muted-foreground">Week 3 was your best — <span className="font-medium text-foreground">R280</span> spent</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-warning/5">
-                          <TrendingUp size={13} className="text-warning shrink-0" />
-                          <span className="text-muted-foreground">Week 2 was the highest at <span className="font-medium text-foreground">R420</span></span>
-                        </div>
-                      </div>
+                      {/* Week insights — dynamic */}
+                      {(() => {
+                        const best = weeklyData.reduce((b, w) => w.spent > 0 && w.spent < b.spent ? w : b, weeklyData.find(w => w.spent > 0) || weeklyData[0]);
+                        const worst = weeklyData.reduce((b, w) => w.spent > b.spent ? w : b, weeklyData[0]);
+                        return (
+                          <div className="mt-3 space-y-2">
+                            {best.spent > 0 && (
+                              <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-success/5">
+                                <TrendingDown size={13} className="text-success shrink-0" />
+                                <span className="text-muted-foreground">{best.week} was your best — <span className="font-medium text-foreground">{formatCurrency(best.spent)}</span> spent</span>
+                              </div>
+                            )}
+                            {worst.spent > 0 && worst.week !== best.week && (
+                              <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-warning/5">
+                                <TrendingUp size={13} className="text-warning shrink-0" />
+                                <span className="text-muted-foreground">{worst.week} was the highest at <span className="font-medium text-foreground">{formatCurrency(worst.spent)}</span></span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </motion.div>
