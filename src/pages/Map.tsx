@@ -1,227 +1,266 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, MapPin, Settings, Search, Tag, Navigation, User, Home } from 'lucide-react';
+import {
+  Search, Layers, Navigation, GraduationCap, UtensilsCrossed, Coffee,
+  Dumbbell, Music, ShoppingBag, Train, Home, BookOpen, Tag, X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-
+import { Input } from '@/components/ui/input';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import MapView from '@/components/map/MapView';
-import NavBar from '@/components/NavBar';
+import PlaceDetailCard from '@/components/map/PlaceDetailCard';
 import DiscountFinder from '@/components/map/DiscountFinder';
-import ReceiptIcon from '@/components/ReceiptIcon';
+import { SA_LOCATIONS, CATEGORY_COLORS, CATEGORY_LABELS, MapLocation, LocationCategory } from '@/data/mapLocations';
 import { toast } from 'sonner';
-import { EventMarker } from '@/components/map/MapView';
+
+const CATEGORY_ICONS: Record<LocationCategory, React.ReactNode> = {
+  university: <GraduationCap size={14} />,
+  food: <UtensilsCrossed size={14} />,
+  cafe: <Coffee size={14} />,
+  gym: <Dumbbell size={14} />,
+  entertainment: <Music size={14} />,
+  shopping: <ShoppingBag size={14} />,
+  transport: <Train size={14} />,
+  accommodation: <Home size={14} />,
+  library: <BookOpen size={14} />,
+  discount: <Tag size={14} />,
+};
+
+const ALL_CATEGORIES: LocationCategory[] = [
+  'university', 'food', 'cafe', 'gym', 'entertainment',
+  'shopping', 'transport', 'library', 'discount',
+];
 
 const Map: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'map' | 'discounts'>('map');
-  const [selectedLocation, setSelectedLocation] = useState<[number, number] | undefined>(undefined);
-  const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('default');
-  const [showEventDetails, setShowEventDetails] = useState<EventMarker | null>(null);
+  const [search, setSearch] = useState('');
+  const [activeCategories, setActiveCategories] = useState<Set<LocationCategory>>(new Set());
+  const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('dark');
+  const [selectedPlace, setSelectedPlace] = useState<MapLocation | null>(null);
+  const [flyTo, setFlyTo] = useState<[number, number] | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleSelectLocation = (coords: [number, number]) => {
-    setSelectedLocation(coords);
-    setActiveTab('map');
+  const toggleCategory = (cat: LocationCategory) => {
+    setActiveCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
   };
-  
-  const handleMarkerClick = (event: EventMarker) => {
-    setShowEventDetails(event);
-    toast.success(`Selected: ${event.name}`);
+
+  const filteredLocations = useMemo(() => {
+    let locs = SA_LOCATIONS;
+    if (activeCategories.size > 0) {
+      locs = locs.filter(l => activeCategories.has(l.category));
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      locs = locs.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        l.address.toLowerCase().includes(q) ||
+        l.tags.some(t => t.includes(q))
+      );
+    }
+    return locs;
+  }, [activeCategories, search]);
+
+  const handleMarkerClick = useCallback((loc: MapLocation) => {
+    setSelectedPlace(loc);
+    setFlyTo([loc.lng, loc.lat]);
+  }, []);
+
+  const handleSearchSelect = (loc: MapLocation) => {
+    setSelectedPlace(loc);
+    setFlyTo([loc.lng, loc.lat]);
+    setDrawerOpen(false);
   };
-  
-  const eventMarkers: EventMarker[] = [
-    { id: 1, name: 'Student Budget Workshop', lat: -33.9249, lng: 18.4241, type: 'academic', 
-      description: 'Learn how to manage your finances effectively as a student',
-      date: '2023-07-15' },
-    { id: 2, name: 'Savings Challenge Meetup', lat: -33.9229, lng: 18.4251, type: 'social',
-      description: 'Join fellow students for the monthly savings challenge',
-      date: '2023-07-20' },
-    { id: 3, name: 'Budget-Friendly Food Market', lat: -33.9269, lng: 18.4231, type: 'food',
-      description: 'Affordable food options from local vendors',
-      date: '2023-07-18' },
-    { id: 4, name: 'Financial Fitness Run', lat: -33.9209, lng: 18.4271, type: 'sport',
-      description: 'Run to raise awareness about financial literacy',
-      date: '2023-07-25' },
-  ];
 
   const cycleMapStyle = () => {
-    if (mapStyle === 'default') setMapStyle('satellite');
-    else if (mapStyle === 'satellite') setMapStyle('dark');
-    else setMapStyle('default');
-    
-    toast.success(`Map style changed to ${mapStyle === 'default' ? 'satellite' : mapStyle === 'satellite' ? 'dark' : 'default'}`);
+    const styles: Array<'default' | 'satellite' | 'dark'> = ['default', 'satellite', 'dark'];
+    const idx = (styles.indexOf(mapStyle) + 1) % 3;
+    setMapStyle(styles[idx]);
+    toast.success(`Map: ${styles[idx]}`);
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) return toast.error('Geolocation not supported');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords: [number, number] = [pos.coords.longitude, pos.coords.latitude];
+        setUserLocation(coords);
+        setFlyTo(coords);
+        toast.success('Found your location!');
+      },
+      () => toast.error("Couldn't get your location")
+    );
+  };
+
+  const handleDiscountSelect = (coords: [number, number]) => {
+    setFlyTo([coords[1], coords[0]]);
+    setDrawerOpen(false);
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-gray-900/90 dark:to-gray-800/90 backdrop-blur-sm">
-      {/* Background lighting effect */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '15s'}} />
-        <div className="absolute -bottom-20 left-1/4 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s'}} />
-      </div>
-      
-      {/* Map Container */}
-      <div className="relative w-full h-screen pb-28">
-        {activeTab === 'map' ? (
-          <MapView 
-            selectedLocation={selectedLocation}
-            mapStyle={mapStyle}
-            markers={eventMarkers}
-            onMarkerClick={handleMarkerClick}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl z-10">
-            <div className="h-full overflow-auto p-4 pb-24">
-              <DiscountFinder onSelectLocation={handleSelectLocation} />
-            </div>
-          </div>
-        )}
+    <div className="relative w-full h-screen overflow-hidden bg-background">
+      {/* Full-screen map */}
+      <MapView
+        locations={filteredLocations}
+        mapStyle={mapStyle}
+        onMarkerClick={handleMarkerClick}
+        flyTo={flyTo}
+        selectedId={selectedPlace?.id ?? null}
+      />
 
-        {/* Event Details Popup */}
-        <AnimatePresence>
-          {showEventDetails && (
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 50 }}
-              className="absolute bottom-36 left-0 right-0 mx-4 z-30"
-            >
-              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-lg shadow-lg p-4 max-w-md mx-auto border border-white/20">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg">{showEventDetails.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      {showEventDetails.description}
-                    </p>
-                    
-                    {showEventDetails.date && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        Date: {new Date(showEventDetails.date).toLocaleDateString()}
-                      </p>
-                    )}
-                    
-                    <div className="mt-3 flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs"
-                        onClick={() => {
-                          toast.success("Event added to your calendar");
-                        }}
-                      >
-                        Add to Calendar
-                      </Button>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          toast.success("Event shared");
-                        }}
-                      >
-                        Share
-                      </Button>
-                    </div>
-                  </div>
-                  
+      {/* Top overlay: Search + Filters */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-3 pb-0 pointer-events-none">
+        <div className="max-w-lg mx-auto space-y-2 pointer-events-auto">
+          {/* Search bar */}
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search campuses, cafés, deals..."
+              className="pl-9 pr-9 bg-card/90 backdrop-blur-xl border-border/50 shadow-lg rounded-xl h-10 text-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Category chips */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+            {ALL_CATEGORIES.map(cat => {
+              const active = activeCategories.has(cat);
+              const color = CATEGORY_COLORS[cat];
+              return (
+                <button
+                  key={cat}
+                  onClick={() => toggleCategory(cat)}
+                  className={`
+                    flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-medium
+                    whitespace-nowrap transition-all shrink-0 border
+                    ${active
+                      ? 'text-white shadow-md border-transparent'
+                      : 'bg-card/85 backdrop-blur-xl text-foreground border-border/40 shadow-sm hover:shadow-md'
+                    }
+                  `}
+                  style={active ? { background: color, borderColor: color } : {}}
+                >
+                  {CATEGORY_ICONS[cat]}
+                  {CATEGORY_LABELS[cat]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Floating controls — right side */}
+      <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2">
+        <motion.div whileTap={{ scale: 0.9 }}>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-10 w-10 rounded-full shadow-lg bg-card/90 backdrop-blur-xl border border-border/50"
+            onClick={cycleMapStyle}
+          >
+            <Layers size={16} />
+          </Button>
+        </motion.div>
+        <motion.div whileTap={{ scale: 0.9 }}>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-10 w-10 rounded-full shadow-lg bg-card/90 backdrop-blur-xl border border-border/50"
+            onClick={handleLocateMe}
+          >
+            <Navigation size={16} />
+          </Button>
+        </motion.div>
+      </div>
+
+      {/* Place detail card */}
+      <AnimatePresence>
+        {selectedPlace && (
+          <PlaceDetailCard
+            place={selectedPlace}
+            onClose={() => setSelectedPlace(null)}
+            userLocation={userLocation}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Bottom drawer — browse & discounts */}
+      <div className="absolute bottom-4 left-0 right-0 z-20 px-3">
+        <div className="max-w-lg mx-auto">
+          <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <DrawerTrigger asChild>
+              <Button
+                className="w-full rounded-xl shadow-lg bg-card/90 backdrop-blur-xl border border-border/50 text-foreground hover:bg-card gap-2 h-11"
+                variant="ghost"
+              >
+                <Search size={15} className="text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  Browse {filteredLocations.length} places across South Africa
+                </span>
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="max-h-[70vh]">
+              <div className="p-4 overflow-y-auto">
+                <div className="flex gap-2 mb-4">
                   <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 rounded-full"
-                    onClick={() => setShowEventDetails(null)}
+                    variant="default"
+                    size="sm"
+                    className="rounded-full text-xs"
+                    onClick={() => setDrawerOpen(false)}
                   >
-                    ✕
+                    Places
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full text-xs"
+                    onClick={() => {}}
+                  >
+                    <Tag size={12} className="mr-1" /> Discounts
                   </Button>
                 </div>
+
+                {/* Quick list */}
+                <div className="space-y-2">
+                  {filteredLocations.slice(0, 20).map(loc => (
+                    <button
+                      key={loc.id}
+                      onClick={() => handleSearchSelect(loc)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors text-left"
+                    >
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                        style={{ background: CATEGORY_COLORS[loc.category] }}
+                      >
+                        <span className="text-white">{CATEGORY_ICONS[loc.category]}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">{loc.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{loc.address}</p>
+                      </div>
+                      {loc.rating && (
+                        <span className="text-xs text-muted-foreground shrink-0">★ {loc.rating}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Floating UI Elements */}
-        <div className="absolute bottom-28 left-0 right-0 px-4 z-20">
-          <div className="mx-auto max-w-md">
-            <Tabs 
-              value={activeTab} 
-              onValueChange={(value) => setActiveTab(value as 'map' | 'discounts')}
-              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-1 rounded-full shadow-lg border border-white/20"
-            >
-              <TabsList className="grid grid-cols-2">
-                <TabsTrigger value="map" className="flex items-center gap-1.5 rounded-full">
-                  <MapPin size={14} />
-                  <span>Map</span>
-                </TabsTrigger>
-                <TabsTrigger value="discounts" className="flex items-center gap-1.5 rounded-full">
-                  <Tag size={14} />
-                  <span>Discounts</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </div>
-
-        {/* Map Controls (Top) */}
-        <div className="absolute top-4 left-0 right-0 px-4 z-20">
-          <div className="mx-auto max-w-md flex justify-between">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                variant="secondary"
-                size="sm"
-                className="shadow-md flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
-              >
-                <Home size={14} className="text-blue-500" />
-                <span>Home</span>
-              </Button>
-            </motion.div>
-
-            <div className="flex gap-2">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  variant="secondary"
-                  size="icon"
-                  className="shadow-md h-8 w-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
-                  onClick={() => setActiveTab(activeTab === 'map' ? 'discounts' : 'map')}
-                >
-                  {activeTab === 'map' ? <Tag size={14} /> : <MapPin size={14} />}
-                </Button>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  variant="secondary"
-                  size="icon"
-                  className="shadow-md h-8 w-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
-                  onClick={cycleMapStyle}
-                >
-                  <Settings size={14} />
-                </Button>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  variant="secondary"
-                  size="icon"
-                  className="shadow-md h-8 w-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20"
-                  onClick={() => window.location.href = '/receipts'}
-                >
-                  <ReceiptIcon size={14} showAnimation={false} />
-                </Button>
-              </motion.div>
-            </div>
-          </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
-
-      <NavBar />
     </div>
   );
 };
