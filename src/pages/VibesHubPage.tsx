@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { School, Heart, Flag, Star, Calendar, MessageCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import ParticleBackground from '@/components/ParticleBackground';
 import EnhancedLogoBadge from '@/components/EnhancedLogoBadge';
 import { BadgeGlow } from '@/components/ui/badge-glow';
