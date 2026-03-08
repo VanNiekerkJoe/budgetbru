@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -9,8 +9,6 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-import EventPopup from '@/components/EventPopup';
-import TutorialGuide from '@/components/TutorialGuide';
 import { useTutorial } from '@/services/TutorialService';
 import { QuickExpenseTracker } from '@/components/dashboard/QuickExpenseTracker';
 import { useBudget } from '@/contexts/BudgetContext';
@@ -19,12 +17,6 @@ import { formatCurrency } from '@/utils/formatters';
 
 const IndexPage: React.FC = () => {
   const navigate = useNavigate();
-  const [showEventPopup, setShowEventPopup] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState<{
-    title: string;
-    description: string;
-    date?: string;
-  } | null>(null);
   
   const { addExpense, totalIncome, totalExpenses, remainingBudget, expenses } = useBudget();
   
@@ -37,18 +29,6 @@ const IndexPage: React.FC = () => {
   }, [expenses]);
 
   const { showTutorial, completeTutorial, skipTutorial } = useTutorial();
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentEvent({
-        title: "Varsity Night Market",
-        description: "Don't miss the Night Market this Friday! Food, music, and more at the Student Center.",
-        date: "Friday, 8 April 2025"
-      });
-      setShowEventPopup(true);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleQuickExpense = (description: string, amount: number, category: string) => {
     addExpense({ amount, category, description, date: new Date().toISOString() });
@@ -83,9 +63,6 @@ const IndexPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      {showTutorial && (
-        <TutorialGuide onComplete={() => { completeTutorial(); toast.success('Tutorial completed!'); }} onSkip={() => { skipTutorial(); toast.info('Tutorial skipped.'); }} />
-      )}
       
       {/* Hero Balance Card */}
       <motion.div 
@@ -266,10 +243,6 @@ const IndexPage: React.FC = () => {
         ))}
       </motion.div>
       
-      {/* Event Popup */}
-      {showEventPopup && currentEvent && (
-        <EventPopup title={currentEvent.title} description={currentEvent.description} date={currentEvent.date} onClose={() => setShowEventPopup(false)} />
-      )}
     </div>
   );
 };
