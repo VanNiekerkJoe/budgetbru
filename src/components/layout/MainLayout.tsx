@@ -46,10 +46,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Shield size={15} className="text-primary" />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60" onClick={() => navigate('/notifications')}>
-              <Bell size={15} className="text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
-            </Button>
+            <NotificationDropdown />
             <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted/60" onClick={handleSignOut} title="Sign out">
               <LogOut size={15} className="text-muted-foreground" />
