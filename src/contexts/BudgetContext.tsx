@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';
+import { createNotification } from '@/services/notificationService';
 
 export type ExpenseCategory = 'food' | 'entertainment' | 'education' | 'transport' | 'utilities' | 'rent' | 'clothing' | 'health' | 'groceries' | 'other';
 
@@ -261,6 +262,35 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
       const newExp = { ...expense, id, date: expense.date || new Date().toISOString() };
       return [newExp, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     });
+
+    // Create notification for the expense
+    const amount = expense.amount;
+    if (amount >= 500) {
+      createNotification({
+        type: 'finance',
+        title: 'Large expense detected',
+        description: `R${amount} spent on ${expense.category} — "${expense.description}"`,
+        icon_type: 'expense',
+      });
+    } else {
+      createNotification({
+        type: 'finance',
+        title: 'Expense added',
+        description: `R${amount} for ${expense.description}`,
+        icon_type: 'expense',
+      });
+    }
+
+    // Check if approaching budget limit
+    const newTotal = totalExpenses + amount;
+    if (totalIncome > 0 && newTotal / totalIncome >= 0.9) {
+      createNotification({
+        type: 'alerts',
+        title: 'Budget limit approaching!',
+        description: `You've spent ${Math.round((newTotal / totalIncome) * 100)}% of your income this month.`,
+        icon_type: 'alert',
+      });
+    }
   };
 
   const addIncome = (incomeItem: Omit<Income, 'id'>) => {
@@ -268,6 +298,13 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
       const id = prev.length > 0 ? Math.max(...prev.map(i => i.id)) + 1 : 1;
       const newInc = { ...incomeItem, id, date: incomeItem.date || new Date().toISOString(), description: incomeItem.description || incomeItem.source };
       return [newInc, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+
+    createNotification({
+      type: 'finance',
+      title: 'Income received',
+      description: `R${incomeItem.amount} from ${incomeItem.source}`,
+      icon_type: 'income',
     });
   };
 
@@ -282,7 +319,29 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   };
 
   const updateSavingsGoal = (id: number, amount: number) => {
-    setSavingsGoals(prev => prev.map(g => g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g));
+    setSavingsGoals(prev => {
+      const updated = prev.map(g => g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g);
+      const goal = updated.find(g => g.id === id);
+      if (goal && goal.currentAmount >= goal.targetAmount) {
+        createNotification({
+          type: 'goals',
+          title: 'Savings goal reached! 🎉',
+          description: `You've reached your "${goal.name}" goal of R${goal.targetAmount}!`,
+          icon_type: 'achievement',
+        });
+      } else if (goal) {
+        const pct = Math.round((goal.currentAmount / goal.targetAmount) * 100);
+        if (pct >= 50 && pct - Math.round(((goal.currentAmount - amount) / goal.targetAmount) * 100) < 50) {
+          createNotification({
+            type: 'goals',
+            title: 'Savings goal halfway there!',
+            description: `You're ${pct}% towards "${goal.name}". Keep going!`,
+            icon_type: 'goal',
+          });
+        }
+      }
+      return updated;
+    });
   };
 
   const setEmergencyFund = (fund: EmergencyFund) => setEmergencyFundState(fund);
