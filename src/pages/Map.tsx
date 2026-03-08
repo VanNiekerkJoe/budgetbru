@@ -378,16 +378,17 @@ const Map: React.FC = () => {
         <div className="absolute inset-0 z-10" onClick={() => setShowSearchResults(false)} />
       )}
 
-      {/* Back to app button */}
-      <div className="absolute left-3 top-3 z-30">
+      {/* Exit map button */}
+      <div className="absolute left-3 bottom-28 z-20">
         <motion.div whileTap={{ scale: 0.9 }}>
           <Button
-            size="icon"
+            size="sm"
             variant="secondary"
-            className="h-10 w-10 rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50"
+            className="rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50 gap-1.5 h-10 px-4"
             onClick={() => window.history.back()}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={14} />
+            <span className="text-xs font-medium">Exit Map</span>
           </Button>
         </motion.div>
       </div>
