@@ -421,7 +421,7 @@ const Map: React.FC = () => {
       </div>
 
       {/* Map style pill */}
-      <div className="absolute left-3 bottom-28 z-20">
+      <div className="absolute left-3 bottom-18 z-20">
         <div className="bg-card/90 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5 text-[10px] font-medium text-muted-foreground shadow-sm">
           {MAP_STYLE_LABELS[mapStyle]}
         </div>
