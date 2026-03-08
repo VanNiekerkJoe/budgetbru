@@ -56,6 +56,203 @@ export type Database = {
         }
         Relationships: []
       }
+      couple_links: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          status: string
+          updated_at: string
+          user_id_1: string
+          user_id_2: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          status?: string
+          updated_at?: string
+          user_id_1: string
+          user_id_2?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          status?: string
+          updated_at?: string
+          user_id_1?: string
+          user_id_2?: string | null
+        }
+        Relationships: []
+      }
+      couple_messages: {
+        Row: {
+          couple_link_id: string
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          couple_link_id: string
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          couple_link_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_messages_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_shared_expenses: {
+        Row: {
+          added_by: string
+          amount: number
+          category: string
+          couple_link_id: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          split_percentage: number
+          split_type: string
+        }
+        Insert: {
+          added_by: string
+          amount: number
+          category?: string
+          couple_link_id: string
+          created_at?: string
+          date?: string
+          description: string
+          id?: string
+          split_percentage?: number
+          split_type?: string
+        }
+        Update: {
+          added_by?: string
+          amount?: number
+          category?: string
+          couple_link_id?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          split_percentage?: number
+          split_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_shared_expenses_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_shared_goals: {
+        Row: {
+          couple_link_id: string
+          created_at: string
+          current_amount: number
+          deadline: string | null
+          icon: string
+          id: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          couple_link_id: string
+          created_at?: string
+          current_amount?: number
+          deadline?: string | null
+          icon?: string
+          id?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          couple_link_id?: string
+          created_at?: string
+          current_amount?: number
+          deadline?: string | null
+          icon?: string
+          id?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_shared_goals_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_wishlists: {
+        Row: {
+          added_by: string
+          couple_link_id: string
+          created_at: string
+          estimated_cost: number
+          id: string
+          is_purchased: boolean
+          priority: string
+          title: string
+          url: string | null
+        }
+        Insert: {
+          added_by: string
+          couple_link_id: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          is_purchased?: boolean
+          priority?: string
+          title: string
+          url?: string | null
+        }
+        Update: {
+          added_by?: string
+          couple_link_id?: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          is_purchased?: boolean
+          priority?: string
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_wishlists_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       iou_splits: {
         Row: {
           created_at: string
@@ -234,6 +431,10 @@ export type Database = {
         Returns: boolean
       }
       is_blocked: { Args: { _user_id: string }; Returns: boolean }
+      is_couple_member: {
+        Args: { _couple_link_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
