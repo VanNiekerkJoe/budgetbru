@@ -30,13 +30,10 @@ const IndexPage: React.FC = () => {
   
   // Use real recent transactions from context
   const recentTransactions = useMemo(() => {
-    const allItems = [
-      ...expenses.slice(0, 10).map(e => ({
-        id: e.id, type: 'expense' as const, amount: e.amount,
-        description: e.description, category: e.category, date: new Date(e.date),
-      })),
-    ];
-    return allItems.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
+    return expenses.slice(0, 5).map(e => ({
+      id: e.id, type: 'expense' as string, amount: e.amount,
+      description: e.description, category: e.category, date: new Date(e.date),
+    }));
   }, [expenses]);
 
   const { showTutorial, completeTutorial, skipTutorial } = useTutorial();
