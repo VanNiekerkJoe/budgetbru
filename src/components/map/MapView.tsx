@@ -281,7 +281,7 @@ const MapView: React.FC<MapViewProps> = ({
         .leaflet-control-zoom a:hover { background: hsl(var(--muted)) !important; }
         .leaflet-control-attribution { font-size: 9px !important; opacity: 0.5; }
       `}</style>
-      <div ref={containerRef} className="w-full h-full" />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full z-0" />
     </>
   );
 };

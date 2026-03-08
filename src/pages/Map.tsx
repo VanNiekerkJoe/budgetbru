@@ -228,7 +228,7 @@ const Map: React.FC = () => {
   }, [search, filteredLocations]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-background">
+    <div className="fixed inset-0 w-full h-full overflow-hidden bg-background z-0">
       <MapView
         locations={filteredLocations}
         mapStyle={mapStyle}
