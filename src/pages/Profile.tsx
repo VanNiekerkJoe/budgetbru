@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -631,8 +631,6 @@ const Profile: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      
-      <EnhancedNavBar />
     </div>
   );
 };

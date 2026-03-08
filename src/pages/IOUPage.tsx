@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import NavBar from '@/components/NavBar';
+
 import { Moon, Sun, Users, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Toggle } from '@/components/ui/toggle';
@@ -351,8 +351,6 @@ const IOUPage: React.FC = () => {
           )}
         </motion.div>
       </main>
-      
-      <NavBar />
     </div>
   );
 };

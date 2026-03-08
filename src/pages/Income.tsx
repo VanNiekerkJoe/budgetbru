@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import MascotHelper from '@/components/MascotHelper';
@@ -355,9 +355,6 @@ const Income = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Nav Bar */}
-      <EnhancedNavBar />
     </div>
   );
 };

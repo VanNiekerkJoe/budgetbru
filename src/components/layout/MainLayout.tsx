@@ -35,14 +35,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <div className={isMobile ? "pb-20 min-h-screen" : "pb-6 min-h-screen"}>
+        <div className="pb-20 min-h-screen">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
             {children}
           </div>
         </div>
       </motion.main>
       
-      {isMobile && <MobileNavbar />}
+      <MobileNavbar />
       <ChatbotButton />
     </div>
   );

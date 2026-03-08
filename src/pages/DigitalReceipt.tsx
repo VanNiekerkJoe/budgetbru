@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { toast } from 'sonner';
 
 const DigitalReceipt = () => {
@@ -304,9 +304,6 @@ const DigitalReceipt = () => {
           </Card>
         </motion.div>
       </div>
-
-      {/* Nav Bar */}
-      <EnhancedNavBar />
     </div>
   );
 };

@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -381,9 +381,6 @@ const EmergencyFund = () => {
           </motion.div>
         )}
       </div>
-
-      {/* Nav Bar */}
-      <EnhancedNavBar />
     </div>
   );
 };
