@@ -390,7 +390,7 @@ export const MobileNavbar: React.FC = () => {
       </AnimatePresence>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border safe-area-bottom">
+      <nav data-tutorial="tutorial-bottom-nav" className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border safe-area-bottom">
         <div className="flex items-stretch">
           {PRIMARY_ITEMS.map(item => (
             <Link

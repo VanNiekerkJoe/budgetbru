@@ -67,6 +67,7 @@ const IndexPage: React.FC = () => {
       
       {/* Hero Balance Card */}
       <motion.div 
+        data-tutorial="tutorial-balance"
         initial={{ opacity: 0, y: -8 }} 
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] via-[hsl(var(--secondary))] to-[hsl(var(--accent))] p-5 text-white shadow-lg"
@@ -125,6 +126,7 @@ const IndexPage: React.FC = () => {
 
       {/* Quick Navigation Grid */}
       <motion.div 
+        data-tutorial="tutorial-quick-nav"
         initial={{ opacity: 0, y: 8 }} 
         animate={{ opacity: 1, y: 0 }} 
         transition={{ delay: 0.1 }}
@@ -150,10 +152,13 @@ const IndexPage: React.FC = () => {
       </motion.div>
 
       {/* Quick Add Expense */}
-      <QuickExpenseTracker onAddExpense={handleQuickExpense} />
+      <div data-tutorial="tutorial-quick-expense">
+        <QuickExpenseTracker onAddExpense={handleQuickExpense} />
+      </div>
 
       {/* Recent Transactions */}
       <motion.div 
+        data-tutorial="tutorial-recent-activity"
         initial={{ opacity: 0, y: 8 }} 
         animate={{ opacity: 1, y: 0 }} 
         transition={{ delay: 0.2 }}
