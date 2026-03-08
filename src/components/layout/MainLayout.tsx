@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MobileNavbar } from './MobileNavbar';
 import ChatbotButton from './ChatbotButton';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen relative">
@@ -33,7 +34,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60">
+            <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60" onClick={() => navigate('/notifications')}>
               <Bell size={15} className="text-muted-foreground" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
             </Button>
