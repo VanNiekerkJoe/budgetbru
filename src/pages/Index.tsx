@@ -65,9 +65,6 @@ const IndexPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      {showTutorial && (
-        <TutorialGuide onComplete={() => { completeTutorial(); toast.success('Tutorial completed!'); }} onSkip={() => { skipTutorial(); toast.info('Tutorial skipped.'); }} />
-      )}
       
       {/* Hero Balance Card */}
       <motion.div 
