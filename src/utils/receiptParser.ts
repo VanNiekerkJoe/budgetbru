@@ -62,17 +62,11 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
   const textLower = rawText.toLowerCase();
 
-  // --- Extract amount ---
   const amountResult = extractAmount(rawText);
-
-  // --- Extract store name ---
   const storeResult = extractStoreName(lines);
-
-  // --- Extract date ---
   const dateResult = extractDate(rawText);
-
-  // --- Determine category ---
   const categoryResult = determineCategory(textLower);
+  const lineItems = extractLineItems(lines);
 
   return {
     amount: amountResult.value,
@@ -83,6 +77,7 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
     dateConfidence: dateResult.confidence,
     category: categoryResult.value,
     categoryConfidence: categoryResult.confidence,
+    lineItems,
     rawText,
   };
 }
