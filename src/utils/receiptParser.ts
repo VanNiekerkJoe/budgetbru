@@ -204,3 +204,58 @@ function determineCategory(textLower: string): { value: ExpenseCategory; confide
   if (bestMatch.count === 1) return { value: bestMatch.category, confidence: 'medium' };
   return { value: 'other', confidence: 'low' };
 }
+
+const SKIP_KEYWORDS = ['total', 'subtotal', 'sub total', 'grand total', 'change', 'cash', 'card', 'vat', 'tax', 'balance', 'payment', 'tendered', 'amount due', 'rounding'];
+
+function extractLineItems(lines: string[]): LineItem[] {
+  const items: LineItem[] = [];
+
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    if (SKIP_KEYWORDS.some(kw => lower.includes(kw))) continue;
+    if (line.length < 4) continue;
+    // Skip lines that are purely dates, phone numbers, or addresses
+    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(line)) continue;
+    if (/^(tel|phone|fax|vat|tax|addr)/i.test(line)) continue;
+
+    // Pattern: description followed by R amount or just amount at end
+    // e.g. "2L WATER R50.00" or "BREAD 12.99" or "R 25.00 MILK"
+    let match: RegExpMatchArray | null;
+
+    // "description R amount" or "description ZAR amount"
+    match = line.match(/^(.+?)\s+(?:R|ZAR)\s*(\d+[.,]\d{2})\s*$/i);
+    if (match) {
+      items.push({ name: match[1].trim(), amount: parseFloat(match[2].replace(',', '.')), raw: line });
+      continue;
+    }
+
+    // "R amount description"
+    match = line.match(/^(?:R|ZAR)\s*(\d+[.,]\d{2})\s+(.+)$/i);
+    if (match) {
+      items.push({ name: match[2].trim(), amount: parseFloat(match[1].replace(',', '.')), raw: line });
+      continue;
+    }
+
+    // "description amount" (number at end, no currency symbol)
+    match = line.match(/^(.{3,}?)\s+(\d+[.,]\d{2})\s*$/);
+    if (match) {
+      const name = match[1].trim();
+      // Skip if name is just numbers
+      if (/[a-zA-Z]/.test(name)) {
+        items.push({ name, amount: parseFloat(match[2].replace(',', '.')), raw: line });
+        continue;
+      }
+    }
+  }
+
+  return items;
+}
+
+export function generateDescription(storeName: string, lineItems: LineItem[]): string {
+  if (lineItems.length === 0) return storeName;
+  const itemSummaries = lineItems.slice(0, 5).map(item =>
+    item.amount ? `${item.name} (R${item.amount.toFixed(2)})` : item.name
+  );
+  const suffix = lineItems.length > 5 ? `, +${lineItems.length - 5} more` : '';
+  return `${storeName}: ${itemSummaries.join(', ')}${suffix}`;
+}
