@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Camera, Upload, Receipt, FileText, X, Check, AlertCircle, Loader2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBudget, ExpenseCategory } from '@/contexts/BudgetContext';
-import { parseReceiptText, ParsedReceipt } from '@/utils/receiptParser';
+import { parseReceiptText, ParsedReceipt, generateDescription } from '@/utils/receiptParser';
 import { formatCurrency } from '@/utils/formatters';
 import Tesseract from 'tesseract.js';
 
