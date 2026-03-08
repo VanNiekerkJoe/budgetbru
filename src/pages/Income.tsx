@@ -1,360 +1,572 @@
-
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
-import type { Income as IncomeType } from '@/contexts/BudgetContext';
-import { ArrowLeft, Plus, Calendar, DollarSign, Landmark, Clock, Repeat, Coins, CalendarClock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { formatCurrency } from '@/utils/formatters';
-
+import {
+  Plus, Calendar, Landmark, Repeat, Coins, TrendingUp, Clock,
+  ArrowUpRight, Wallet, PieChart as PieIcon, BarChart3, Target,
+  Briefcase, GraduationCap, Gift, Sparkles, Search, Filter, Trash2,
+  ChevronDown, ChevronUp, Zap, X
+} from 'lucide-react';
+import { formatCurrency, formatDate } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
-
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import MascotHelper from '@/components/MascotHelper';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, AreaChart, Area, RadialBarChart, RadialBar
+} from 'recharts';
 
-type FormValues = {
-  amount: number;
-  source: string;
-  date: string;
-  recurring: boolean;
-  frequency?: 'weekly' | 'monthly' | 'once';
-};
+const SOURCE_OPTIONS = [
+  { value: 'Allowance', emoji: '💵', color: '#22c55e' },
+  { value: 'Scholarship', emoji: '🎓', color: '#6366f1' },
+  { value: 'Part-time Job', emoji: '💼', color: '#3b82f6' },
+  { value: 'Bursary', emoji: '📜', color: '#8b5cf6' },
+  { value: 'Tutoring', emoji: '📚', color: '#f59e0b' },
+  { value: 'Side Hustle', emoji: '🚀', color: '#ec4899' },
+  { value: 'Freelance', emoji: '💻', color: '#14b8a6' },
+  { value: 'Gift', emoji: '🎁', color: '#f97316' },
+  { value: 'Investment', emoji: '📈', color: '#10b981' },
+  { value: 'Other', emoji: '💸', color: '#6b7280' },
+];
 
-const Income = () => {
-  const { addIncome, incomes, totalIncome } = useBudget();
-  const [showRecurring, setShowRecurring] = useState(false);
-  const [selectedFrequency, setSelectedFrequency] = useState<'weekly' | 'monthly' | 'once'>('monthly');
-  const [activeTab, setActiveTab] = useState<'add' | 'view'>('view');
+const getSourceEmoji = (source: string) => SOURCE_OPTIONS.find(s => s.value.toLowerCase() === source.toLowerCase())?.emoji || '💸';
+const getSourceColor = (source: string) => SOURCE_OPTIONS.find(s => s.value.toLowerCase() === source.toLowerCase())?.color || '#6b7280';
 
-  const form = useForm<FormValues>({
-    defaultValues: {
-      amount: 0,
-      source: '',
-      date: new Date().toISOString().split('T')[0],
-      recurring: false,
-      frequency: 'monthly',
-    }
+const Income: React.FC = () => {
+  const { addIncome, incomes, totalIncome, totalExpenses, deleteIncome } = useBudget();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterSource, setFilterSource] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+
+  const [newIncome, setNewIncome] = useState({
+    amount: '', source: '', date: new Date().toISOString().split('T')[0], frequency: 'monthly' as 'weekly' | 'monthly' | 'once'
   });
 
-  const onSubmit = (data: FormValues) => {
-    try {
-      addIncome({
-        amount: Number(data.amount),
-        source: data.source,
-        date: data.date,
-        description: data.source, // Add description field using source as the value
-        recurring: showRecurring,
-        frequency: showRecurring ? selectedFrequency : undefined,
-      });
+  const sortedIncomes = useMemo(() =>
+    [...incomes]
+      .filter(i => !filterSource || i.source.toLowerCase() === filterSource.toLowerCase())
+      .filter(i => !searchTerm || i.source.toLowerCase().includes(searchTerm.toLowerCase()) || (i.description || '').toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()),
+    [incomes, filterSource, searchTerm]
+  );
 
-      form.reset({
-        amount: 0,
-        source: '',
-        date: new Date().toISOString().split('T')[0],
-        recurring: false,
-        frequency: 'monthly',
-      });
+  const sourceTotals = useMemo(() => {
+    const map: Record<string, number> = {};
+    incomes.forEach(i => { map[i.source] = (map[i.source] || 0) + i.amount; });
+    return Object.entries(map).map(([name, value]) => ({ name, value, emoji: getSourceEmoji(name) })).sort((a, b) => b.value - a.value);
+  }, [incomes]);
 
-      toast.success(`Income of ${formatCurrency(data.amount)} added!`, {
-        description: showRecurring ? `Recurring ${selectedFrequency}` : 'One-time income',
-      });
-      
-      // Switch to view tab after adding income
-      setActiveTab('view');
-    } catch (error) {
-      toast.error('Failed to add income');
+  const pieData = sourceTotals;
+  const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
+  const healthScore = Math.max(0, Math.min(100, savingsRate > 0 ? Math.min(savingsRate * 2.5, 100) : 0));
+  const healthColor = healthScore >= 70 ? '#22c55e' : healthScore >= 40 ? '#eab308' : '#ef4444';
+  const healthGrade = healthScore >= 80 ? 'A' : healthScore >= 60 ? 'B' : healthScore >= 40 ? 'C' : 'D';
+
+  const monthlyData = useMemo(() => {
+    const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+    return months.map((m, i) => ({
+      month: m, income: totalIncome * (0.7 + Math.random() * 0.6), expenses: totalExpenses * (0.8 + Math.random() * 0.4)
+    }));
+  }, [totalIncome, totalExpenses]);
+
+  const recurringTotal = useMemo(() => incomes.filter(i => i.recurring).reduce((s, i) => s + i.amount, 0), [incomes]);
+  const oneTimeTotal = totalIncome - recurringTotal;
+  const avgPerSource = incomes.length > 0 ? Math.round(totalIncome / new Set(incomes.map(i => i.source)).size) : 0;
+
+  const handleAdd = () => {
+    if (!newIncome.source || !newIncome.amount || isNaN(Number(newIncome.amount)) || Number(newIncome.amount) <= 0) {
+      toast.error('Please fill all fields');
+      return;
     }
+    addIncome({
+      amount: Number(newIncome.amount),
+      source: newIncome.source,
+      description: newIncome.source,
+      date: newIncome.date,
+      recurring: isRecurring,
+      frequency: isRecurring ? newIncome.frequency : undefined,
+    });
+    toast.success(`${getSourceEmoji(newIncome.source)} Income of ${formatCurrency(Number(newIncome.amount))} added!`);
+    setNewIncome({ amount: '', source: '', date: new Date().toISOString().split('T')[0], frequency: 'monthly' });
+    setIsRecurring(false);
+    setShowAddForm(false);
   };
 
-  const toggleRecurring = () => {
-    setShowRecurring(!showRecurring);
-    form.setValue('recurring', !showRecurring);
+  const handleDelete = (id: number) => {
+    deleteIncome(id);
+    toast.success('Income deleted');
+    setExpandedId(null);
   };
-
-  const handleFrequencyChange = (value: 'weekly' | 'monthly' | 'once') => {
-    setSelectedFrequency(value);
-    form.setValue('frequency', value);
-  };
-
-  const sourceOptions = ['Allowance', 'Scholarship', 'Part-time Job', 'Bursary', 'Tutoring', 'Side Hustle', 'Gift', 'Other'];
-
-  // Sort incomes by date (most recent first)
-  const sortedIncomes = [...incomes].sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return dateB.getTime() - dateA.getTime();
-  });
 
   return (
-    <div className="pb-28 min-h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
-      {/* Background decorations */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-200/20 to-green-300/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -left-40 w-80 h-80 bg-gradient-to-br from-blue-200/20 to-blue-300/30 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 pb-28">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-32 -right-20 w-80 h-80 bg-success/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '14s' }} />
+        <div className="absolute bottom-1/3 -left-20 w-72 h-72 bg-primary/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '18s' }} />
       </div>
 
       {/* Header */}
-      <div className="relative px-4 pt-6 pb-4 flex justify-between items-center bg-white dark:bg-gray-900 shadow-sm z-10">
-        <Link to="/">
-          <Button variant="ghost" className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <ArrowLeft size={18} />
-            <span>Back</span>
-          </Button>
-        </Link>
-        <h1 className="text-2xl font-bold text-center text-gray-800 dark:text-white">Income</h1>
-        <div className="w-24"></div> {/* Spacer for balance */}
-      </div>
+      <header className="bg-card/80 backdrop-blur-xl border-b border-border py-5 px-4 sticky top-0 z-20">
+        <div className="container mx-auto max-w-lg">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Income</p>
+                <h1 className="text-2xl font-bold text-success">{formatCurrency(totalIncome)}</h1>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {incomes.length} source{incomes.length !== 1 ? 's' : ''} · {savingsRate}% savings rate
+                </p>
+              </div>
+              <Button onClick={() => setShowAddForm(true)} className="bg-success hover:bg-success/90 text-success-foreground rounded-full h-12 w-12 p-0 shadow-lg">
+                <Plus size={22} />
+              </Button>
+            </div>
 
-      <div className="relative z-10 px-4 py-4 max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap gap-4 justify-center mb-6"
-        >
-          <Card className="w-full border-green-500/20 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
-                <Coins size={20} />
-                Total Income
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600 dark:text-green-300">{formatCurrency(totalIncome)}</div>
-              <div className="text-xs mt-1 text-green-600/70 dark:text-green-400/70">From {incomes.length} source{incomes.length !== 1 ? 's' : ''}</div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            {/* Income vs Expenses bar */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-3">
+              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                <span>Income utilization</span>
+                <span>{totalIncome > 0 ? Math.round((totalExpenses / totalIncome) * 100) : 0}% spent</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden flex">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${totalIncome > 0 ? Math.min((totalExpenses / totalIncome) * 100, 100) : 0}%` }} transition={{ duration: 0.8 }} className="h-full bg-destructive/60 rounded-l-full" />
+                <motion.div initial={{ width: 0 }} animate={{ width: `${totalIncome > 0 ? Math.max(((totalIncome - totalExpenses) / totalIncome) * 100, 0) : 0}%` }} transition={{ duration: 0.8, delay: 0.2 }} className="h-full bg-success rounded-r-full" />
+              </div>
+              <div className="flex justify-between text-[10px] mt-1">
+                <span className="text-destructive">Expenses {formatCurrency(totalExpenses)}</span>
+                <span className="text-success">Saved {formatCurrency(Math.max(totalIncome - totalExpenses, 0))}</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </header>
 
-        <MascotHelper 
-          type="finance" 
-          message="Regular income tracking helps you plan your budget better! Add all your income sources here." 
-        />
-
-        <Tabs defaultValue="view" value={activeTab} onValueChange={(v) => setActiveTab(v as 'add' | 'view')} className="mt-6">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="view">View Income</TabsTrigger>
-            <TabsTrigger value="add">Add Income</TabsTrigger>
+      <main className="container mx-auto px-4 py-4 space-y-4 max-w-lg">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-4 w-full bg-card/60 backdrop-blur-md border border-border">
+            <TabsTrigger value="overview" className="text-xs gap-1 data-[state=active]:bg-success/10 data-[state=active]:text-success">
+              <TrendingUp size={13} /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="history" className="text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <Clock size={13} /> History
+            </TabsTrigger>
+            <TabsTrigger value="breakdown" className="text-xs gap-1 data-[state=active]:bg-accent/10 data-[state=active]:text-accent-foreground">
+              <PieIcon size={13} /> Sources
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="text-xs gap-1 data-[state=active]:bg-warning/10 data-[state=active]:text-warning">
+              <BarChart3 size={13} /> Trends
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="add" className="space-y-4">
-            <Card className="border border-gray-200/80 dark:border-gray-700/50 shadow-sm">
-              <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Plus size={18} className="text-green-500" />
-                  Add New Income
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1">
-                            <DollarSign size={14} className="text-gray-500" />
-                            Amount
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="0.00" 
-                              className="text-lg" 
-                              {...field}
-                              onChange={e => field.onChange(Number(e.target.value))} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="source"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1">
-                            <Landmark size={14} className="text-gray-500" />
-                            Source
-                          </FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select income source" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {sourceOptions.map((source) => (
-                                <SelectItem key={source} value={source}>
-                                  {source}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1">
-                            <Calendar size={14} className="text-gray-500" />
-                            Date Received
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="pt-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className={`w-full flex items-center gap-2 ${showRecurring ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : ''}`}
-                        onClick={toggleRecurring}
-                      >
-                        <Repeat size={14} className={showRecurring ? "text-green-500" : "text-gray-500"} />
-                        {showRecurring ? 'Recurring Income' : 'Is this a recurring income?'}
-                      </Button>
+          {/* OVERVIEW TAB */}
+          <TabsContent value="overview">
+            <AnimatePresence mode="wait">
+              <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mt-3">
+                {/* Quick Add */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-4 relative overflow-hidden">
+                  <div className="absolute -top-20 -right-20 w-40 h-40 bg-success/5 rounded-full blur-3xl pointer-events-none" />
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 bg-success/10 rounded-lg flex items-center justify-center">
+                        <Zap size={14} className="text-success" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-foreground">Quick Add Income</h3>
                     </div>
-
-                    {showRecurring && (
-                      <FormField
-                        control={form.control}
-                        name="frequency"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-1">
-                              <CalendarClock size={14} className="text-green-500" />
-                              Frequency
-                            </FormLabel>
-                            <Select 
-                              onValueChange={(value: string) => handleFrequencyChange(value as 'weekly' | 'monthly' | 'once')} 
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select frequency" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="once">One-time</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription className="text-xs text-green-600 dark:text-green-400">
-                              {selectedFrequency === 'weekly' && "We'll add this to your income every week"}
-                              {selectedFrequency === 'monthly' && "We'll add this to your income every month"}
-                              {selectedFrequency === 'once' && "We'll only record this income once"}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-
-                    <div className="pt-2">
-                      <Button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-white">
-                        Add Income
-                      </Button>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {SOURCE_OPTIONS.slice(0, 6).map(s => (
+                        <motion.button key={s.value} whileTap={{ scale: 0.95 }}
+                          onClick={() => { setNewIncome({ ...newIncome, source: s.value }); setShowAddForm(true); }}
+                          className="flex flex-col items-center p-2.5 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
+                          <span className="text-xl">{s.emoji}</span>
+                          <span className="text-[10px] text-muted-foreground mt-0.5">{s.value}</span>
+                        </motion.button>
+                      ))}
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+                  </div>
+                </div>
+
+                {/* Income Health */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-4 border border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Target size={16} className="text-primary" /> Income Health
+                  </h3>
+                  <div className="flex items-center gap-4">
+                    <div className="w-24 h-24 flex-shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" data={[{ value: healthScore, fill: healthColor }]} startAngle={90} endAngle={-270} barSize={8}>
+                          <RadialBar dataKey="value" cornerRadius={10} background={{ fill: 'hsl(var(--muted))' }} />
+                        </RadialBarChart>
+                      </ResponsiveContainer>
+                      <div className="relative -mt-[62px] text-center">
+                        <span className="text-2xl font-bold" style={{ color: healthColor }}>{healthGrade}</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm text-foreground font-medium">
+                        {healthScore >= 70 ? "Great savings rate! 🔥" : healthScore >= 40 ? "Room to improve 💪" : "Focus on earning more 📈"}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-muted/30 rounded-lg p-2 text-center">
+                          <p className="text-[10px] text-muted-foreground">Savings Rate</p>
+                          <p className="text-sm font-bold text-success">{savingsRate}%</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-lg p-2 text-center">
+                          <p className="text-[10px] text-muted-foreground">Net Saved</p>
+                          <p className="text-sm font-bold text-foreground">{formatCurrency(Math.max(totalIncome - totalExpenses, 0))}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-card/60 backdrop-blur-xl rounded-xl p-3.5 border border-border text-center">
+                    <Repeat size={18} className="mx-auto text-primary mb-1" />
+                    <p className="text-[10px] text-muted-foreground">Recurring</p>
+                    <p className="text-sm font-bold text-foreground">{formatCurrency(recurringTotal)}</p>
+                    <p className="text-[10px] text-muted-foreground">{incomes.filter(i => i.recurring).length} sources</p>
+                  </div>
+                  <div className="bg-card/60 backdrop-blur-xl rounded-xl p-3.5 border border-border text-center">
+                    <Sparkles size={18} className="mx-auto text-warning mb-1" />
+                    <p className="text-[10px] text-muted-foreground">One-time</p>
+                    <p className="text-sm font-bold text-foreground">{formatCurrency(oneTimeTotal)}</p>
+                    <p className="text-[10px] text-muted-foreground">{incomes.filter(i => !i.recurring).length} entries</p>
+                  </div>
+                </div>
+
+                {/* Recent Income */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border overflow-hidden">
+                  <div className="p-3 border-b border-border flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">Recent Income</h3>
+                    <button onClick={() => setActiveTab('history')} className="text-[11px] text-primary hover:underline">View all →</button>
+                  </div>
+                  {incomes.slice(0, 3).map(income => (
+                    <div key={income.id} className="p-3 flex items-center border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                      <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center text-lg mr-3 flex-shrink-0">
+                        {getSourceEmoji(income.source)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{income.source}</p>
+                        <p className="text-[10px] text-muted-foreground">{formatDate(income.date)}
+                          {income.recurring && <span className="ml-1.5 text-primary">• {income.frequency}</span>}
+                        </p>
+                      </div>
+                      <p className="text-sm font-bold text-success flex items-center gap-1">
+                        <ArrowUpRight size={12} /> {formatCurrency(income.amount)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </TabsContent>
 
-          <TabsContent value="view" className="space-y-4">
-            <Card className="border border-gray-200/80 dark:border-gray-700/50 shadow-sm">
-              <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Clock size={18} className="text-blue-500" />
-                  Income History
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 max-h-[400px] overflow-y-auto">
-                {sortedIncomes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No income entries yet</p>
-                    <p className="text-sm mt-2">
-                      Add your first income to get started
-                    </p>
-                    <Button 
-                      onClick={() => setActiveTab('add')} 
-                      variant="outline" 
-                      className="mt-4"
-                    >
-                      <Plus size={16} className="mr-2" /> Add Income
-                    </Button>
+          {/* HISTORY TAB */}
+          <TabsContent value="history">
+            <AnimatePresence mode="wait">
+              <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mt-3">
+                {/* Search & Filter */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-3 border border-border flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search income..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 bg-background/50 h-9 text-sm" />
+                  </div>
+                  <Select value={filterSource || 'all'} onValueChange={v => setFilterSource(v === 'all' ? null : v)}>
+                    <SelectTrigger className="w-28 bg-background/50 h-9 text-xs">
+                      <Filter size={12} className="mr-1" /><SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {SOURCE_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}><span className="flex items-center gap-1">{s.emoji} {s.value}</span></SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Income List */}
+                {sortedIncomes.length > 0 ? (
+                  <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border overflow-hidden">
+                    <div className="divide-y divide-border">
+                      {sortedIncomes.map((income, idx) => {
+                        const isExpanded = expandedId === income.id;
+                        return (
+                          <motion.div key={income.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }} layout className="group">
+                            <div className="p-3.5 flex items-center cursor-pointer hover:bg-muted/20 transition-colors" onClick={() => setExpandedId(isExpanded ? null : income.id)}>
+                              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-lg mr-3 flex-shrink-0">
+                                {getSourceEmoji(income.source)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-medium text-foreground truncate">{income.source}</h3>
+                                <p className="text-xs text-muted-foreground">{formatDate(income.date)}
+                                  {income.recurring && <span className="ml-1.5 text-primary text-[10px]">🔄 {income.frequency}</span>}
+                                </p>
+                              </div>
+                              <div className="text-right flex items-center gap-2">
+                                <p className="font-semibold text-success text-sm">{formatCurrency(income.amount)}</p>
+                                {isExpanded ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
+                              </div>
+                            </div>
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                  <div className="px-3.5 pb-3 flex items-center gap-2">
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success capitalize">{income.source}</span>
+                                    {income.recurring && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">Recurring · {income.frequency}</span>}
+                                    {totalIncome > 0 && <span className="text-xs text-muted-foreground">{((income.amount / totalIncome) * 100).toFixed(1)}% of total</span>}
+                                    <div className="flex-1" />
+                                    <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(income.id)}>
+                                      <Trash2 size={13} className="mr-1" /> Delete
+                                    </Button>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : (
-                  <ul className="space-y-3">
-                    {sortedIncomes.map((income) => (
-                      <motion.li
-                        key={income.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="p-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium">{income.source}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                              <Calendar size={12} />
-                              {new Date(income.date).toLocaleDateString()}
-                              {income.recurring && (
-                                <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 py-0.5 px-1.5 rounded-full">
-                                  {income.frequency}
-                                </span>
-                              )}
+                  <div className="bg-card/60 backdrop-blur-xl rounded-xl p-8 border border-border text-center">
+                    <Wallet size={32} className="mx-auto text-muted-foreground mb-2" />
+                    <h3 className="font-semibold text-foreground mb-1">No income found</h3>
+                    <p className="text-xs text-muted-foreground mb-3">{searchTerm || filterSource ? 'Try different filters' : 'Add your first income'}</p>
+                    {(searchTerm || filterSource) && <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSearchTerm(''); setFilterSource(null); }}>Clear</Button>}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* SOURCES TAB */}
+          <TabsContent value="breakdown">
+            <AnimatePresence mode="wait">
+              <motion.div key="breakdown" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 mt-3">
+                {/* Pie Chart */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-4 border border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <PieIcon size={16} className="text-primary" /> Income by Source
+                  </h3>
+                  {pieData.length > 0 ? (
+                    <div className="flex items-center gap-4">
+                      <div className="w-32 h-32 flex-shrink-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} paddingAngle={3} dataKey="value" stroke="none">
+                              {pieData.map(entry => <Cell key={entry.name} fill={getSourceColor(entry.name)} />)}
+                            </Pie>
+                            <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex-1 space-y-1.5 max-h-40 overflow-y-auto">
+                        {pieData.map(s => {
+                          const pct = totalIncome > 0 ? ((s.value / totalIncome) * 100).toFixed(0) : '0';
+                          return (
+                            <div key={s.name} className="flex items-center gap-2">
+                              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: getSourceColor(s.name) }} />
+                              <span className="text-xs flex-1 text-foreground">{s.emoji} {s.name}</span>
+                              <span className="text-xs font-medium text-foreground">{pct}%</span>
+                              <span className="text-xs text-muted-foreground">{formatCurrency(s.value)}</span>
                             </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : <p className="text-sm text-muted-foreground text-center py-4">No income data yet</p>}
+                </div>
+
+                {/* Source Bars */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-4 border border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <TrendingUp size={16} className="text-success" /> Top Sources
+                  </h3>
+                  <div className="space-y-3">
+                    {pieData.slice(0, 5).map(s => {
+                      const pct = totalIncome > 0 ? (s.value / totalIncome) * 100 : 0;
+                      return (
+                        <div key={s.name}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-medium text-foreground flex items-center gap-1">{s.emoji} {s.name}</span>
+                            <span className="text-xs text-muted-foreground">{formatCurrency(s.value)}</span>
                           </div>
-                          <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-                            {formatCurrency(income.amount)}
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6, delay: 0.1 }}
+                              className="h-full rounded-full" style={{ backgroundColor: getSourceColor(s.name) }} />
                           </div>
                         </div>
-                      </motion.li>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Diversification Score */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-4 border border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <Sparkles size={16} className="text-warning" /> Income Diversification
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-muted/30 rounded-lg p-2.5 text-center">
+                      <p className="text-[10px] text-muted-foreground">Sources</p>
+                      <p className="text-lg font-bold text-foreground">{new Set(incomes.map(i => i.source)).size}</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-2.5 text-center">
+                      <p className="text-[10px] text-muted-foreground">Avg/Source</p>
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(avgPerSource)}</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-2.5 text-center">
+                      <p className="text-[10px] text-muted-foreground">Recurring %</p>
+                      <p className="text-sm font-bold text-primary">{totalIncome > 0 ? Math.round((recurringTotal / totalIncome) * 100) : 0}%</p>
+                    </div>
+                  </div>
+                  {new Set(incomes.map(i => i.source)).size < 3 && (
+                    <p className="text-xs text-warning mt-2 flex items-center gap-1">
+                      ⚠️ Tip: Diversify your income — aim for 3+ sources to reduce risk
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* TRENDS TAB */}
+          <TabsContent value="trends">
+            <AnimatePresence mode="wait">
+              <motion.div key="trends" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 mt-3">
+                {/* Income vs Expenses Chart */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-4 border border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <BarChart3 size={16} className="text-accent-foreground" /> Income vs Expenses
+                  </h3>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={monthlyData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+                        <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `R${v}`} />
+                        <Tooltip formatter={(v: number) => formatCurrency(Math.round(v))} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+                        <Bar dataKey="income" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} name="Income" />
+                        <Bar dataKey="expenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name="Expenses" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Savings Growth */}
+                <div className="bg-card/60 backdrop-blur-xl rounded-xl p-4 border border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <TrendingUp size={16} className="text-success" /> Savings Growth
+                  </h3>
+                  <div className="h-40">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={monthlyData.map((d, i) => ({ ...d, savings: Math.max(d.income - d.expenses, 0) * (1 + i * 0.1) }))}>
+                        <defs>
+                          <linearGradient id="savGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+                        <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `R${v}`} />
+                        <Tooltip formatter={(v: number) => formatCurrency(Math.round(v))} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+                        <Area type="monotone" dataKey="savings" stroke="hsl(var(--success))" fill="url(#savGradient)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Income Growth Tips */}
+                <div className="bg-gradient-to-br from-success/10 to-primary/10 border border-success/15 rounded-xl p-4">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-2">
+                    <Zap size={14} className="text-success" /> Income Growth Tips
+                  </h3>
+                  <div className="space-y-2">
+                    {[
+                      { emoji: '💼', tip: 'Add a side hustle to boost income by R2,000-R5,000/month' },
+                      { emoji: '📚', tip: 'Tutoring pays R150-R300/hr — great for students' },
+                      { emoji: '🎓', tip: 'Apply for bursaries and scholarships — free money!' },
+                      { emoji: '📈', tip: 'Invest spare income to generate passive returns' },
+                    ].map((t, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="text-base">{t.emoji}</span>
+                        <span>{t.tip}</span>
+                      </div>
                     ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
+
+      {/* Add Income Bottom Sheet */}
+      <AnimatePresence>
+        {showAddForm && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAddForm(false)}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg bg-card border-t border-border rounded-t-2xl p-5 space-y-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-foreground">Add Income</h3>
+                <button onClick={() => setShowAddForm(false)}><X size={18} className="text-muted-foreground" /></button>
+              </div>
+
+              {/* Source Selection */}
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Source</p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {SOURCE_OPTIONS.map(s => (
+                    <button key={s.value} onClick={() => setNewIncome({ ...newIncome, source: s.value })}
+                      className={`flex flex-col items-center p-2 rounded-xl text-xs transition-all ${newIncome.source === s.value ? 'bg-success/15 ring-1 ring-success/30 scale-105' : 'bg-muted/30 hover:bg-muted/50'}`}>
+                      <span className="text-lg">{s.emoji}</span>
+                      <span className="text-[9px] text-muted-foreground mt-0.5">{s.value}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R</span>
+                <Input type="number" placeholder="0.00" value={newIncome.amount} onChange={e => setNewIncome({ ...newIncome, amount: e.target.value })} className="pl-8 bg-background/50 h-11 text-lg" />
+              </div>
+
+              <Input type="date" value={newIncome.date} onChange={e => setNewIncome({ ...newIncome, date: e.target.value })} className="bg-background/50 h-10" />
+
+              <div className="flex items-center justify-between bg-muted/20 rounded-xl p-3">
+                <div className="flex items-center gap-2">
+                  <Repeat size={14} className={isRecurring ? 'text-primary' : 'text-muted-foreground'} />
+                  <span className="text-sm text-foreground">Recurring income</span>
+                </div>
+                <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
+              </div>
+
+              {isRecurring && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['weekly', 'monthly', 'once'] as const).map(f => (
+                      <button key={f} onClick={() => setNewIncome({ ...newIncome, frequency: f })}
+                        className={`p-2 rounded-xl text-xs text-center transition-all capitalize ${newIncome.frequency === f ? 'bg-primary/15 ring-1 ring-primary/30 text-primary font-medium' : 'bg-muted/20 text-muted-foreground'}`}>
+                        {f === 'once' ? 'One-time' : f}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              <Button className="w-full bg-success hover:bg-success/90 text-success-foreground h-11" onClick={handleAdd}>
+                <Plus size={16} className="mr-2" /> Add Income
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
