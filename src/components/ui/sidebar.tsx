@@ -141,8 +141,8 @@ const Sidebar = React.forwardRef<
         >
           <div
             className={cn(
-              "flex h-full flex-col border-r bg-sidebar text-sidebar-foreground shadow-sm transition-all duration-300 overflow-hidden",
-              "group-data-[state=collapsed]:w-14 group-data-[state=expanded]:w-64"
+              "flex h-full flex-col border-r bg-sidebar text-sidebar-foreground shadow-sm transition-all duration-300",
+              "group-data-[state=collapsed]:w-14 group-data-[state=collapsed]:overflow-hidden group-data-[state=expanded]:w-64 group-data-[state=expanded]:overflow-y-auto"
             )}
           >
             {children}

@@ -44,17 +44,17 @@ const IndexPage: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
-  const [quickActions, setQuickActions] = useState([
+  const quickActions = [
     { id: 1, name: 'Add Expense', icon: 'expenses' as CategoryType, path: '/expenses' },
     { id: 2, name: 'Add Income', icon: 'income' as CategoryType, path: '/income' },
     { id: 3, name: 'Set Goal', icon: 'savings' as CategoryType, path: '/savings' },
     { id: 4, name: 'Insights', icon: 'insights' as CategoryType, path: '/insights' },
-  ]);
+  ];
   
   const [newCategoryModal, setNewCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   
-  const { showTutorial, completeTutorial, skipTutorial, resetTutorial } = useTutorial();
+  const { showTutorial, completeTutorial, skipTutorial } = useTutorial();
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -145,21 +145,13 @@ const IndexPage: React.FC = () => {
     hidden: { opacity: 0 },
     show: { 
       opacity: 1,
-      transition: { 
-        staggerChildren: 0.1 
-      }
+      transition: { staggerChildren: 0.06 }
     }
   };
   
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     show: { opacity: 1, y: 0 }
-  };
-  
-  const buttonVariants = {
-    rest: { scale: 1 },
-    hover: { scale: 1.05 },
-    tap: { scale: 0.95 }
   };
   
   const formatTimeAgo = (date: Date) => {
@@ -192,39 +184,36 @@ const IndexPage: React.FC = () => {
     { title: 'Transport Tips', category: 'Transport', icon: '🚗' },
   ];
 
-  
-
   return (
     <div className="space-y-5">
-      {/* Welcome Tutorial */}
       {showTutorial && (
         <TutorialGuide onComplete={handleTutorialComplete} onSkip={handleTutorialSkip} />
       )}
       
       <div className="space-y-5">
+        {/* Search */}
         <motion.div 
           className="relative"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
           <Input 
             type="text"
             placeholder="Search transactions, tips, or categories..." 
-            className="pl-9 bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-full"
+            className="pl-9 bg-card/80 border-border rounded-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           
-          {/* Enhanced Search Suggestions */}
           <AnimatePresence>
             {searchSuggestions.length > 0 && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-20 overflow-hidden"
+                className="absolute left-0 right-0 top-full mt-1 bg-popover text-popover-foreground rounded-lg shadow-lg z-20 overflow-hidden border border-border"
               >
                 {searchSuggestions.map((suggestion, index) => (
                   <motion.div
@@ -232,13 +221,13 @@ const IndexPage: React.FC = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="flex items-center p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    className="flex items-center p-2.5 hover:bg-muted cursor-pointer"
                     onClick={() => {
                       setSearchTerm(suggestion);
                       setSearchSuggestions([]);
                     }}
                   >
-                    <Search size={14} className="mr-2 text-gray-500" />
+                    <Search size={14} className="mr-2 text-muted-foreground" />
                     <span className="text-sm">{suggestion}</span>
                   </motion.div>
                 ))}
@@ -247,10 +236,11 @@ const IndexPage: React.FC = () => {
           </AnimatePresence>
         </motion.div>
         
+        {/* Balance Card */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
           className="animated-card"
         >
           <BalanceCard />
@@ -259,6 +249,7 @@ const IndexPage: React.FC = () => {
         {/* Quick Expense Tracker */}
         <QuickExpenseTracker onAddExpense={handleQuickExpense} />
         
+        {/* Tabs */}
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-3 mb-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -274,6 +265,7 @@ const IndexPage: React.FC = () => {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-5"
               >
+                {/* Quick Actions */}
                 <motion.div 
                   variants={containerVariants}
                   initial="hidden"
@@ -286,10 +278,10 @@ const IndexPage: React.FC = () => {
                         variants={itemVariants}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="bg-white dark:bg-gray-800/80 rounded-lg shadow-sm p-3 flex flex-col items-center justify-center"
+                        className="bg-card rounded-lg shadow-sm p-3 flex flex-col items-center justify-center"
                       >
                         <CategoryIcon category={action.icon} size={20} withAnimation />
-                        <span className="text-xs mt-2 text-center">{action.name}</span>
+                        <span className="text-xs mt-2 text-center text-card-foreground">{action.name}</span>
                       </motion.div>
                     </Link>
                   ))}
@@ -300,21 +292,19 @@ const IndexPage: React.FC = () => {
                   variants={containerVariants}
                   initial="hidden"
                   animate="show"
-                  className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md p-4"
+                  className="bg-card backdrop-blur-md rounded-xl shadow-md p-4"
                 >
                   <div className="flex justify-between items-center mb-3">
                     <div>
                       <BadgeGlow>
-                        <h3 className="font-semibold text-base">Recent Activity</h3>
+                        <h3 className="font-semibold text-base text-card-foreground">Recent Activity</h3>
                       </BadgeGlow>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Your latest transactions</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Your latest transactions</p>
                     </div>
                     <motion.button 
-                      variants={buttonVariants}
-                      initial="rest"
-                      whileHover="hover"
-                      whileTap="tap"
-                      className="text-xs text-theme-pink flex items-center gap-1 px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-900/20"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="text-xs text-primary flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10"
                       onClick={handleAddIncome}
                     >
                       <Plus size={12} className="inline-block" />
@@ -330,15 +320,15 @@ const IndexPage: React.FC = () => {
                           variants={itemVariants}
                           className={`flex justify-between items-center p-2.5 rounded-lg ${
                             transaction.type === 'income' 
-                              ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
-                              : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300'
+                              ? 'bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300' 
+                              : 'bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300'
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <div className={`w-9 h-9 flex items-center justify-center rounded-full ${
                               transaction.type === 'income' 
-                                ? 'bg-green-100 dark:bg-green-800/30 text-green-600 dark:text-green-300' 
-                                : 'bg-red-100 dark:bg-red-800/30 text-red-600 dark:text-red-300'
+                                ? 'bg-green-100 dark:bg-green-900/40' 
+                                : 'bg-red-100 dark:bg-red-900/40'
                             }`}>
                               {getCategoryEmoji(transaction.category)}
                             </div>
@@ -357,16 +347,16 @@ const IndexPage: React.FC = () => {
                       ))
                     ) : (
                       <div className="text-center py-6">
-                        <Wallet className="mx-auto text-gray-400 mb-2" size={24} />
-                        <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">Try clearing your search</p>
+                        <Wallet className="mx-auto text-muted-foreground mb-2" size={24} />
+                        <p className="text-muted-foreground">No transactions found</p>
+                        <p className="text-xs text-muted-foreground/70">Try clearing your search</p>
                       </div>
                     )}
                   </div>
                   
                   {filteredTransactions.length > 4 && (
                     <div className="mt-3 text-center">
-                      <Button variant="link" size="sm" className="text-theme-pink">
+                      <Button variant="link" size="sm" className="text-primary">
                         View All Transactions
                         <ChevronRight size={14} className="ml-1" />
                       </Button>
@@ -378,7 +368,7 @@ const IndexPage: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
                   className="rounded-xl overflow-hidden shadow-xl h-32 relative cursor-pointer"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -386,67 +376,67 @@ const IndexPage: React.FC = () => {
                 >
                   <MapView compact />
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/50 via-black/20 to-transparent hover:from-black/30 transition-all z-10">
-                    <Badge variant="secondary" className="bg-white/90 dark:bg-black/70 text-black dark:text-white shadow-lg">
+                    <Badge variant="secondary" className="bg-background/90 text-foreground shadow-lg">
                       Campus Map
                     </Badge>
                   </div>
                 </motion.div>
                 
-                {/* Main Categories */}
+                {/* Category Cards */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+                  transition={{ duration: 0.4, delay: 0.35 }}
                   className="grid grid-cols-2 gap-4"
                 >
-                  {/* Finances Category */}
+                  {/* Finances */}
                   <motion.div 
                     whileHover={{ scale: 1.03 }}
-                    className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
+                    className="bg-card backdrop-blur-md rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
                   >
                     <CategoryIcon category="finances" withBackground withAnimation size={28} />
-                    <h3 className="font-semibold text-base">Finances</h3>
+                    <h3 className="font-semibold text-base text-card-foreground">Finances</h3>
                     <div className="grid grid-cols-2 gap-2 w-full">
-                      <Link to="/expenses" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/expenses" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="expenses" size={16} />
                         <span className="text-xs mt-1">Expenses</span>
                       </Link>
-                      <Link to="/savings" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/savings" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="savings" size={16} />
                         <span className="text-xs mt-1">Savings</span>
                       </Link>
-                      <Link to="/tips" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/tips" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="tips" size={16} />
                         <span className="text-xs mt-1">Tips</span>
                       </Link>
-                      <Link to="/iou" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/iou" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="iou" size={16} />
                         <span className="text-xs mt-1">IOU</span>
                       </Link>
                     </div>
                   </motion.div>
                   
-                  {/* Jols Category */}
+                  {/* Jols */}
                   <motion.div 
                     whileHover={{ scale: 1.03 }}
-                    className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
+                    className="bg-card backdrop-blur-md rounded-xl shadow-md p-4 flex flex-col items-center space-y-3"
                   >
                     <CategoryIcon category="jols" withBackground withAnimation size={28} />
-                    <h3 className="font-semibold text-base">Jols</h3>
+                    <h3 className="font-semibold text-base text-card-foreground">Jols</h3>
                     <div className="grid grid-cols-2 gap-2 w-full">
-                      <Link to="/map" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/map" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="map" size={16} />
                         <span className="text-xs mt-1">Map</span>
                       </Link>
-                      <Link to="/community" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/community" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="community" size={16} />
                         <span className="text-xs mt-1">Community</span>
                       </Link>
-                      <Link to="/planning" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/planning" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="planning" size={16} />
                         <span className="text-xs mt-1">Planning</span>
                       </Link>
-                      <Link to="/vibes" className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                      <Link to="/vibes" className="flex flex-col items-center p-2 bg-muted rounded-lg hover:bg-muted/80 transition-all">
                         <CategoryIcon category="vibes" size={16} />
                         <span className="text-xs mt-1">Vibes Hub</span>
                       </Link>
@@ -466,12 +456,12 @@ const IndexPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <h3 className="text-base font-semibold">All Transactions</h3>
                   <div className="flex space-x-1">
-                    <Select 
+                    <SimpleSelect 
                       options={["All Types", "Income", "Expense"]} 
                       defaultValue="All Types"
                       small
                     />
-                    <Select 
+                    <SimpleSelect 
                       options={["All Time", "This Week", "This Month"]} 
                       defaultValue="All Time"
                       small
@@ -490,21 +480,21 @@ const IndexPage: React.FC = () => {
                       <motion.div 
                         key={transaction.id}
                         variants={itemVariants}
-                        className="bg-white dark:bg-gray-800/90 backdrop-blur-md p-3 rounded-lg shadow-sm flex items-center justify-between"
+                        className="bg-card backdrop-blur-md p-3 rounded-lg shadow-sm flex items-center justify-between"
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                             transaction.type === 'income' 
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' 
-                              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                              ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300' 
+                              : 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
                           }`}>
                             {getCategoryEmoji(transaction.category)}
                           </div>
                           <div>
-                            <p className="font-medium">{transaction.description}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <p className="font-medium text-card-foreground">{transaction.description}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
                               <span className="capitalize">{transaction.category}</span>
                               <span>•</span>
                               <span>{formatTimeAgo(transaction.date)}</span>
@@ -523,10 +513,10 @@ const IndexPage: React.FC = () => {
                   ) : (
                     <motion.div 
                       variants={itemVariants}
-                      className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-lg p-6 shadow-sm text-center"
+                      className="bg-card backdrop-blur-md rounded-lg p-6 shadow-sm text-center"
                     >
-                      <Wallet className="mx-auto mb-2 text-gray-400" size={24} />
-                      <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
+                      <Wallet className="mx-auto mb-2 text-muted-foreground" size={24} />
+                      <p className="text-muted-foreground">No transactions found</p>
                       {searchTerm && (
                         <Button 
                           variant="outline" 
@@ -550,14 +540,14 @@ const IndexPage: React.FC = () => {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4"
               >
-                <Card className="border-0 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                <Card className="border-0 bg-gradient-to-r from-primary/10 to-accent/10">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <BadgeGlow>
                           <h3 className="font-medium text-lg">Explore</h3>
                         </BadgeGlow>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Discover budget tips and ideas</p>
+                        <p className="text-sm text-muted-foreground mt-1">Discover budget tips and ideas</p>
                       </div>
                       <div className="text-2xl">💡</div>
                     </div>
@@ -577,19 +567,19 @@ const IndexPage: React.FC = () => {
                         variants={itemVariants}
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.98 }}
-                        className="bg-white dark:bg-gray-800/90 backdrop-blur-md p-4 rounded-lg shadow-sm cursor-pointer"
+                        className="bg-card backdrop-blur-md p-4 rounded-lg shadow-sm cursor-pointer"
                         onClick={() => toast.info("Coming soon!", { description: "This feature is under development" })}
                       >
                         <div className="text-2xl mb-2">{item.icon}</div>
-                        <h3 className="font-medium text-sm">{item.title}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.category}</p>
+                        <h3 className="font-medium text-sm text-card-foreground">{item.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{item.category}</p>
                       </motion.div>
                     ))}
                   </div>
                   
                   <motion.div 
                     variants={itemVariants}
-                    className="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 p-4 rounded-lg shadow-sm border border-amber-200 dark:border-amber-800/30"
+                    className="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-950/20 dark:to-yellow-950/20 p-4 rounded-lg shadow-sm border border-amber-200 dark:border-amber-800/30"
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-3xl">🎓</div>
@@ -602,7 +592,7 @@ const IndexPage: React.FC = () => {
                   
                   <motion.div 
                     variants={itemVariants}
-                    className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/20 p-4 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800/30"
+                    className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-950/20 dark:to-cyan-950/20 p-4 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800/30"
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-3xl">📊</div>
@@ -663,7 +653,7 @@ const IndexPage: React.FC = () => {
             onClick={() => setNewCategoryModal(false)}
           >
             <motion.div 
-              className="bg-white dark:bg-gray-800 p-5 rounded-xl w-full max-w-xs"
+              className="bg-card p-5 rounded-xl w-full max-w-xs"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -671,10 +661,10 @@ const IndexPage: React.FC = () => {
             >
               <h3 className="text-xl font-semibold mb-3 text-primary">New Category</h3>
               <div className="mb-4">
-                <label className="block text-sm mb-1">Category Name</label>
+                <label className="block text-sm mb-1 text-card-foreground">Category Name</label>
                 <input 
                   type="text" 
-                  className="w-full px-3 py-2 border rounded-md bg-background border-border" 
+                  className="w-full px-3 py-2 border rounded-md bg-background border-border text-foreground" 
                   placeholder="e.g. Entertainment"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
@@ -703,11 +693,11 @@ const IndexPage: React.FC = () => {
   );
 };
 
-const Select: React.FC<{options: string[], defaultValue: string, small?: boolean}> = ({ options, defaultValue, small }) => {
+const SimpleSelect: React.FC<{options: string[], defaultValue: string, small?: boolean}> = ({ options, defaultValue, small }) => {
   return (
     <select 
       defaultValue={defaultValue} 
-      className={`rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 ${
+      className={`rounded-md border border-border bg-card text-card-foreground ${
         small ? 'text-xs py-1' : 'text-sm py-2'
       } px-2`}
     >
