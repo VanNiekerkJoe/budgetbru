@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Camera, Upload, Receipt, FileText, X, Check, AlertCircle, Loader2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { ArrowLeft, Camera, Upload, Receipt, FileText, X, Check, AlertCircle, Loader2, ChevronDown, ChevronUp, Eye, Plus, Trash2, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBudget, ExpenseCategory } from '@/contexts/BudgetContext';
-import { parseReceiptText, ParsedReceipt } from '@/utils/receiptParser';
+import { parseReceiptText, ParsedReceipt, LineItem, generateDescription } from '@/utils/receiptParser';
 import { formatCurrency } from '@/utils/formatters';
 import Tesseract from 'tesseract.js';
 
