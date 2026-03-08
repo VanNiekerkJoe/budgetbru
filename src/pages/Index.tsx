@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 import { useTutorial } from '@/services/TutorialService';
+import TutorialGuide from '@/components/TutorialGuide';
 import { QuickExpenseTracker } from '@/components/dashboard/QuickExpenseTracker';
 import { useBudget } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
