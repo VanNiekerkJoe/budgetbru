@@ -351,8 +351,6 @@ const IOUPage: React.FC = () => {
           )}
         </motion.div>
       </main>
-      
-      <NavBar />
     </div>
   );
 };

@@ -273,8 +273,6 @@ const Savings: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       </main>
-      
-      <EnhancedNavBar />
     </div>
   );
 };

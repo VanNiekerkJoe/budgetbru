@@ -505,8 +505,6 @@ const PlanningPage: React.FC = () => {
           </motion.div>
         </div>
       )}
-      
-      <EnhancedNavBar />
     </div>
   );
 };

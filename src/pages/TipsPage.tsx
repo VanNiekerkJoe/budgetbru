@@ -256,8 +256,6 @@ const TipsPage: React.FC = () => {
           ))}
         </div>
       </main>
-      
-      <NavBar />
     </div>
   );
 };

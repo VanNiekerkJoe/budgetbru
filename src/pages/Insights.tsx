@@ -460,8 +460,6 @@ const Insights: React.FC = () => {
           </AnimatePresence>
         </Tabs>
       </main>
-      
-      <EnhancedNavBar />
     </div>
   );
 };

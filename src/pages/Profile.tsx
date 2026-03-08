@@ -631,8 +631,6 @@ const Profile: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      
-      <EnhancedNavBar />
     </div>
   );
 };

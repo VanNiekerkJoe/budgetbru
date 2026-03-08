@@ -381,9 +381,6 @@ const EmergencyFund = () => {
           </motion.div>
         )}
       </div>
-
-      {/* Nav Bar */}
-      <EnhancedNavBar />
     </div>
   );
 };

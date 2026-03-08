@@ -428,8 +428,6 @@ const Expenses: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      
-      <EnhancedNavBar />
     </div>
   );
 };

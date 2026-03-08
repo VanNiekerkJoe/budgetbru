@@ -304,9 +304,6 @@ const DigitalReceipt = () => {
           </Card>
         </motion.div>
       </div>
-
-      {/* Nav Bar */}
-      <EnhancedNavBar />
     </div>
   );
 };

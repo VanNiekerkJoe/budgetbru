@@ -355,9 +355,6 @@ const Income = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Nav Bar */}
-      <EnhancedNavBar />
     </div>
   );
 };

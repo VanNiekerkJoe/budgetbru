@@ -287,8 +287,6 @@ const CommunityPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </main>
-      
-      <NavBar />
     </div>
   );
 };

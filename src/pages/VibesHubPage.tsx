@@ -431,8 +431,6 @@ const VibesHubPage: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-      
-      <EnhancedNavBar />
     </div>
   );
 };
