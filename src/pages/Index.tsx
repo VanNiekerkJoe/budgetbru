@@ -29,8 +29,6 @@ const IndexPage: React.FC = () => {
   }, [expenses]);
 
   const { showTutorial, completeTutorial, skipTutorial } = useTutorial();
-  
-  }, []);
 
   const handleQuickExpense = (description: string, amount: number, category: string) => {
     addExpense({ amount, category, description, date: new Date().toISOString() });
