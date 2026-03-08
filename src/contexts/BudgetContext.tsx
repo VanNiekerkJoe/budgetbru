@@ -299,9 +299,11 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   };
 
   const addIncome = (incomeItem: Omit<Income, 'id'>) => {
-    const id = income.length > 0 ? Math.max(...income.map(i => i.id)) + 1 : 1;
-    const newInc = { ...incomeItem, id, date: incomeItem.date || new Date().toISOString(), description: incomeItem.description || incomeItem.source };
-    setIncome(prev => [newInc, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    setIncome(prev => {
+      const id = prev.length > 0 ? Math.max(...prev.map(i => i.id)) + 1 : 1;
+      const newInc = { ...incomeItem, id, date: incomeItem.date || new Date().toISOString(), description: incomeItem.description || incomeItem.source };
+      return [newInc, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
   };
 
   const addSaving = (saving: Omit<Saving, 'id'>) => {
