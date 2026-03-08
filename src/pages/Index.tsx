@@ -30,16 +30,6 @@ const IndexPage: React.FC = () => {
 
   const { showTutorial, completeTutorial, skipTutorial } = useTutorial();
   
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentEvent({
-        title: "Varsity Night Market",
-        description: "Don't miss the Night Market this Friday! Food, music, and more at the Student Center.",
-        date: "Friday, 8 April 2025"
-      });
-      setShowEventPopup(true);
-    }, 2000);
-    return () => clearTimeout(timer);
   }, []);
 
   const handleQuickExpense = (description: string, amount: number, category: string) => {
