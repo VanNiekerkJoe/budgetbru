@@ -91,7 +91,7 @@ export function parseReceiptText(rawText: string): ParsedReceipt {
   };
 }
 
-function extractAmount(text: string): { value: number | null; confidence: 'high' | 'medium' | 'low' } {
+function extractAmount(text: string, _lines?: string[]): { value: number | null; confidence: 'high' | 'medium' | 'low' } {
   // Try patterns from most to least specific
   // Allow amounts like R8, R80, R8.00, R80.00, R800.50
   const patterns = [
