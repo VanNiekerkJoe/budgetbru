@@ -58,7 +58,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </motion.main>
       
       <MobileNavbar />
-      <ChatbotButton />
     </div>
   );
 };
