@@ -66,6 +66,7 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 }
 
 const Map: React.FC = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeCategories, setActiveCategories] = useState<Set<LocationCategory>>(new Set());
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('dark');
