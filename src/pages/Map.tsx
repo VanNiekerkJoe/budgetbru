@@ -190,7 +190,7 @@ const Map: React.FC = () => {
     setActiveCategories(new Set());
     setSearch('');
     setFlyTo(null);
-    // Reset map to SA view — flyTo null won't trigger, so we use a dummy
+    setFlyToZoom(5.5);
     setTimeout(() => setFlyTo([25.0, -29.0]), 50);
   };
 
