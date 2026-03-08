@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import { MobileNavbar } from './MobileNavbar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Bell, Shield, LogOut } from 'lucide-react';
+import { Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 
 interface MainLayoutProps {
   children: React.ReactNode;
