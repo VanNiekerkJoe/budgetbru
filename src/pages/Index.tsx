@@ -137,14 +137,18 @@ const IndexPage: React.FC = () => {
       )}
       
       {/* Greeting */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Hey, Bru! 👋</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Here's your financial snapshot</p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/8 via-accent/5 to-transparent border border-border/30 p-5">
+        <div className="absolute top-0 right-0 w-28 h-28 bg-primary/8 rounded-full blur-3xl" />
+        <div className="flex items-center justify-between relative z-10">
+          <div>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Welcome back</p>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Hey, Bru! 👋</h1>
+            <p className="text-sm text-muted-foreground mt-1">Here's your financial snapshot</p>
+          </div>
+          <motion.div whileHover={{ rotate: 15, scale: 1.1 }} className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center border border-primary/10">
+            <Sparkles size={20} className="text-primary" />
+          </motion.div>
         </div>
-        <motion.div whileHover={{ rotate: 15 }} className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-          <Sparkles size={18} className="text-primary" />
-        </motion.div>
       </motion.div>
 
       {/* Search */}
