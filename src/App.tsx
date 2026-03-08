@@ -35,6 +35,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const CouplesPage = lazy(() => import("./pages/CouplesPage"));
 
 const queryClient = new QueryClient();
 
