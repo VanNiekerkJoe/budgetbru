@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Layers, GraduationCap, UtensilsCrossed, Coffee,
@@ -65,6 +66,7 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 }
 
 const Map: React.FC = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeCategories, setActiveCategories] = useState<Set<LocationCategory>>(new Set());
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('dark');
@@ -379,13 +381,13 @@ const Map: React.FC = () => {
       )}
 
       {/* Exit map button */}
-      <div className="absolute left-3 bottom-28 z-20">
+      <div className="absolute left-3 bottom-6 z-20">
         <motion.div whileTap={{ scale: 0.9 }}>
           <Button
             size="sm"
-            variant="secondary"
-            className="rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50 gap-1.5 h-10 px-4"
-            onClick={() => window.history.back()}
+            className="rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50 gap-1.5 h-10 px-4 text-foreground hover:bg-card"
+            variant="ghost"
+            onClick={() => navigate('/')}
           >
             <ArrowLeft size={14} />
             <span className="text-xs font-medium">Exit Map</span>
@@ -394,7 +396,7 @@ const Map: React.FC = () => {
       </div>
 
       {/* Floating controls */}
-      <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2">
+      <div className="absolute right-3 bottom-6 z-20 flex flex-col gap-2">
         <motion.div whileTap={{ scale: 0.9 }}>
           <Button
             size="icon"
@@ -419,7 +421,7 @@ const Map: React.FC = () => {
       </div>
 
       {/* Map style pill */}
-      <div className="absolute left-3 bottom-28 z-20">
+      <div className="absolute left-3 bottom-18 z-20">
         <div className="bg-card/90 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5 text-[10px] font-medium text-muted-foreground shadow-sm">
           {MAP_STYLE_LABELS[mapStyle]}
         </div>
