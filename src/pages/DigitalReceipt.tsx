@@ -171,7 +171,11 @@ const DigitalReceipt = () => {
       return;
     }
 
-    addExpense({ amount, category, description, date });
+    const finalDescription = lineItems.length > 0
+      ? generateDescription(description, lineItems)
+      : description;
+
+    addExpense({ amount, category, description: finalDescription, date });
 
     const historyItem: ScanHistoryItem = {
       id: Date.now(),
