@@ -2,11 +2,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MobileNavbar } from './MobileNavbar';
-
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Bell } from 'lucide-react';
+import { Bell, Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -15,6 +15,12 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdmin, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -34,11 +40,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
+            {isAdmin && (
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted/60" onClick={() => navigate('/admin')} title="Admin">
+                <Shield size={15} className="text-primary" />
+              </Button>
+            )}
             <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full hover:bg-muted/60" onClick={() => navigate('/notifications')}>
               <Bell size={15} className="text-muted-foreground" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
             </Button>
             <ThemeToggle />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted/60" onClick={handleSignOut} title="Sign out">
+              <LogOut size={15} className="text-muted-foreground" />
+            </Button>
           </div>
         </div>
       </div>
