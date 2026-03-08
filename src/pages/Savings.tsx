@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
-import EnhancedNavBar from '@/components/EnhancedNavBar';
+
 import SavingsGoalsList from '@/components/savings/SavingsGoalsList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
