@@ -2,7 +2,8 @@
 import * as React from "react"
 
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Home, CreditCard, PiggyBank, BarChart, User, Settings } from "lucide-react"
+import { PanelLeft } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import { useMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
