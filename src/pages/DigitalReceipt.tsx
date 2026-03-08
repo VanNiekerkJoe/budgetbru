@@ -297,6 +297,86 @@ const DigitalReceipt = () => {
                     </Collapsible>
                   )}
 
+                  {/* Optional breakdown section */}
+                  {isDone && (
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => setShowBreakdown(!showBreakdown)}
+                        className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                      >
+                        <List size={14} />
+                        {showBreakdown ? 'Hide' : 'Show'} Item Breakdown
+                        {lineItems.length > 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{lineItems.length}</Badge>}
+                        {showBreakdown ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+
+                      {showBreakdown && (
+                        <div className="space-y-2 rounded-md border border-border p-3">
+                          {lineItems.length > 0 && (
+                            <div className="divide-y divide-border max-h-48 overflow-auto">
+                              {lineItems.map((item, i) => (
+                                <div key={i} className="flex items-center justify-between py-1.5 text-sm">
+                                  <span className="text-foreground truncate mr-2">{item.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-foreground whitespace-nowrap">
+                                      {item.amount !== null ? formatCurrency(item.amount) : '—'}
+                                    </span>
+                                    <button
+                                      onClick={() => setLineItems(prev => prev.filter((_, idx) => idx !== i))}
+                                      className="text-muted-foreground hover:text-destructive"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Add new item */}
+                          <div className="flex gap-2 pt-1">
+                            <Input
+                              placeholder="Item name"
+                              value={newItemName}
+                              onChange={(e) => setNewItemName(e.target.value)}
+                              className="text-sm h-8"
+                            />
+                            <Input
+                              placeholder="R 0.00"
+                              type="number"
+                              value={newItemAmount}
+                              onChange={(e) => setNewItemAmount(e.target.value)}
+                              className="text-sm h-8 w-24"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-2"
+                              disabled={!newItemName.trim()}
+                              onClick={() => {
+                                setLineItems(prev => [...prev, {
+                                  name: newItemName.trim(),
+                                  amount: newItemAmount ? parseFloat(newItemAmount) : null,
+                                  raw: `${newItemName} R${newItemAmount}`,
+                                }]);
+                                setNewItemName('');
+                                setNewItemAmount('');
+                              }}
+                            >
+                              <Plus size={14} />
+                            </Button>
+                          </div>
+
+                          {lineItems.length > 0 && (
+                            <p className="text-xs text-muted-foreground pt-1">
+                              Items total: {formatCurrency(lineItems.reduce((s, i) => s + (i.amount || 0), 0))}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
 
                   {/* Editable form */}
                   {isDone && (
