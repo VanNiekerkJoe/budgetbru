@@ -194,7 +194,7 @@ const IndexPage: React.FC = () => {
         </div>
         
         <div className="px-3.5 pb-3 space-y-1">
-          {transactions.slice(0, 4).map((t, i) => (
+          {recentTransactions.slice(0, 4).map((t, i) => (
             <motion.div 
               key={t.id}
               initial={{ opacity: 0, x: -8 }}
