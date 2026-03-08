@@ -91,6 +91,7 @@ const MapView: React.FC<MapViewProps> = ({
       maxBoundsViscosity: 0.85,
       zoomSnap: 0.25,
       zoomDelta: 0.5,
+      attributionControl: true,
     });
 
     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -103,7 +104,11 @@ const MapView: React.FC<MapViewProps> = ({
 
     markersRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
-    setTimeout(() => map.invalidateSize(), 150);
+
+    // Multiple invalidateSize calls to handle various mount timing issues
+    map.invalidateSize();
+    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => map.invalidateSize(), 500);
 
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
