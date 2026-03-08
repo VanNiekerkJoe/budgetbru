@@ -116,6 +116,7 @@ const Income: React.FC = () => {
     setQuickAmount('');
   };
 
+  const handleDelete = (id: number) => {
     deleteIncome(id);
     toast.success('Income deleted');
     setExpandedId(null);
