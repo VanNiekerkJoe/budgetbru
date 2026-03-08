@@ -96,9 +96,10 @@ const STORAGE_KEYS = {
 };
 
 // Clear all old data so users start fresh
-const DATA_VERSION = 'bb_v2';
+const DATA_VERSION = 'bb_v3';
 if (!localStorage.getItem(DATA_VERSION)) {
   Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+  localStorage.removeItem('bb_v2');
   localStorage.setItem(DATA_VERSION, '1');
 }
 
