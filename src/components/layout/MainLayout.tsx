@@ -23,14 +23,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/30">
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center shadow-md shadow-primary/20">
-              <span className="text-primary-foreground font-bold text-sm">B</span>
-              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-2 border-background" />
+          <div className="flex items-center gap-3">
+            <div className="relative w-9 h-9 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25">
+              <span className="text-primary-foreground font-extrabold text-sm tracking-tight">B</span>
+              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-2 border-background animate-pulse" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-sm text-foreground leading-tight tracking-tight">BudgetBru</span>
-              <span className="text-[10px] text-muted-foreground leading-tight">Smart Finance</span>
+              <span className="font-extrabold text-[15px] text-foreground leading-tight tracking-tight">BudgetBru</span>
+              <span className="text-[10px] text-muted-foreground leading-tight font-medium">Smart Finance 💜</span>
             </div>
           </div>
 
