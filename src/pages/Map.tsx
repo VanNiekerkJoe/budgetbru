@@ -381,13 +381,13 @@ const Map: React.FC = () => {
       )}
 
       {/* Exit map button */}
-      <div className="absolute left-3 bottom-28 z-20">
+      <div className="absolute left-3 bottom-6 z-20">
         <motion.div whileTap={{ scale: 0.9 }}>
           <Button
             size="sm"
-            variant="secondary"
-            className="rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50 gap-1.5 h-10 px-4"
-            onClick={() => window.history.back()}
+            className="rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50 gap-1.5 h-10 px-4 text-foreground hover:bg-card"
+            variant="ghost"
+            onClick={() => navigate('/')}
           >
             <ArrowLeft size={14} />
             <span className="text-xs font-medium">Exit Map</span>
