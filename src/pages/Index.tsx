@@ -274,7 +274,7 @@ const IndexPage: React.FC = () => {
                 whileTap={{ scale: 0.99 }}
                 onClick={() => setShowMap(true)}
               >
-                <MapView compact />
+                <MapView locations={[]} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10 flex items-end p-4">
                   <div className="flex items-center justify-between w-full">
                     <div>
@@ -409,7 +409,7 @@ const IndexPage: React.FC = () => {
         {showMap && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowMap(false)}>
             <motion.div className="w-full max-w-lg mx-4 h-[500px] rounded-2xl overflow-hidden" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={e => e.stopPropagation()}>
-              <MapView />
+              <MapView locations={[]} />
             </motion.div>
           </motion.div>
         )}
