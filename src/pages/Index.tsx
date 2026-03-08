@@ -126,6 +126,7 @@ const IndexPage: React.FC = () => {
 
       {/* Quick Navigation Grid */}
       <motion.div 
+        data-tutorial="tutorial-quick-nav"
         initial={{ opacity: 0, y: 8 }} 
         animate={{ opacity: 1, y: 0 }} 
         transition={{ delay: 0.1 }}
