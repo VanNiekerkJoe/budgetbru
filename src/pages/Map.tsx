@@ -378,6 +378,20 @@ const Map: React.FC = () => {
         <div className="absolute inset-0 z-10" onClick={() => setShowSearchResults(false)} />
       )}
 
+      {/* Back to app button */}
+      <div className="absolute left-3 top-3 z-30">
+        <motion.div whileTap={{ scale: 0.9 }}>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-10 w-10 rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50"
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft size={16} />
+          </Button>
+        </motion.div>
+      </div>
+
       {/* Floating controls */}
       <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2">
         <motion.div whileTap={{ scale: 0.9 }}>
