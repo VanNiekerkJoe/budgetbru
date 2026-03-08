@@ -1,0 +1,17 @@
+{
+  "name": "BudgetBru",
+  "short_name": "BudgetBru",
+  "description": "Smart student finance tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#CA529A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
