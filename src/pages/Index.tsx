@@ -9,8 +9,6 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-import EventPopup from '@/components/EventPopup';
-import TutorialGuide from '@/components/TutorialGuide';
 import { useTutorial } from '@/services/TutorialService';
 import { QuickExpenseTracker } from '@/components/dashboard/QuickExpenseTracker';
 import { useBudget } from '@/contexts/BudgetContext';
