@@ -56,6 +56,87 @@ export type Database = {
         }
         Relationships: []
       }
+      iou_splits: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          participants: Json
+          title: string
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          participants?: Json
+          title: string
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          participants?: Json
+          title?: string
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ious: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string
+          due_date: string | null
+          id: string
+          is_owed_to_me: boolean
+          notes: string[]
+          paid_amount: number
+          person: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          date?: string
+          description: string
+          due_date?: string | null
+          id?: string
+          is_owed_to_me?: boolean
+          notes?: string[]
+          paid_amount?: number
+          person: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          is_owed_to_me?: boolean
+          notes?: string[]
+          paid_amount?: number
+          person?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
