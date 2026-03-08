@@ -119,7 +119,7 @@ const DigitalReceipt = () => {
 
       // Pre-fill form
       if (parsed.amount !== null) setAmount(parsed.amount);
-      setDescription(generateDescription(parsed.storeName, parsed.lineItems));
+      if (parsed.storeName) setDescription(parsed.storeName);
       setCategory(parsed.category);
       if (parsed.date) setDate(parsed.date);
 
