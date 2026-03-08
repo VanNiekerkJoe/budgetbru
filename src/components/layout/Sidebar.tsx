@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBudget } from '@/contexts/BudgetContext';
-import { Home, ChartPie, CircleDollarSign, Wallet, User, Map, MessageSquare, Calendar, Zap } from 'lucide-react';
+import { Home, ChartPie, CircleDollarSign, Wallet, User, Map, MessageSquare, Calendar, Zap, Heart } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { Badge } from '@/components/ui/badge';
 
@@ -21,6 +21,7 @@ const Sidebar: React.FC = () => {
     { path: '/community', icon: MessageSquare, label: 'Community' },
     { path: '/vibes', icon: Zap, label: 'Vibes Hub' },
     { path: '/planning', icon: Calendar, label: 'Planning' },
+    { path: '/couples', icon: Heart, label: 'Couples' },
     { path: '/profile', icon: User, label: 'Profile' },
   ];
 

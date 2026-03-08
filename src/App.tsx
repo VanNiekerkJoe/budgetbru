@@ -35,6 +35,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const CouplesPage = lazy(() => import("./pages/CouplesPage"));
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const AnimatedRoutes = () => {
           <Route path="/vibes" element={<ProtectedRoute><MainLayout><VibesHubPage /></MainLayout></ProtectedRoute>} />
           <Route path="/planning" element={<ProtectedRoute><MainLayout><PlanningPage /></MainLayout></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><MainLayout><Notifications /></MainLayout></ProtectedRoute>} />
+          <Route path="/couples" element={<ProtectedRoute><MainLayout><CouplesPage /></MainLayout></ProtectedRoute>} />
           
           {/* Admin route */}
           <Route path="/admin" element={<ProtectedRoute adminOnly><MainLayout><AdminPage /></MainLayout></ProtectedRoute>} />
