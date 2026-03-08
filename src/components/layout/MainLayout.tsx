@@ -36,37 +36,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   
   return (
     <div className="flex min-h-screen relative">
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <Sidebar defaultOpen={true} className="hidden md:flex border-r border-border/30">
-          <SidebarHeader className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-accent"></div>
-              <span className="font-semibold text-lg">BudgetBru</span>
-            </div>
-          </SidebarHeader>
-          
-          <SidebarSearch />
-          
-          <SidebarContent className="py-6">
-            <nav className="space-y-1.5">
-              {navItems.map(item => (
-                <SidebarNavItem key={item.path} href={item.path} icon={item.icon} active={location.pathname === item.path}>
-                  {item.label}
-                </SidebarNavItem>
-              ))}
-            </nav>
-          </SidebarContent>
-          
-          <SidebarFooter className="flex items-center justify-between">
-            <ThemeToggle />
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">v1.0.0</span>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
-      )}
-
       {/* Mobile slide-out menu */}
       {isMobile && (
         <>
