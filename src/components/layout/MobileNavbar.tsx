@@ -111,16 +111,17 @@ export const MobileNavbar: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
             onClick={resetFAB}
           >
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ translateY: '100%' }}
+              animate={{ translateY: '0%' }}
+              exit={{ translateY: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl border-t border-border pb-safe"
+              className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl border-t border-border shadow-2xl"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             >
               {/* Drag handle */}
               <div className="w-10 h-1 bg-muted-foreground/20 rounded-full mx-auto mt-3" />
