@@ -6,8 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
 import MainLayout from "./components/layout/MainLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
 
@@ -30,6 +32,9 @@ const DigitalReceipt = lazy(() => import("./pages/DigitalReceipt"));
 const VibesHubPage = lazy(() => import("./pages/VibesHubPage"));
 const PlanningPage = lazy(() => import("./pages/PlanningPage"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 const queryClient = new QueryClient();
 
@@ -39,7 +44,6 @@ const PageLoader = () => (
   </div>
 );
 
-// Route wrapper for animations
 const AnimatedRoutes = () => {
   const location = useLocation();
   
@@ -47,21 +51,30 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Suspense fallback={<MainLayout><PageLoader /></MainLayout>}>
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<MainLayout><IndexPage /></MainLayout>} />
-          <Route path="/expenses" element={<MainLayout><Expenses /></MainLayout>} />
-          <Route path="/income" element={<MainLayout><Income /></MainLayout>} />
-          <Route path="/map" element={<MapPage />} />
-          <Route path="/savings" element={<MainLayout><Savings /></MainLayout>} />
-          <Route path="/insights" element={<MainLayout><Insights /></MainLayout>} />
-          <Route path="/profile" element={<MainLayout><Profile /></MainLayout>} />
-          <Route path="/emergency-fund" element={<MainLayout><EmergencyFund /></MainLayout>} />
-          <Route path="/receipts" element={<MainLayout><DigitalReceipt /></MainLayout>} />
-          <Route path="/iou" element={<MainLayout><IOUPage /></MainLayout>} />
-          <Route path="/tips" element={<MainLayout><TipsPage /></MainLayout>} />
-          <Route path="/community" element={<MainLayout><CommunityPage /></MainLayout>} />
-          <Route path="/vibes" element={<MainLayout><VibesHubPage /></MainLayout>} />
-          <Route path="/planning" element={<MainLayout><PlanningPage /></MainLayout>} />
-          <Route path="/notifications" element={<MainLayout><Notifications /></MainLayout>} />
+          {/* Public routes */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Protected routes */}
+          <Route path="/" element={<ProtectedRoute><MainLayout><IndexPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/expenses" element={<ProtectedRoute><MainLayout><Expenses /></MainLayout></ProtectedRoute>} />
+          <Route path="/income" element={<ProtectedRoute><MainLayout><Income /></MainLayout></ProtectedRoute>} />
+          <Route path="/map" element={<ProtectedRoute><MapPage /></ProtectedRoute>} />
+          <Route path="/savings" element={<ProtectedRoute><MainLayout><Savings /></MainLayout></ProtectedRoute>} />
+          <Route path="/insights" element={<ProtectedRoute><MainLayout><Insights /></MainLayout></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
+          <Route path="/emergency-fund" element={<ProtectedRoute><MainLayout><EmergencyFund /></MainLayout></ProtectedRoute>} />
+          <Route path="/receipts" element={<ProtectedRoute><MainLayout><DigitalReceipt /></MainLayout></ProtectedRoute>} />
+          <Route path="/iou" element={<ProtectedRoute><MainLayout><IOUPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/tips" element={<ProtectedRoute><MainLayout><TipsPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute><MainLayout><CommunityPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/vibes" element={<ProtectedRoute><MainLayout><VibesHubPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/planning" element={<ProtectedRoute><MainLayout><PlanningPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><MainLayout><Notifications /></MainLayout></ProtectedRoute>} />
+          
+          {/* Admin route */}
+          <Route path="/admin" element={<ProtectedRoute adminOnly><MainLayout><AdminPage /></MainLayout></ProtectedRoute>} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -87,15 +100,17 @@ const App = () => {
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <BrowserRouter>
           <QueryClientProvider client={queryClient}>
-            <BudgetProvider>
-              <TooltipProvider>
-                <div className="min-h-screen bg-background">
-                  <Toaster />
-                  <Sonner position="top-center" />
-                  <AnimatedRoutes />
-                </div>
-              </TooltipProvider>
-            </BudgetProvider>
+            <AuthProvider>
+              <BudgetProvider>
+                <TooltipProvider>
+                  <div className="min-h-screen bg-background">
+                    <Toaster />
+                    <Sonner position="top-center" />
+                    <AnimatedRoutes />
+                  </div>
+                </TooltipProvider>
+              </BudgetProvider>
+            </AuthProvider>
           </QueryClientProvider>
         </BrowserRouter>
       </ThemeProvider>
