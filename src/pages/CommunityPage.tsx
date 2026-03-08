@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Send, Users, Heart, School, ShoppingBag, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
-import NavBar from '@/components/NavBar';
+
 import ParticleBackground from '@/components/ParticleBackground';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
