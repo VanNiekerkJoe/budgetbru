@@ -258,20 +258,22 @@ const SidebarSearch = React.forwardRef<
 ))
 SidebarSearch.displayName = "SidebarSearch"
 
-// New component for navigation items with icons
+// Navigation item using React Router Link
 const SidebarNavItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & {
+  HTMLAnchorElement,
+  React.ComponentPropsWithoutRef<typeof Link> & {
     icon: React.ElementType;
     active?: boolean;
+    href?: string;
   }
->(({ className, children, icon: Icon, active, ...props }, ref) => {
+>(({ className, children, icon: Icon, active, href, to, ...props }, ref) => {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <a
+          <Link
             ref={ref}
+            to={to || href || "/"}
             className={cn(
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all hover:bg-sidebar-accent/50",
               active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
@@ -279,9 +281,9 @@ const SidebarNavItem = React.forwardRef<
             )}
             {...props}
           >
-            <Icon className="h-4 w-4" />
-            <span className="group-data-[state=collapsed]:hidden">{children}</span>
-          </a>
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="group-data-[state=collapsed]:hidden truncate">{children}</span>
+          </Link>
         </TooltipTrigger>
         <TooltipContent side="right" className="group-data-[state=expanded]:hidden">
           <p>{children}</p>
