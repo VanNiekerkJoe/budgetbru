@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, Layers, Navigation, GraduationCap, UtensilsCrossed, Coffee,
+  Search, Layers, GraduationCap, UtensilsCrossed, Coffee,
   Dumbbell, Music, ShoppingBag, Train, Home, BookOpen, Tag, X,
-  MapPin, ChevronUp, Star, ArrowUpDown, LocateFixed,
+  MapPin, ChevronUp, Star, ArrowUpDown, LocateFixed, Beer,
+  ChefHat, Zap, ArrowLeft, Sandwich,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MapView from '@/components/map/MapView';
 import PlaceDetailCard from '@/components/map/PlaceDetailCard';
 import DiscountFinder from '@/components/map/DiscountFinder';
-import { SA_LOCATIONS, CATEGORY_COLORS, CATEGORY_LABELS, MapLocation, LocationCategory } from '@/data/mapLocations';
+import {
+  SA_LOCATIONS, CATEGORY_COLORS, CATEGORY_LABELS, MapLocation, LocationCategory,
+  getPOIsForCampus, getUniversity,
+} from '@/data/mapLocations';
 import { toast } from 'sonner';
 
 const CATEGORY_ICONS: Record<LocationCategory, React.ReactNode> = {
@@ -26,11 +30,22 @@ const CATEGORY_ICONS: Record<LocationCategory, React.ReactNode> = {
   accommodation: <Home size={13} />,
   library: <BookOpen size={13} />,
   discount: <Tag size={13} />,
+  bar: <Beer size={13} />,
+  restaurant: <ChefHat size={13} />,
+  fastfood: <Sandwich size={13} />,
+  studyspot: <BookOpen size={13} />,
 };
 
-const ALL_CATEGORIES: LocationCategory[] = [
+// Categories shown on national view
+const NATIONAL_CATEGORIES: LocationCategory[] = [
   'university', 'food', 'cafe', 'gym', 'entertainment',
   'shopping', 'transport', 'library', 'discount',
+];
+
+// Categories shown when zoomed into a campus
+const CAMPUS_CATEGORIES: LocationCategory[] = [
+  'bar', 'restaurant', 'fastfood', 'cafe', 'studyspot',
+  'gym', 'entertainment', 'shopping', 'transport', 'discount',
 ];
 
 const MAP_STYLE_LABELS: Record<string, string> = {
@@ -61,14 +76,15 @@ const Map: React.FC = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [locating, setLocating] = useState(false);
 
-  // Auto-get location on mount
+  // Campus focus state — when a university is selected, zoom in and show its POIs
+  const [focusedCampusId, setFocusedCampusId] = useState<number | null>(null);
+  const focusedUniversity = focusedCampusId ? getUniversity(focusedCampusId) : null;
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLocation([pos.coords.longitude, pos.coords.latitude]);
-        },
-        () => {} // silently fail
+        (pos) => setUserLocation([pos.coords.longitude, pos.coords.latitude]),
+        () => {}
       );
     }
   }, []);
@@ -88,8 +104,18 @@ const Map: React.FC = () => {
     setSelectedPlace(null);
   };
 
+  // When focused on a campus, show that university + its POIs; otherwise show all
+  const baseLocations = useMemo(() => {
+    if (focusedCampusId) {
+      const uni = getUniversity(focusedCampusId);
+      const pois = getPOIsForCampus(focusedCampusId);
+      return uni ? [uni, ...pois] : pois;
+    }
+    return SA_LOCATIONS;
+  }, [focusedCampusId]);
+
   const filteredLocations = useMemo(() => {
-    let locs = SA_LOCATIONS;
+    let locs = baseLocations;
     if (activeCategories.size > 0) {
       locs = locs.filter(l => activeCategories.has(l.category));
     }
@@ -103,9 +129,8 @@ const Map: React.FC = () => {
       );
     }
     return locs;
-  }, [activeCategories, search]);
+  }, [baseLocations, activeCategories, search]);
 
-  // Sort by distance if enabled and user location exists
   const sortedLocations = useMemo(() => {
     if (!sortByDistance || !userLocation) return filteredLocations;
     return [...filteredLocations].sort((a, b) => {
@@ -121,29 +146,50 @@ const Map: React.FC = () => {
     return d < 1 ? `${Math.round(d * 1000)}m` : `${d.toFixed(0)}km`;
   };
 
-  // Category counts
+  const currentCategories = focusedCampusId ? CAMPUS_CATEGORIES : NATIONAL_CATEGORIES;
+
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    const base = search.trim()
-      ? SA_LOCATIONS.filter(l => {
-          const q = search.toLowerCase();
-          return l.name.toLowerCase().includes(q) || l.address.toLowerCase().includes(q) || l.tags.some(t => t.includes(q));
-        })
-      : SA_LOCATIONS;
-    base.forEach(l => { counts[l.category] = (counts[l.category] || 0) + 1; });
+    baseLocations.forEach(l => { counts[l.category] = (counts[l.category] || 0) + 1; });
     return counts;
-  }, [search]);
+  }, [baseLocations]);
 
   const handleMarkerClick = useCallback((loc: MapLocation) => {
+    // If clicking a university on the national view, zoom into that campus
+    if (loc.category === 'university' && !focusedCampusId) {
+      setFocusedCampusId(loc.id);
+      setFlyTo([loc.lng, loc.lat]);
+      setSelectedPlace(null);
+      setActiveCategories(new Set());
+      setSearch('');
+      toast.success(`Exploring ${loc.name}`, { description: 'Showing nearby bars, restaurants & more' });
+      return;
+    }
     setSelectedPlace(loc);
     setFlyTo([loc.lng, loc.lat]);
-  }, []);
+  }, [focusedCampusId]);
 
   const handleSearchSelect = (loc: MapLocation) => {
-    setSelectedPlace(loc);
-    setFlyTo([loc.lng, loc.lat]);
+    if (loc.category === 'university' && !focusedCampusId) {
+      setFocusedCampusId(loc.id);
+      setFlyTo([loc.lng, loc.lat]);
+      setSelectedPlace(null);
+    } else {
+      setSelectedPlace(loc);
+      setFlyTo([loc.lng, loc.lat]);
+    }
     setDrawerOpen(false);
     setShowSearchResults(false);
+  };
+
+  const handleBackToNational = () => {
+    setFocusedCampusId(null);
+    setSelectedPlace(null);
+    setActiveCategories(new Set());
+    setSearch('');
+    setFlyTo(null);
+    // Reset map to SA view — flyTo null won't trigger, so we use a dummy
+    setTimeout(() => setFlyTo([25.0, -29.0]), 50);
   };
 
   const cycleMapStyle = () => {
@@ -172,7 +218,6 @@ const Map: React.FC = () => {
     setDrawerOpen(false);
   };
 
-  // Search results for inline dropdown
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     return filteredLocations.slice(0, 6);
@@ -180,7 +225,6 @@ const Map: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-background">
-      {/* Full-screen map */}
       <MapView
         locations={filteredLocations}
         mapStyle={mapStyle}
@@ -193,11 +237,38 @@ const Map: React.FC = () => {
       {/* Top overlay */}
       <div className="absolute top-0 left-0 right-0 z-20 p-3 pb-0 pointer-events-none">
         <div className="max-w-lg mx-auto space-y-2 pointer-events-auto">
+
+          {/* Campus header bar — shows when zoomed into a campus */}
+          {focusedUniversity && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 bg-primary/95 backdrop-blur-xl rounded-xl px-3 py-2.5 shadow-lg"
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 rounded-full text-primary-foreground hover:bg-white/20 shrink-0"
+                onClick={handleBackToNational}
+              >
+                <ArrowLeft size={16} />
+              </Button>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-primary-foreground truncate">
+                  {focusedUniversity.name}
+                </p>
+                <p className="text-[10px] text-primary-foreground/70">
+                  {getPOIsForCampus(focusedCampusId!).length} places nearby · Tap to explore
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Search bar */}
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
             <Input
-              placeholder="Search campuses, cafés, deals..."
+              placeholder={focusedCampusId ? "Search bars, restaurants, cafés..." : "Search campuses, cafés, deals..."}
               className="pl-9 pr-20 bg-card/95 backdrop-blur-xl border-border/40 shadow-lg rounded-xl h-11 text-sm"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setShowSearchResults(true); }}
@@ -217,7 +288,6 @@ const Map: React.FC = () => {
               </span>
             </div>
 
-            {/* Live search dropdown */}
             <AnimatePresence>
               {showSearchResults && searchResults.length > 0 && (
                 <motion.div
@@ -270,10 +340,11 @@ const Map: React.FC = () => {
                 <X size={10} /> Clear
               </button>
             )}
-            {ALL_CATEGORIES.map(cat => {
+            {currentCategories.map(cat => {
               const active = activeCategories.has(cat);
               const color = CATEGORY_COLORS[cat];
               const count = categoryCounts[cat] || 0;
+              if (count === 0) return null;
               return (
                 <button
                   key={cat}
@@ -300,15 +371,11 @@ const Map: React.FC = () => {
         </div>
       </div>
 
-      {/* Close search overlay when clicking map */}
       {showSearchResults && (
-        <div
-          className="absolute inset-0 z-10"
-          onClick={() => setShowSearchResults(false)}
-        />
+        <div className="absolute inset-0 z-10" onClick={() => setShowSearchResults(false)} />
       )}
 
-      {/* Floating controls — right side */}
+      {/* Floating controls */}
       <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2">
         <motion.div whileTap={{ scale: 0.9 }}>
           <Button
@@ -316,7 +383,6 @@ const Map: React.FC = () => {
             variant="secondary"
             className="h-10 w-10 rounded-full shadow-lg bg-card/95 backdrop-blur-xl border border-border/50"
             onClick={cycleMapStyle}
-            title={MAP_STYLE_LABELS[mapStyle]}
           >
             <Layers size={16} />
           </Button>
@@ -334,7 +400,7 @@ const Map: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Map style label pill */}
+      {/* Map style pill */}
       <div className="absolute left-3 bottom-28 z-20">
         <div className="bg-card/90 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5 text-[10px] font-medium text-muted-foreground shadow-sm">
           {MAP_STYLE_LABELS[mapStyle]}
@@ -363,14 +429,19 @@ const Map: React.FC = () => {
               >
                 <ChevronUp size={16} className="text-muted-foreground" />
                 <span className="text-sm font-medium">
-                  {filteredLocations.length} places across South Africa
+                  {focusedUniversity
+                    ? `${getPOIsForCampus(focusedCampusId!).length} places near ${focusedUniversity.name.split('(')[0].trim()}`
+                    : `${filteredLocations.length} places across South Africa`
+                  }
                 </span>
                 <MapPin size={13} className="text-primary ml-auto" />
               </Button>
             </DrawerTrigger>
             <DrawerContent className="max-h-[75vh]">
               <DrawerHeader className="pb-2">
-                <DrawerTitle className="text-base">Explore South Africa</DrawerTitle>
+                <DrawerTitle className="text-base">
+                  {focusedUniversity ? `Near ${focusedUniversity.name.split('(')[0].trim()}` : 'Explore South Africa'}
+                </DrawerTitle>
               </DrawerHeader>
 
               <Tabs defaultValue="places" className="px-4">
@@ -384,7 +455,6 @@ const Map: React.FC = () => {
                 </TabsList>
 
                 <TabsContent value="places" className="mt-0">
-                  {/* Sort toggle */}
                   {userLocation && (
                     <button
                       onClick={() => setSortByDistance(p => !p)}

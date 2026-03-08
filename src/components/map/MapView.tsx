@@ -31,6 +31,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
   university: '🎓', food: '🍔', cafe: '☕', gym: '💪',
   entertainment: '🎵', shopping: '🛍️', transport: '🚆',
   accommodation: '🏠', library: '📚', discount: '🏷️',
+  bar: '🍺', restaurant: '🍽️', fastfood: '🍟', studyspot: '📖',
 };
 
 const createMarkerIcon = (loc: MapLocation, isSelected: boolean) => {
