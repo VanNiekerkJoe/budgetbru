@@ -138,16 +138,16 @@ const Insights: React.FC = () => {
     });
   }, [getExpensesForMonth, getIncomeForMonth]);
 
-  // ─── Spending insights ───
+  // ─── Spending insights (real) ───
   const topCategory = categoryData[0];
-  const biggestExpense = expenses.length > 0
-    ? expenses.reduce((max, e) => e.amount > max.amount ? e : max, expenses[0])
+  const biggestExpense = currentMonthExpenses.length > 0
+    ? currentMonthExpenses.reduce((max, e) => e.amount > max.amount ? e : max, currentMonthExpenses[0])
     : null;
 
-  // ─── Projected end-of-month ───
-  const daysInMonth = 30;
+  // ─── Projected end-of-month (real) ───
   const dayOfMonth = new Date().getDate();
-  const projectedTotal = dayOfMonth > 0 ? (totalExpenses / dayOfMonth) * daysInMonth : totalExpenses;
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+  const projectedTotal = dayOfMonth > 0 ? Math.round((totalExpenses / dayOfMonth) * daysInMonth) : totalExpenses;
   const projectedSavings = totalIncome - projectedTotal;
 
   const getFinancialTip = () => {
