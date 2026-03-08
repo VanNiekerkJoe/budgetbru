@@ -299,6 +299,13 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
       const newInc = { ...incomeItem, id, date: incomeItem.date || new Date().toISOString(), description: incomeItem.description || incomeItem.source };
       return [newInc, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     });
+
+    createNotification({
+      type: 'finance',
+      title: 'Income received',
+      description: `R${incomeItem.amount} from ${incomeItem.source}`,
+      icon_type: 'income',
+    });
   };
 
   const addSaving = (saving: Omit<Saving, 'id'>) => {
