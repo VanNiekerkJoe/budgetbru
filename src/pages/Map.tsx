@@ -70,6 +70,7 @@ const Map: React.FC = () => {
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark'>('dark');
   const [selectedPlace, setSelectedPlace] = useState<MapLocation | null>(null);
   const [flyTo, setFlyTo] = useState<[number, number] | null>(null);
+  const [flyToZoom, setFlyToZoom] = useState(14);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sortByDistance, setSortByDistance] = useState(false);
@@ -155,9 +156,9 @@ const Map: React.FC = () => {
   }, [baseLocations]);
 
   const handleMarkerClick = useCallback((loc: MapLocation) => {
-    // If clicking a university on the national view, zoom into that campus
     if (loc.category === 'university' && !focusedCampusId) {
       setFocusedCampusId(loc.id);
+      setFlyToZoom(15);
       setFlyTo([loc.lng, loc.lat]);
       setSelectedPlace(null);
       setActiveCategories(new Set());
@@ -166,6 +167,7 @@ const Map: React.FC = () => {
       return;
     }
     setSelectedPlace(loc);
+    setFlyToZoom(16);
     setFlyTo([loc.lng, loc.lat]);
   }, [focusedCampusId]);
 
@@ -188,7 +190,7 @@ const Map: React.FC = () => {
     setActiveCategories(new Set());
     setSearch('');
     setFlyTo(null);
-    // Reset map to SA view — flyTo null won't trigger, so we use a dummy
+    setFlyToZoom(5.5);
     setTimeout(() => setFlyTo([25.0, -29.0]), 50);
   };
 
@@ -230,6 +232,7 @@ const Map: React.FC = () => {
         mapStyle={mapStyle}
         onMarkerClick={handleMarkerClick}
         flyTo={flyTo}
+        flyToZoom={flyToZoom}
         selectedId={selectedPlace?.id ?? null}
         userLocation={userLocation}
       />
