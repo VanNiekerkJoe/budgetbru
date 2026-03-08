@@ -290,67 +290,97 @@ export const MobileNavbar: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55]"
             onClick={() => setShowMore(false)}
           >
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ translateY: '100%' }}
+              animate={{ translateY: '0%' }}
+              exit={{ translateY: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute bottom-0 left-0 right-0 bg-card rounded-t-2xl border-t border-border pb-safe max-h-[70vh] overflow-y-auto"
+              className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl border-t border-border shadow-2xl max-h-[75vh] overflow-y-auto"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             >
-              <div className="flex items-center justify-between px-5 pt-4 pb-2">
-                <h3 className="font-semibold text-base">More</h3>
+              {/* Drag handle */}
+              <div className="w-10 h-1 bg-muted-foreground/20 rounded-full mx-auto mt-3" />
+
+              <div className="flex items-center justify-between px-5 pt-3 pb-1">
+                <h3 className="font-bold text-base text-foreground">More</h3>
                 <button 
                   onClick={() => setShowMore(false)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors"
+                  className="w-8 h-8 rounded-xl bg-muted/60 flex items-center justify-center active:bg-muted"
                 >
-                  <X size={18} className="text-muted-foreground" />
+                  <X size={16} className="text-muted-foreground" />
                 </button>
               </div>
               
               {/* Finance Section */}
-              <div className="px-4 pb-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">Finance</p>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {FINANCE_ITEMS.map(item => (
-                    <Link
+              <div className="px-4 pb-3 pt-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1 mb-2">💰 Finance</p>
+                <div className="space-y-1">
+                  {FINANCE_ITEMS.map((item, i) => (
+                    <motion.div
                       key={item.path}
-                      to={item.path}
-                      onClick={() => setShowMore(false)}
-                      className={`flex flex-col items-center justify-center py-3.5 px-1 rounded-xl transition-colors active:scale-95 ${
-                        isActive(item.path) 
-                          ? 'bg-primary/10 text-primary' 
-                          : 'text-muted-foreground hover:bg-muted active:bg-muted'
-                      }`}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
                     >
-                      <item.icon size={20} />
-                      <span className="text-[10px] mt-1.5 font-medium leading-tight text-center">{item.label}</span>
-                    </Link>
+                      <Link
+                        to={item.path}
+                        onClick={() => setShowMore(false)}
+                        className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all active:scale-[0.98] ${
+                          isActive(item.path)
+                            ? 'bg-primary/10 ring-1 ring-primary/20'
+                            : 'hover:bg-muted/60 active:bg-muted'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl ${isActive(item.path) ? 'bg-primary/15' : item.bg} flex items-center justify-center flex-shrink-0`}>
+                          <item.icon size={20} className={isActive(item.path) ? 'text-primary' : item.color} />
+                        </div>
+                        <span className={`text-sm font-semibold ${isActive(item.path) ? 'text-primary' : 'text-foreground'}`}>
+                          {item.label}
+                        </span>
+                        {isActive(item.path) && (
+                          <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                        )}
+                      </Link>
+                    </motion.div>
                   ))}
                 </div>
               </div>
 
+              {/* Divider */}
+              <div className="mx-5 h-px bg-border/60" />
+
               {/* Social Section */}
-              <div className="px-4 pb-6">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">Social & Tools</p>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {SOCIAL_ITEMS.map(item => (
-                    <Link
+              <div className="px-4 pb-8 pt-3">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1 mb-2">🌍 Social & Tools</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {SOCIAL_ITEMS.map((item, i) => (
+                    <motion.div
                       key={item.path}
-                      to={item.path}
-                      onClick={() => setShowMore(false)}
-                      className={`flex flex-col items-center justify-center py-3.5 px-1 rounded-xl transition-colors active:scale-95 ${
-                        isActive(item.path) 
-                          ? 'bg-primary/10 text-primary' 
-                          : 'text-muted-foreground hover:bg-muted active:bg-muted'
-                      }`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.05 + i * 0.03 }}
                     >
-                      <item.icon size={20} />
-                      <span className="text-[10px] mt-1.5 font-medium leading-tight text-center">{item.label}</span>
-                    </Link>
+                      <Link
+                        to={item.path}
+                        onClick={() => setShowMore(false)}
+                        className={`flex flex-col items-center justify-center py-4 px-2 rounded-2xl transition-all active:scale-95 ${
+                          isActive(item.path) 
+                            ? 'bg-primary/10 ring-1 ring-primary/20' 
+                            : 'bg-muted/30 hover:bg-muted/60 active:bg-muted'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl ${isActive(item.path) ? 'bg-primary/15' : item.bg} flex items-center justify-center mb-1.5`}>
+                          <item.icon size={18} className={isActive(item.path) ? 'text-primary' : item.color} />
+                        </div>
+                        <span className={`text-[11px] font-semibold leading-tight text-center ${isActive(item.path) ? 'text-primary' : 'text-foreground'}`}>
+                          {item.label}
+                        </span>
+                      </Link>
+                    </motion.div>
                   ))}
                 </div>
               </div>
