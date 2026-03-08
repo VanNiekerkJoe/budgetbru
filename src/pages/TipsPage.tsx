@@ -4,7 +4,7 @@ import {
   BookOpen, Star, Coffee, DollarSign, Briefcase, GraduationCap,
   Lightbulb, TrendingUp, Heart, Bookmark, BookmarkCheck, ChevronRight,
   Flame, Target, Sparkles, ArrowRight, CheckCircle2, Clock, Zap,
-  PiggyBank, ShieldCheck, Users, Smartphone, Search, X
+  PiggyBank, ShieldCheck, Users, Smartphone, Search, X, Quote
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,36 +14,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useBudget } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
-
-type TipCategory = 'student' | 'budgeting' | 'saving' | 'earning' | 'investing' | 'lifestyle';
-type TipDifficulty = 'beginner' | 'intermediate' | 'advanced';
-
-interface Tip {
-  id: string;
-  title: string;
-  content: string;
-  category: TipCategory;
-  difficulty: TipDifficulty;
-  emoji: string;
-  isFeatured?: boolean;
-  potentialSaving?: number;
-  actionSteps?: string[];
-  tags?: string[];
-}
-
-interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  difficulty: TipDifficulty;
-  emoji: string;
-  progress: number;
-  target: number;
-  reward: string;
-}
-
-const TIPS: Tip[] = [
+import { TIPS, type TipCategory, type TipDifficulty, type Tip } from '@/data/tips';
+import { getTodaysQuote, DAILY_QUOTES } from '@/data/dailyQuotes';
   // === BUDGETING ===
   {
     id: '1', title: 'The 50/30/20 Rule', emoji: '📊',
