@@ -56,6 +56,250 @@ export type Database = {
         }
         Relationships: []
       }
+      couple_achievements: {
+        Row: {
+          badge_type: string
+          couple_link_id: string
+          created_at: string
+          details: Json
+          earned_date: string
+          id: string
+        }
+        Insert: {
+          badge_type: string
+          couple_link_id: string
+          created_at?: string
+          details?: Json
+          earned_date?: string
+          id?: string
+        }
+        Update: {
+          badge_type?: string
+          couple_link_id?: string
+          created_at?: string
+          details?: Json
+          earned_date?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_achievements_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_bill_reminders: {
+        Row: {
+          amount: number
+          assigned_to: string | null
+          couple_link_id: string
+          created_at: string
+          created_by: string
+          due_date: string
+          frequency: string | null
+          id: string
+          is_paid: boolean
+          is_recurring: boolean
+          notification_days: string
+          split_percentage: number
+          split_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          assigned_to?: string | null
+          couple_link_id: string
+          created_at?: string
+          created_by: string
+          due_date: string
+          frequency?: string | null
+          id?: string
+          is_paid?: boolean
+          is_recurring?: boolean
+          notification_days?: string
+          split_percentage?: number
+          split_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          assigned_to?: string | null
+          couple_link_id?: string
+          created_at?: string
+          created_by?: string
+          due_date?: string
+          frequency?: string | null
+          id?: string
+          is_paid?: boolean
+          is_recurring?: boolean
+          notification_days?: string
+          split_percentage?: number
+          split_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_bill_reminders_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_challenges: {
+        Row: {
+          couple_link_id: string
+          created_at: string
+          current_progress: number
+          description: string
+          end_date: string
+          id: string
+          reward: string | null
+          start_date: string
+          status: string
+          target_value: number
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          couple_link_id: string
+          created_at?: string
+          current_progress?: number
+          description: string
+          end_date: string
+          id?: string
+          reward?: string | null
+          start_date?: string
+          status?: string
+          target_value: number
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          couple_link_id?: string
+          created_at?: string
+          current_progress?: number
+          description?: string
+          end_date?: string
+          id?: string
+          reward?: string | null
+          start_date?: string
+          status?: string
+          target_value?: number
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_challenges_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_date_night_items: {
+        Row: {
+          actual_cost: number
+          category: string
+          created_at: string
+          date_night_id: string
+          description: string
+          estimated_cost: number
+          id: string
+          is_completed: boolean
+        }
+        Insert: {
+          actual_cost?: number
+          category?: string
+          created_at?: string
+          date_night_id: string
+          description: string
+          estimated_cost?: number
+          id?: string
+          is_completed?: boolean
+        }
+        Update: {
+          actual_cost?: number
+          category?: string
+          created_at?: string
+          date_night_id?: string
+          description?: string
+          estimated_cost?: number
+          id?: string
+          is_completed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_date_night_items_date_night_id_fkey"
+            columns: ["date_night_id"]
+            isOneToOne: false
+            referencedRelation: "couple_date_nights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_date_nights: {
+        Row: {
+          actual_spent: number
+          budget_amount: number
+          couple_link_id: string
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          planned_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_spent?: number
+          budget_amount?: number
+          couple_link_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          planned_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_spent?: number
+          budget_amount?: number
+          couple_link_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          planned_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_date_nights_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_links: {
         Row: {
           created_at: string
@@ -113,6 +357,88 @@ export type Database = {
             foreignKeyName: "couple_messages_couple_link_id_fkey"
             columns: ["couple_link_id"]
             isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_monthly_budgets: {
+        Row: {
+          category_budgets: Json
+          couple_link_id: string
+          created_at: string
+          id: string
+          month_year: string
+          spent_amount: number
+          total_budget: number
+          updated_at: string
+        }
+        Insert: {
+          category_budgets?: Json
+          couple_link_id: string
+          created_at?: string
+          id?: string
+          month_year: string
+          spent_amount?: number
+          total_budget?: number
+          updated_at?: string
+        }
+        Update: {
+          category_budgets?: Json
+          couple_link_id?: string
+          created_at?: string
+          id?: string
+          month_year?: string
+          spent_amount?: number
+          total_budget?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_monthly_budgets_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: false
+            referencedRelation: "couple_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_preferences: {
+        Row: {
+          bill_reminder_notifications: boolean
+          challenge_notifications: boolean
+          couple_link_id: string
+          created_at: string
+          id: string
+          notifications_enabled: boolean
+          transparency_mode: string
+          updated_at: string
+        }
+        Insert: {
+          bill_reminder_notifications?: boolean
+          challenge_notifications?: boolean
+          couple_link_id: string
+          created_at?: string
+          id?: string
+          notifications_enabled?: boolean
+          transparency_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          bill_reminder_notifications?: boolean
+          challenge_notifications?: boolean
+          couple_link_id?: string
+          created_at?: string
+          id?: string
+          notifications_enabled?: boolean
+          transparency_mode?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_preferences_couple_link_id_fkey"
+            columns: ["couple_link_id"]
+            isOneToOne: true
             referencedRelation: "couple_links"
             referencedColumns: ["id"]
           },
