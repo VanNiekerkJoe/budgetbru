@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { BudgetProvider } from "./contexts/BudgetContext";
 import WelcomeAnimation from "./components/WelcomeAnimation";
-import ParticleBackground from "./components/ParticleBackground";
 import MainLayout from "./components/layout/MainLayout";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
@@ -91,14 +90,6 @@ const App = () => {
                 <div className="min-h-screen bg-background">
                   <Toaster />
                   <Sonner position="top-center" />
-                  
-                  {/* Lightweight ambient background */}
-                  <div className="fixed inset-0 z-0 pointer-events-none">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(155,135,245,0.08),transparent_70%)]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,195,160,0.08),transparent_70%)]" />
-                    <ParticleBackground count={12} className="opacity-15" />
-                  </div>
-                  
                   <AnimatedRoutes />
                 </div>
               </TooltipProvider>

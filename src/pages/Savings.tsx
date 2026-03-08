@@ -119,92 +119,83 @@ const Savings: React.FC = () => {
   const radialData = [{ name: 'Score', value: savingsScore, fill: scoreColor }];
 
   return (
-    <div className="min-h-screen bg-background pb-28">
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-xl border-b border-border/40 py-5 px-4 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <PiggyBank size={18} className="text-primary" />
-                <h1 className="text-lg font-bold text-foreground">Savings</h1>
-              </div>
-              <p className="text-xs text-muted-foreground">Track your goals & grow your wealth</p>
+    <div className="space-y-4 pb-4">
+      {/* Inline Summary */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border/50 rounded-xl p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <PiggyBank size={16} className="text-primary" />
+              <h1 className="text-base font-bold text-foreground">Savings</h1>
             </div>
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="rounded-xl gap-1.5 h-9">
-                  <Plus size={14} /> New Goal
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>New Savings Goal</DialogTitle>
-                  <DialogDescription>What are you saving for?</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-                  <div>
-                    <label className="text-xs font-medium text-foreground mb-1 block">Goal Name</label>
-                    <Input placeholder="e.g. Rage 2026, New laptop" value={name} onChange={e => setName(e.target.value)} required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-medium text-foreground mb-1 block">Target Amount</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R</span>
-                        <Input type="number" placeholder="0" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className="pl-7" required />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-foreground mb-1 block">Starting Amount</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R</span>
-                        <Input type="number" placeholder="0" value={initialAmount} onChange={e => setInitialAmount(e.target.value)} className="pl-7" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-medium text-foreground mb-1 block">Goal Type</label>
-                      <Select value={category} onValueChange={v => setCategory(v as 'short' | 'medium' | 'long')}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="short">Short-term</SelectItem>
-                          <SelectItem value="medium">Medium-term</SelectItem>
-                          <SelectItem value="long">Long-term</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-foreground mb-1 block">Target Date</label>
-                      <Input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" className="w-full gap-1.5">
-                      <TrendingUp size={14} /> Create Goal
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <p className="text-[10px] text-muted-foreground">Track your goals & grow your wealth</p>
           </div>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="rounded-xl gap-1 h-8 text-xs">
+                <Plus size={13} /> New Goal
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>New Savings Goal</DialogTitle>
+                <DialogDescription>What are you saving for?</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-3 pt-1">
+                <div>
+                  <label className="text-[10px] font-medium text-foreground mb-1 block">Goal Name</label>
+                  <Input placeholder="e.g. Rage 2026, New laptop" value={name} onChange={e => setName(e.target.value)} className="h-9 text-sm" required />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-medium text-foreground mb-1 block">Target Amount</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R</span>
+                      <Input type="number" placeholder="0" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className="pl-6 h-9 text-sm" required />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-foreground mb-1 block">Starting Amount</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">R</span>
+                      <Input type="number" placeholder="0" value={initialAmount} onChange={e => setInitialAmount(e.target.value)} className="pl-6 h-9 text-sm" />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-medium text-foreground mb-1 block">Goal Type</label>
+                    <Select value={category} onValueChange={v => setCategory(v as 'short' | 'medium' | 'long')}>
+                      <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="short">Short-term</SelectItem>
+                        <SelectItem value="medium">Medium-term</SelectItem>
+                        <SelectItem value="long">Long-term</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-foreground mb-1 block">Target Date</label>
+                    <Input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className="h-9 text-sm" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" className="w-full gap-1 h-9 text-sm">
+                    <TrendingUp size={13} /> Create Goal
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-      </header>
+      </motion.div>
 
-      <main className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4 bg-muted/60 backdrop-blur-sm">
-            <TabsTrigger value="goals" className="text-xs gap-1">
-              <Target size={13} /> Goals
-            </TabsTrigger>
-            <TabsTrigger value="overview" className="text-xs gap-1">
-              <Sparkles size={13} /> Overview
-            </TabsTrigger>
-            <TabsTrigger value="forecast" className="text-xs gap-1">
-              <BarChart3 size={13} /> Forecast
-            </TabsTrigger>
-          </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-3 mb-3 bg-muted/60">
+          <TabsTrigger value="goals" className="text-[11px]">Goals</TabsTrigger>
+          <TabsTrigger value="overview" className="text-[11px]">Overview</TabsTrigger>
+          <TabsTrigger value="forecast" className="text-[11px]">Forecast</TabsTrigger>
+        </TabsList>
 
           <AnimatePresence mode="wait">
             {/* ═══════ GOALS TAB ═══════ */}
@@ -512,7 +503,6 @@ const Savings: React.FC = () => {
             </TabsContent>
           </AnimatePresence>
         </Tabs>
-      </main>
     </div>
   );
 };
