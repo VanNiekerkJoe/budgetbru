@@ -100,7 +100,22 @@ const Income: React.FC = () => {
     setShowAddForm(false);
   };
 
-  const handleDelete = (id: number) => {
+  const handleQuickAdd = () => {
+    if (!quickSource || !quickAmount || isNaN(Number(quickAmount)) || Number(quickAmount) <= 0) {
+      toast.error('Enter a valid amount');
+      return;
+    }
+    addIncome({
+      amount: Number(quickAmount),
+      source: quickSource,
+      description: quickSource,
+      date: new Date().toISOString().split('T')[0],
+    });
+    toast.success(`${getSourceEmoji(quickSource)} ${formatCurrency(Number(quickAmount))} added!`);
+    setQuickSource(null);
+    setQuickAmount('');
+  };
+
     deleteIncome(id);
     toast.success('Income deleted');
     setExpandedId(null);
