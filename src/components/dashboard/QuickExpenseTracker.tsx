@@ -1,21 +1,26 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Plus, Check } from 'lucide-react';
+import { Clock, Plus, Check, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface QuickExpenseTrackerProps {
   onAddExpense: (description: string, amount: number, category: string) => void;
 }
 
 const QUICK_EXPENSE_CATEGORIES = [
-  { id: 'food', label: 'Food', emoji: '🍔', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' },
-  { id: 'transport', label: 'Transport', emoji: '🚗', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' },
-  { id: 'education', label: 'Study', emoji: '📚', color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-300' },
-  { id: 'entertainment', label: 'Fun', emoji: '🎬', color: 'bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300' },
-  { id: 'utilities', label: 'Utils', emoji: '💡', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' },
+  { id: 'food', label: 'Food', emoji: '🍔', color: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300' },
+  { id: 'transport', label: 'Transport', emoji: '🚗', color: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300' },
+  { id: 'education', label: 'Study', emoji: '📚', color: 'bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300' },
+  { id: 'entertainment', label: 'Fun', emoji: '🎬', color: 'bg-pink-100 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300' },
+  { id: 'utilities', label: 'Utils', emoji: '💡', color: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300' },
+];
+
+const QUICK_PRESETS = [
+  { label: '☕ Coffee', amount: 15, category: 'food' },
+  { label: '🥪 Lunch', amount: 45, category: 'food' },
+  { label: '🚕 Uber', amount: 35, category: 'transport' },
 ];
 
 export function QuickExpenseTracker({ onAddExpense }: QuickExpenseTrackerProps) {
@@ -38,139 +43,116 @@ export function QuickExpenseTracker({ onAddExpense }: QuickExpenseTrackerProps) 
     setSelectedCategory(QUICK_EXPENSE_CATEGORIES[0].id);
   };
 
-  const createQuickExpense = (label: string, amount: number, category: string) => {
-    onAddExpense(label, amount, category);
-  };
-
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
-      className="bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-md overflow-hidden"
+      className="bg-card rounded-2xl shadow-md border border-border/50 overflow-hidden"
     >
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center">
-          <Clock size={16} className="mr-2" />
-          Quick Expenses
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 p-3">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Zap size={14} className="text-primary" />
+        </div>
+        <h3 className="text-sm font-semibold text-card-foreground">Quick Add</h3>
+      </div>
+      
+      <div className="px-4 pb-4 space-y-3">
         {!isAdding ? (
           <>
-            <div className="grid grid-cols-5 gap-1">
-              {QUICK_EXPENSE_CATEGORIES.map((category) => (
-                <motion.div
-                  key={category.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer ${category.color}`}
-                  onClick={() => createQuickExpense(category.label, 20, category.id)}
-                >
-                  <div className="text-lg">{category.emoji}</div>
-                  <div className="text-xs mt-1">{category.label}</div>
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md flex items-center justify-center cursor-pointer"
-                onClick={() => createQuickExpense("Coffee", 15, "food")}
-              >
-                <span>☕ Coffee R15</span>
-              </motion.div>
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md flex items-center justify-center cursor-pointer"
-                onClick={() => createQuickExpense("Lunch", 45, "food")}
-              >
-                <span>🥪 Lunch R45</span>
-              </motion.div>
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded-md flex items-center justify-center cursor-pointer"
-                onClick={() => setIsAdding(true)}
-              >
-                <span className="flex items-center">
-                  <Plus size={14} className="mr-1" />
-                  Custom
-                </span>
-              </motion.div>
-            </div>
-          </>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-3"
-          >
-            <div className="flex gap-2">
-              <div className="flex-grow">
-                <Input 
-                  placeholder="Description" 
-                  value={description} 
-                  onChange={(e) => setDescription(e.target.value)} 
-                  className="text-sm"
-                />
-              </div>
-              <div className="w-24">
-                <Input 
-                  placeholder="Amount" 
-                  type="number"
-                  value={amount} 
-                  onChange={(e) => setAmount(e.target.value)} 
-                  className="text-sm"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-1">
+            {/* Category chips */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {QUICK_EXPENSE_CATEGORIES.map((category) => (
                 <motion.button
                   key={category.id}
                   whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`flex-1 py-1 rounded-md flex flex-col items-center ${
-                    selectedCategory === category.id 
-                      ? 'ring-2 ring-theme-pink ring-opacity-50 ' + category.color
-                      : 'bg-gray-50 dark:bg-gray-700/50'
-                  }`}
-                  onClick={() => setSelectedCategory(category.id)}
+                  whileTap={{ scale: 0.93 }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap ${category.color} transition-all`}
+                  onClick={() => onAddExpense(category.label, 20, category.id)}
                 >
-                  <div className="text-sm">{category.emoji}</div>
-                  <div className="text-xs">{category.label}</div>
+                  <span>{category.emoji}</span>
+                  <span>{category.label}</span>
                 </motion.button>
               ))}
             </div>
             
-            <div className="flex justify-end gap-2 pt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={resetForm}
-                className="text-xs h-8"
+            {/* Quick presets */}
+            <div className="flex gap-2">
+              {QUICK_PRESETS.map((preset) => (
+                <motion.button
+                  key={preset.label}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex-1 bg-muted hover:bg-muted/70 rounded-xl py-2.5 px-3 text-xs font-medium text-foreground transition-colors"
+                  onClick={() => onAddExpense(preset.label.split(' ')[1], preset.amount, preset.category)}
+                >
+                  {preset.label} R{preset.amount}
+                </motion.button>
+              ))}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center justify-center gap-1 bg-primary/10 text-primary rounded-xl py-2.5 px-3 text-xs font-medium transition-colors hover:bg-primary/15"
+                onClick={() => setIsAdding(true)}
               >
+                <Plus size={13} />
+                Custom
+              </motion.button>
+            </div>
+          </>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-3"
+          >
+            <div className="flex gap-2">
+              <Input 
+                placeholder="What did you spend on?" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                className="text-sm rounded-xl"
+                autoFocus
+              />
+              <Input 
+                placeholder="R0" 
+                type="number"
+                value={amount} 
+                onChange={(e) => setAmount(e.target.value)} 
+                className="text-sm w-24 rounded-xl"
+              />
+            </div>
+            
+            <div className="flex gap-1.5">
+              {QUICK_EXPENSE_CATEGORIES.map((category) => (
+                <motion.button
+                  key={category.id}
+                  whileTap={{ scale: 0.93 }}
+                  className={`flex-1 py-2 rounded-xl flex flex-col items-center gap-0.5 text-xs transition-all ${
+                    selectedCategory === category.id 
+                      ? 'ring-2 ring-primary/50 ' + category.color
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  <span>{category.emoji}</span>
+                  <span className="text-[10px]">{category.label}</span>
+                </motion.button>
+              ))}
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={resetForm} className="text-xs h-8 rounded-lg">
                 Cancel
               </Button>
-              <Button 
-                size="sm" 
-                onClick={handleAddExpense}
-                className="text-xs h-8"
-                disabled={!description || !amount}
-              >
+              <Button size="sm" onClick={handleAddExpense} className="text-xs h-8 rounded-lg" disabled={!description || !amount}>
                 <Check size={14} className="mr-1" />
-                Add
+                Add Expense
               </Button>
             </div>
           </motion.div>
         )}
-      </CardContent>
+      </div>
     </motion.div>
   );
 }
