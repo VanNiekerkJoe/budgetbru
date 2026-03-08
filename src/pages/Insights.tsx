@@ -137,49 +137,31 @@ const Insights: React.FC = () => {
   const radialData = [{ name: 'Score', value: healthScore, fill: healthColor }];
 
   return (
-    <div className="min-h-screen bg-background pb-28">
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-xl border-b border-border/40 py-5 px-4 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <Activity size={18} className="text-primary" />
-                <h1 className="text-lg font-bold text-foreground">Insights</h1>
-              </div>
-              <p className="text-xs text-muted-foreground">Your financial command center</p>
+    <div className="space-y-4 pb-4">
+      {/* Inline Summary */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border/50 rounded-xl p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <Activity size={16} className="text-primary" />
+              <h1 className="text-base font-bold text-foreground">Insights</h1>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="text-center">
-                <div
-                  className="text-2xl font-black"
-                  style={{ color: healthColor }}
-                >
-                  {healthGrade}
-                </div>
-                <p className="text-[9px] text-muted-foreground font-medium">SCORE</p>
-              </div>
-            </div>
+            <p className="text-[10px] text-muted-foreground">Your financial command center</p>
+          </div>
+          <div className="text-center">
+            <div className="text-xl font-black" style={{ color: healthColor }}>{healthGrade}</div>
+            <p className="text-[8px] text-muted-foreground font-medium">SCORE</p>
           </div>
         </div>
-      </header>
+      </motion.div>
 
-      <main className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4 bg-muted/60 backdrop-blur-sm">
-            <TabsTrigger value="overview" className="text-xs gap-1">
-              <Sparkles size={13} /> Overview
-            </TabsTrigger>
-            <TabsTrigger value="spending" className="text-xs gap-1">
-              <PieChartIcon size={13} /> Spending
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="text-xs gap-1">
-              <BarChart3 size={13} /> Trends
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="text-xs gap-1">
-              <Target size={13} /> Goals
-            </TabsTrigger>
-          </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-4 mb-3 bg-muted/60">
+          <TabsTrigger value="overview" className="text-[11px]">Overview</TabsTrigger>
+          <TabsTrigger value="spending" className="text-[11px]">Spending</TabsTrigger>
+          <TabsTrigger value="trends" className="text-[11px]">Trends</TabsTrigger>
+          <TabsTrigger value="goals" className="text-[11px]">Goals</TabsTrigger>
+        </TabsList>
 
           <AnimatePresence mode="wait">
             {/* ═══════ OVERVIEW TAB ═══════ */}

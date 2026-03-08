@@ -209,68 +209,49 @@ const IOUPage: React.FC = () => {
   const [partialAmt, setPartialAmt] = useState('');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 pb-28">
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-20 w-80 h-80 bg-primary/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '14s' }} />
-        <div className="absolute bottom-1/3 -left-20 w-72 h-72 bg-success/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '18s' }} />
-      </div>
-
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-xl border-b border-border py-5 px-4 sticky top-0 z-20">
-        <div className="container mx-auto max-w-lg">
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-                  <HandCoins size={16} className="text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-foreground">IOU Tracker</h1>
-                  <p className="text-[11px] text-muted-foreground">Who owes who — sorted</p>
-                </div>
-              </div>
-              <Button onClick={() => setShowAddForm(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-10 w-10 p-0 shadow-lg">
-                <Plus size={18} />
-              </Button>
+    <div className="space-y-4 pb-4">
+      {/* Inline Summary */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border/50 rounded-xl p-3">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-primary/15 flex items-center justify-center">
+              <HandCoins size={14} className="text-primary" />
             </div>
-
-            {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-success/10 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">They Owe Me</p>
-                <p className="text-sm font-bold text-success">{formatCurrency(totalOwed)}</p>
-              </div>
-              <div className="bg-destructive/10 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">I Owe Them</p>
-                <p className="text-sm font-bold text-destructive">{formatCurrency(totalOwe)}</p>
-              </div>
-              <div className={`rounded-xl p-2.5 text-center ${net >= 0 ? 'bg-primary/10' : 'bg-warning/10'}`}>
-                <p className="text-[10px] text-muted-foreground">Net Balance</p>
-                <p className={`text-sm font-bold ${net >= 0 ? 'text-primary' : 'text-warning'}`}>
-                  {net >= 0 ? '+' : '-'}{formatCurrency(Math.abs(net))}
-                </p>
-              </div>
+            <div>
+              <h1 className="text-base font-bold text-foreground">IOU Tracker</h1>
+              <p className="text-[10px] text-muted-foreground">Who owes who — sorted</p>
             </div>
-          </motion.div>
+          </div>
+          <Button onClick={() => setShowAddForm(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-9 w-9 p-0 shadow-md">
+            <Plus size={16} />
+          </Button>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-4 space-y-4 max-w-lg">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 w-full bg-card/60 backdrop-blur-md border border-border">
-            <TabsTrigger value="active" className="text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-              <Clock size={13} /> Active
-            </TabsTrigger>
-            <TabsTrigger value="split" className="text-xs gap-1 data-[state=active]:bg-accent/10 data-[state=active]:text-accent-foreground">
-              <Users size={13} /> Split
-            </TabsTrigger>
-            <TabsTrigger value="people" className="text-xs gap-1 data-[state=active]:bg-warning/10 data-[state=active]:text-warning">
-              <UserPlus size={13} /> People
-            </TabsTrigger>
-            <TabsTrigger value="history" className="text-xs gap-1 data-[state=active]:bg-success/10 data-[state=active]:text-success">
-              <History size={13} /> History
-            </TabsTrigger>
-          </TabsList>
+        <div className="grid grid-cols-3 gap-1.5">
+          <div className="bg-success/10 rounded-xl p-2 text-center">
+            <p className="text-[9px] text-muted-foreground">They Owe Me</p>
+            <p className="text-xs font-bold text-success">{formatCurrency(totalOwed)}</p>
+          </div>
+          <div className="bg-destructive/10 rounded-xl p-2 text-center">
+            <p className="text-[9px] text-muted-foreground">I Owe Them</p>
+            <p className="text-xs font-bold text-destructive">{formatCurrency(totalOwe)}</p>
+          </div>
+          <div className={`rounded-xl p-2 text-center ${net >= 0 ? 'bg-primary/10' : 'bg-warning/10'}`}>
+            <p className="text-[9px] text-muted-foreground">Net</p>
+            <p className={`text-xs font-bold ${net >= 0 ? 'text-primary' : 'text-warning'}`}>
+              {net >= 0 ? '+' : '-'}{formatCurrency(Math.abs(net))}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-4 w-full bg-muted/60">
+          <TabsTrigger value="active" className="text-[11px]">Active</TabsTrigger>
+          <TabsTrigger value="split" className="text-[11px]">Split</TabsTrigger>
+          <TabsTrigger value="people" className="text-[11px]">People</TabsTrigger>
+          <TabsTrigger value="history" className="text-[11px]">History</TabsTrigger>
+        </TabsList>
 
           {/* ACTIVE TAB */}
           <TabsContent value="active">
