@@ -154,6 +154,10 @@ const DigitalReceipt = () => {
     setOcrProgress(0);
     setParsedResult(null);
     setShowRawText(false);
+    setShowBreakdown(false);
+    setLineItems([]);
+    setNewItemName('');
+    setNewItemAmount('');
     setAmount(0);
     setDescription('');
     setCategory('other');
