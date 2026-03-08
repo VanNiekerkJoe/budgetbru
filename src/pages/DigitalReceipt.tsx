@@ -208,7 +208,7 @@ const DigitalReceipt = () => {
       if (parsed.storeName) setDescription(parsed.storeName);
       setCategory(parsed.category);
       if (parsed.date) setDate(parsed.date);
-      if (parsed.lineItems.length > 0) {
+      if (parsed.lineItems.length > 0 && autoBreakdown) {
         setLineItems(parsed.lineItems);
         setShowBreakdown(true);
       }
