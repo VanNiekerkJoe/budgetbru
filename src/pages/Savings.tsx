@@ -503,7 +503,6 @@ const Savings: React.FC = () => {
             </TabsContent>
           </AnimatePresence>
         </Tabs>
-      </main>
     </div>
   );
 };

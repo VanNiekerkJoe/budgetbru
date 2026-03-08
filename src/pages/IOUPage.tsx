@@ -612,7 +612,6 @@ const IOUPage: React.FC = () => {
             </AnimatePresence>
           </TabsContent>
         </Tabs>
-      </main>
 
       {/* Add IOU Modal */}
       <AnimatePresence>

@@ -764,7 +764,6 @@ const Insights: React.FC = () => {
             </TabsContent>
           </AnimatePresence>
         </Tabs>
-      </main>
     </div>
   );
 };
