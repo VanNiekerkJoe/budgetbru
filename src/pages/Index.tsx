@@ -243,6 +243,13 @@ const IndexPage: React.FC = () => {
           </Link>
         ))}
       </motion.div>
+
+      {/* First-time tutorial */}
+      <AnimatePresence>
+        {showTutorial && (
+          <TutorialGuide onComplete={completeTutorial} onSkip={skipTutorial} />
+        )}
+      </AnimatePresence>
       
     </div>
   );
