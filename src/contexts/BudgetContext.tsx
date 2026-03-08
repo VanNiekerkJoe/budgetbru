@@ -112,118 +112,31 @@ function saveToStorage<T>(key: string, data: T) {
   }
 }
 
-// ─── Realistic seed data with dates spanning the last 6 months ───
-function generateSeedExpenses(): Expense[] {
-  const now = new Date();
-  const items: Expense[] = [];
-  let id = 1;
-
-  const templates = [
-    { category: 'food', descriptions: ['KFC', 'Nandos', 'Lunch at res', 'Uber Eats', 'Spur', 'Pizza', 'Coffee', 'Snacks'] },
-    { category: 'transport', descriptions: ['Uber ride', 'Bus fare', 'Petrol', 'Bolt ride', 'Taxi'] },
-    { category: 'entertainment', descriptions: ['Movies', 'Netflix', 'Spotify', 'Night out', 'Games', 'Concert'] },
-    { category: 'education', descriptions: ['Textbooks', 'Printing', 'Course materials', 'Stationery'] },
-    { category: 'utilities', descriptions: ['Electricity', 'Phone data', 'WiFi', 'Water'] },
-    { category: 'groceries', descriptions: ['Checkers', 'Pick n Pay', 'Woolworths', 'Shoprite'] },
-    { category: 'health', descriptions: ['Pharmacy', 'Gym membership', 'Doctor visit'] },
-    { category: 'clothing', descriptions: ['Mr Price', 'Shein order', 'Shoes'] },
-  ];
-
-  const amountRanges: Record<string, [number, number]> = {
-    food: [25, 180], transport: [15, 120], entertainment: [30, 200],
-    education: [50, 400], utilities: [80, 350], groceries: [150, 600],
-    health: [50, 300], clothing: [100, 500],
-  };
-
-  // Generate 8-15 expenses per month for the last 6 months
-  for (let m = 5; m >= 0; m--) {
-    const monthDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
-    const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
-    const count = 8 + Math.floor(Math.random() * 8);
-
-    for (let i = 0; i < count; i++) {
-      const tmpl = templates[Math.floor(Math.random() * templates.length)];
-      const desc = tmpl.descriptions[Math.floor(Math.random() * tmpl.descriptions.length)];
-      const [min, max] = amountRanges[tmpl.category] || [20, 200];
-      const amount = Math.round(min + Math.random() * (max - min));
-      const day = Math.min(1 + Math.floor(Math.random() * daysInMonth), m === 0 ? now.getDate() : daysInMonth);
-      const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
-
-      items.push({ id: id++, amount, category: tmpl.category, description: desc, date: date.toISOString() });
-    }
-  }
-
-  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
-
-function generateSeedIncome(): Income[] {
-  const now = new Date();
-  const items: Income[] = [];
-  let id = 1;
-
-  for (let m = 5; m >= 0; m--) {
-    const monthDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
-    // Main income on the 25th
-    items.push({
-      id: id++, amount: 2000, source: 'part-time',
-      description: 'Part-time job salary',
-      date: new Date(monthDate.getFullYear(), monthDate.getMonth(), Math.min(25, new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate())).toISOString(),
-      recurring: true, frequency: 'monthly',
-    });
-    // Allowance on the 1st
-    items.push({
-      id: id++, amount: 500, source: 'allowance',
-      description: 'Monthly allowance',
-      date: new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).toISOString(),
-      recurring: true, frequency: 'monthly',
-    });
-    // Random side income some months
-    if (Math.random() > 0.5) {
-      const sideAmounts = [150, 200, 300, 250, 100];
-      const sideSources = ['Freelance gig', 'Sold textbooks', 'Tutoring', 'Cash gift', 'Side hustle'];
-      const idx = Math.floor(Math.random() * sideSources.length);
-      items.push({
-        id: id++, amount: sideAmounts[idx], source: 'other',
-        description: sideSources[idx],
-        date: new Date(monthDate.getFullYear(), monthDate.getMonth(), 10 + Math.floor(Math.random() * 15)).toISOString(),
-      });
-    }
-  }
-
-  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
-
 type BudgetProviderProps = { children: ReactNode };
 
 export const BudgetProvider = ({ children }: BudgetProviderProps) => {
   const [expenses, setExpenses] = useState<Expense[]>(() =>
-    loadFromStorage(STORAGE_KEYS.expenses, generateSeedExpenses())
+    loadFromStorage(STORAGE_KEYS.expenses, [])
   );
 
   const [income, setIncome] = useState<Income[]>(() =>
-    loadFromStorage(STORAGE_KEYS.income, generateSeedIncome())
+    loadFromStorage(STORAGE_KEYS.income, [])
   );
 
   const [savings, setSavings] = useState<Saving[]>(() =>
-    loadFromStorage(STORAGE_KEYS.savings, [
-      { id: 1, name: 'New Laptop', targetAmount: 12000, currentAmount: 4000, deadline: '2026-08-01', iconName: 'laptop' },
-      { id: 2, name: 'Spring Break Trip', targetAmount: 5000, currentAmount: 2500, deadline: '2026-10-15', iconName: 'palmtree' },
-    ])
+    loadFromStorage(STORAGE_KEYS.savings, [])
   );
 
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(() =>
-    loadFromStorage(STORAGE_KEYS.savingsGoals, [
-      { id: 1, name: 'New Laptop', targetAmount: 12000, currentAmount: 4000, deadline: '2026-08-01', category: 'medium' as const, iconName: 'laptop' },
-      { id: 2, name: 'Spring Break Trip', targetAmount: 5000, currentAmount: 2500, deadline: '2026-10-15', category: 'short' as const, iconName: 'palmtree' },
-    ])
+    loadFromStorage(STORAGE_KEYS.savingsGoals, [])
   );
 
   const [emergencyFund, setEmergencyFundState] = useState<EmergencyFund>(() =>
     loadFromStorage(STORAGE_KEYS.emergencyFund, {
       targetAmount: 10000,
-      currentAmount: 2400,
+      currentAmount: 0,
       lastUpdate: new Date().toISOString(),
-      monthlyContribution: 500,
+      monthlyContribution: 0,
     })
   );
 
