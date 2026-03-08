@@ -95,6 +95,13 @@ const STORAGE_KEYS = {
   emergencyFund: 'bb_emergencyFund',
 };
 
+// Clear all old data so users start fresh
+const DATA_VERSION = 'bb_v2';
+if (!localStorage.getItem(DATA_VERSION)) {
+  Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+  localStorage.setItem(DATA_VERSION, '1');
+}
+
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
