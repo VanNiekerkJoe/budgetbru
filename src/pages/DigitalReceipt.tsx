@@ -126,6 +126,10 @@ const DigitalReceipt = () => {
       if (parsed.storeName) setDescription(parsed.storeName);
       setCategory(parsed.category);
       if (parsed.date) setDate(parsed.date);
+      if (parsed.lineItems.length > 0) {
+        setLineItems(parsed.lineItems);
+        setShowBreakdown(true);
+      }
 
       setOcrProgress(100);
       setScanStage('done');
