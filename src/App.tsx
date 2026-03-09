@@ -37,6 +37,8 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const CouplesPage = lazy(() => import("./pages/CouplesPage"));
 const RoommatesPage = lazy(() => import("./pages/RoommatesPage"));
+const StudentSurvivalPage = lazy(() => import("./pages/StudentSurvivalPage"));
+const SOSPage = lazy(() => import("./pages/SOSPage"));
 
 const queryClient = new QueryClient();
 
