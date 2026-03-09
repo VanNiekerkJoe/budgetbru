@@ -373,6 +373,15 @@ const CouplesPage: React.FC = () => {
   // Expenses
   const handleAddExpense = async () => {
     if (!user || !coupleLink || !expDesc.trim() || !expAmount) return;
+    
+    // Determine split percentage based on split type
+    let splitPercentage = 50;
+    if (expSplitType === 'pay_full') {
+      splitPercentage = 100; // I pay 100%, partner owes 0%
+    } else if (expSplitType === 'custom') {
+      splitPercentage = Number(expSplitPct);
+    }
+    
     const { error } = await supabase.from('couple_shared_expenses').insert({
       couple_link_id: coupleLink.id,
       added_by: user.id,
@@ -380,7 +389,7 @@ const CouplesPage: React.FC = () => {
       amount: Number(expAmount),
       category: expCategory,
       split_type: expSplitType,
-      split_percentage: expSplitType === '50/50' ? 50 : Number(expSplitPct),
+      split_percentage: splitPercentage,
     });
     if (error) { toast.error('Failed to add expense'); return; }
     toast.success('Expense added');
