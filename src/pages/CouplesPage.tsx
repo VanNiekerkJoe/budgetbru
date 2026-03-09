@@ -105,6 +105,7 @@ const CouplesPage: React.FC = () => {
   // Data states
   const [expenses, setExpenses] = useState<SharedExpense[]>([]);
   const [goals, setGoals] = useState<SharedGoal[]>([]);
+  const [goalContributions, setGoalContributions] = useState<GoalContribution[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [messages, setMessages] = useState<CoupleMessage[]>([]);
 
