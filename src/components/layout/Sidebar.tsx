@@ -22,6 +22,7 @@ const Sidebar: React.FC = () => {
     { path: '/vibes', icon: Zap, label: 'Vibes Hub' },
     { path: '/planning', icon: Calendar, label: 'Planning' },
     { path: '/couples', icon: Heart, label: 'Couples' },
+    { path: '/roommates', icon: Users, label: 'Roommates' },
     { path: '/profile', icon: User, label: 'Profile' },
   ];
 
