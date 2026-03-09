@@ -158,15 +158,6 @@ const IndexPage: React.FC = () => {
         <QuickExpenseTracker onAddExpense={handleQuickExpense} />
       </div>
 
-      {/* Student Survival Mode */}
-      <div>
-        <StudentSurvivalMode />
-      </div>
-
-      {/* S.O.S Emergency Money Request */}
-      <div>
-        <SOSMoneyRequest />
-      </div>
 
       {/* Recent Transactions */}
       <motion.div 
