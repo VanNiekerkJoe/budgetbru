@@ -300,6 +300,41 @@ export type Database = {
           },
         ]
       }
+      couple_goal_contributions: {
+        Row: {
+          amount: number
+          contribution_date: string
+          contributor_id: string
+          created_at: string
+          goal_id: string
+          id: string
+        }
+        Insert: {
+          amount: number
+          contribution_date?: string
+          contributor_id: string
+          created_at?: string
+          goal_id: string
+          id?: string
+        }
+        Update: {
+          amount?: number
+          contribution_date?: string
+          contributor_id?: string
+          created_at?: string
+          goal_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_goal_contributions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "couple_shared_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_links: {
         Row: {
           created_at: string

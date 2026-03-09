@@ -70,6 +70,15 @@ interface CoupleMessage {
   created_at: string;
 }
 
+interface GoalContribution {
+  id: string;
+  goal_id: string;
+  contributor_id: string;
+  amount: number;
+  contribution_date: string;
+  created_at: string;
+}
+
 const EXPENSE_CATEGORIES = [
   { id: 'groceries', label: 'Groceries', emoji: '🛒' },
   { id: 'dining', label: 'Dining', emoji: '🍽️' },
@@ -96,6 +105,7 @@ const CouplesPage: React.FC = () => {
   // Data states
   const [expenses, setExpenses] = useState<SharedExpense[]>([]);
   const [goals, setGoals] = useState<SharedGoal[]>([]);
+  const [goalContributions, setGoalContributions] = useState<GoalContribution[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [messages, setMessages] = useState<CoupleMessage[]>([]);
 
@@ -178,10 +188,23 @@ const CouplesPage: React.FC = () => {
       supabase.from('couple_messages').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: true }),
     ]);
 
+    // Fetch contributions for the goals we found
+    const goalIds = goalRes.data?.map(g => g.id) || [];
+    let contributions: GoalContribution[] = [];
+    
+    if (goalIds.length > 0) {
+      const contribRes = await supabase.from('couple_goal_contributions')
+        .select('*')
+        .in('goal_id', goalIds)
+        .order('created_at', { ascending: false });
+      contributions = contribRes.data || [];
+    }
+
     if (expRes.data) setExpenses(expRes.data);
     if (goalRes.data) setGoals(goalRes.data);
     if (wishRes.data) setWishlist(wishRes.data);
     if (msgRes.data) setMessages(msgRes.data);
+    setGoalContributions(contributions);
   }, [coupleLink]);
 
   useEffect(() => { fetchCoupleLink(); }, [fetchCoupleLink]);
@@ -387,8 +410,31 @@ const CouplesPage: React.FC = () => {
   };
 
   const handleContributeGoal = async (goal: SharedGoal, amount: number) => {
+    if (!user) return;
+    
+    // Add the contribution record
+    const { error: contribError } = await supabase.from('couple_goal_contributions').insert({
+      goal_id: goal.id,
+      contributor_id: user.id,
+      amount: amount,
+    });
+    
+    if (contribError) { 
+      toast.error('Failed to record contribution'); 
+      return; 
+    }
+
+    // Update the goal's total amount
     const newAmount = Math.min(goal.current_amount + amount, goal.target_amount);
-    await supabase.from('couple_shared_goals').update({ current_amount: newAmount }).eq('id', goal.id);
+    const { error: goalError } = await supabase.from('couple_shared_goals').update({ 
+      current_amount: newAmount 
+    }).eq('id', goal.id);
+    
+    if (goalError) { 
+      toast.error('Failed to update goal'); 
+      return; 
+    }
+    
     if (newAmount >= goal.target_amount) toast.success('🎉 Goal achieved! Congratulations!');
     else toast.success(`Added ${formatCurrency(amount)} to "${goal.title}"`);
     fetchAllData();
@@ -445,6 +491,20 @@ const CouplesPage: React.FC = () => {
     return s + (Number(e.amount) * pct / 100);
   }, 0);
   const partnerShare = totalSharedExpenses - myShare;
+
+  // Helper function to get my contribution to a specific goal
+  const getMyContribution = (goalId: string): number => {
+    return goalContributions
+      .filter(c => c.goal_id === goalId && c.contributor_id === user?.id)
+      .reduce((sum, c) => sum + Number(c.amount), 0);
+  };
+
+  // Helper function to get partner's contribution to a specific goal
+  const getPartnerContribution = (goalId: string): number => {
+    return goalContributions
+      .filter(c => c.goal_id === goalId && c.contributor_id !== user?.id)
+      .reduce((sum, c) => sum + Number(c.amount), 0);
+  };
 
   if (loading) {
     return (
@@ -718,6 +778,8 @@ const CouplesPage: React.FC = () => {
               {goals.map(goal => {
                 const pct = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
                 const completed = pct >= 100;
+                const myContribution = getMyContribution(goal.id);
+                const partnerContribution = getPartnerContribution(goal.id);
                 return (
                   <Card key={goal.id} className={completed ? 'border-emerald-500/30 bg-emerald-500/5' : ''}>
                     <CardContent className="pt-4 space-y-3">
@@ -731,12 +793,20 @@ const CouplesPage: React.FC = () => {
                         </div>
                         {completed && <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">🎉 Done!</Badge>}
                       </div>
-                      <div>
-                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{formatCurrency(goal.current_amount)}</span>
                           <span>{formatCurrency(goal.target_amount)}</span>
                         </div>
                         <Progress value={Math.min(pct, 100)} className="h-2" />
+                        
+                        {/* Individual contributions */}
+                        {(myContribution > 0 || partnerContribution > 0) && (
+                          <div className="flex justify-between text-xs pt-1 border-t border-border/50">
+                            <span className="text-primary font-medium">You: {formatCurrency(myContribution)}</span>
+                            <span className="text-muted-foreground">Partner: {formatCurrency(partnerContribution)}</span>
+                          </div>
+                        )}
                       </div>
                       {!completed && (
                         <div className="flex gap-2">
