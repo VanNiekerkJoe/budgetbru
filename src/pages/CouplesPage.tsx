@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -39,6 +40,8 @@ interface SharedExpense {
   split_percentage: number;
   date: string;
   created_at: string;
+  user_1_paid: boolean;
+  user_2_paid: boolean;
 }
 
 interface SharedGoal {
@@ -402,6 +405,27 @@ const CouplesPage: React.FC = () => {
     fetchAllData();
   };
 
+  const handleTogglePayment = async (expenseId: string, currentStatus: boolean) => {
+    if (!coupleLink || !user) return;
+    
+    // Determine which user is making the payment
+    const isUser1 = coupleLink.user_id_1 === user.id;
+    const updateField = isUser1 ? 'user_1_paid' : 'user_2_paid';
+    
+    const { error } = await supabase
+      .from('couple_shared_expenses')
+      .update({ [updateField]: !currentStatus })
+      .eq('id', expenseId);
+    
+    if (error) {
+      toast.error('Failed to update payment status');
+      return;
+    }
+    
+    toast.success(currentStatus ? 'Marked as unpaid' : 'Marked as paid');
+    fetchAllData();
+  };
+
   // Goals
   const handleAddGoal = async () => {
     if (!coupleLink || !goalTitle.trim() || !goalTarget) return;
@@ -655,8 +679,11 @@ const CouplesPage: React.FC = () => {
                 <div className="space-y-2">
                   {expenses.slice(0, 5).map(e => {
                     const cat = EXPENSE_CATEGORIES.find(c => c.id === e.category);
+                    const isUser1 = coupleLink?.user_id_1 === user?.id;
+                    const isPaid = isUser1 ? e.user_1_paid : e.user_2_paid;
+                    
                     return (
-                      <div key={e.id} className="flex items-center justify-between text-sm py-1.5">
+                      <div key={e.id} className={`flex items-center justify-between text-sm py-1.5 ${isPaid ? "line-through opacity-50" : ""}`}>
                         <span>{cat?.emoji} {e.description}</span>
                         <span className="font-medium text-foreground">{formatCurrency(e.amount)}</span>
                       </div>
@@ -730,17 +757,25 @@ const CouplesPage: React.FC = () => {
             <div className="space-y-2">
               {expenses.map(e => {
                 const cat = EXPENSE_CATEGORIES.find(c => c.id === e.category);
+                const isUser1 = coupleLink?.user_id_1 === user?.id;
+                const isPaid = isUser1 ? e.user_1_paid : e.user_2_paid;
+                
                 return (
                   <motion.div key={e.id} layout className="flex items-center justify-between p-3 bg-card border border-border rounded-xl">
                     <div className="flex items-center gap-3">
+                      <Checkbox 
+                        checked={isPaid}
+                        onCheckedChange={() => handleTogglePayment(e.id, isPaid)}
+                        className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      />
                       <span className="text-xl">{cat?.emoji || '📦'}</span>
-                      <div>
+                      <div className={isPaid ? "line-through opacity-50" : ""}>
                         <p className="text-sm font-medium text-foreground">{e.description}</p>
                         <p className="text-xs text-muted-foreground">{e.date} · {e.split_type === '50/50' ? '50/50' : e.split_type === 'pay_full' ? 'I paid full' : `${e.split_percentage}%`}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-foreground">{formatCurrency(e.amount)}</span>
+                      <span className={`font-bold text-sm text-foreground ${isPaid ? "line-through opacity-50" : ""}`}>{formatCurrency(e.amount)}</span>
                       <button onClick={() => handleDeleteExpense(e.id)} className="text-muted-foreground hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </button>
