@@ -86,6 +86,7 @@ const GOAL_ICONS = ['🎯', '🏠', '✈️', '💍', '🚗', '👶', '🎓', '�
 
 const CouplesPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [coupleLink, setCoupleLink] = useState<CoupleLink | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteCode, setInviteCode] = useState('');
