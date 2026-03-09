@@ -726,6 +726,424 @@ export type Database = {
         }
         Relationships: []
       }
+      roommate_bill_reminders: {
+        Row: {
+          amount: number
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          due_date: string
+          frequency: string | null
+          group_id: string
+          id: string
+          is_paid: boolean
+          is_recurring: boolean
+          notification_days: string
+          split_details: Json
+          split_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          due_date: string
+          frequency?: string | null
+          group_id: string
+          id?: string
+          is_paid?: boolean
+          is_recurring?: boolean
+          notification_days?: string
+          split_details?: Json
+          split_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          due_date?: string
+          frequency?: string | null
+          group_id?: string
+          id?: string
+          is_paid?: boolean
+          is_recurring?: boolean
+          notification_days?: string
+          split_details?: Json
+          split_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_bill_reminders_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          is_active: boolean
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          invite_code: string
+          max_members: number
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          max_members?: number
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          max_members?: number
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      roommate_messages: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          message: string
+          message_type: string
+          metadata: Json
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          message: string
+          message_type?: string
+          metadata?: Json
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          message?: string
+          message_type?: string
+          metadata?: Json
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_monthly_budgets: {
+        Row: {
+          category_budgets: Json
+          created_at: string
+          group_id: string
+          id: string
+          individual_contributions: Json
+          month_year: string
+          spent_amount: number
+          total_budget: number
+          updated_at: string
+        }
+        Insert: {
+          category_budgets?: Json
+          created_at?: string
+          group_id: string
+          id?: string
+          individual_contributions?: Json
+          month_year: string
+          spent_amount?: number
+          total_budget?: number
+          updated_at?: string
+        }
+        Update: {
+          category_budgets?: Json
+          created_at?: string
+          group_id?: string
+          id?: string
+          individual_contributions?: Json
+          month_year?: string
+          spent_amount?: number
+          total_budget?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_monthly_budgets_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_preferences: {
+        Row: {
+          auto_split_expenses: boolean
+          bill_reminder_notifications: boolean
+          created_at: string
+          currency: string
+          expense_approval_required: boolean
+          expense_notifications: boolean
+          group_id: string
+          id: string
+          notifications_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          auto_split_expenses?: boolean
+          bill_reminder_notifications?: boolean
+          created_at?: string
+          currency?: string
+          expense_approval_required?: boolean
+          expense_notifications?: boolean
+          group_id: string
+          id?: string
+          notifications_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          auto_split_expenses?: boolean
+          bill_reminder_notifications?: boolean
+          created_at?: string
+          currency?: string
+          expense_approval_required?: boolean
+          expense_notifications?: boolean
+          group_id?: string
+          id?: string
+          notifications_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_preferences_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: true
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_shared_expenses: {
+        Row: {
+          added_by: string
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string
+          group_id: string
+          id: string
+          receipt_url: string | null
+          split_details: Json
+          split_type: string
+        }
+        Insert: {
+          added_by: string
+          amount: number
+          category?: string
+          created_at?: string
+          date?: string
+          description: string
+          group_id: string
+          id?: string
+          receipt_url?: string | null
+          split_details?: Json
+          split_type?: string
+        }
+        Update: {
+          added_by?: string
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          group_id?: string
+          id?: string
+          receipt_url?: string | null
+          split_details?: Json
+          split_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_shared_expenses_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_shared_goals: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_amount: number
+          deadline: string | null
+          description: string | null
+          group_id: string
+          icon: string
+          id: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          current_amount?: number
+          deadline?: string | null
+          description?: string | null
+          group_id: string
+          icon?: string
+          id?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_amount?: number
+          deadline?: string | null
+          description?: string | null
+          group_id?: string
+          icon?: string
+          id?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_shared_goals_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roommate_wishlists: {
+        Row: {
+          added_by: string
+          category: string
+          created_at: string
+          estimated_cost: number
+          group_id: string
+          id: string
+          is_purchased: boolean
+          notes: string | null
+          priority: string
+          purchased_by: string | null
+          purchased_date: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          added_by: string
+          category?: string
+          created_at?: string
+          estimated_cost?: number
+          group_id: string
+          id?: string
+          is_purchased?: boolean
+          notes?: string | null
+          priority?: string
+          purchased_by?: string | null
+          purchased_date?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          added_by?: string
+          category?: string
+          created_at?: string
+          estimated_cost?: number
+          group_id?: string
+          id?: string
+          is_purchased?: boolean
+          notes?: string | null
+          priority?: string
+          purchased_by?: string | null
+          purchased_date?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_wishlists_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "roommate_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -759,6 +1177,14 @@ export type Database = {
       is_blocked: { Args: { _user_id: string }; Returns: boolean }
       is_couple_member: {
         Args: { _couple_link_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_roommate_admin: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_roommate_member: {
+        Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
     }
