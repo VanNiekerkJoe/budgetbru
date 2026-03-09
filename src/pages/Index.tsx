@@ -12,6 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { useTutorial } from '@/services/TutorialService';
 import TutorialGuide from '@/components/TutorialGuide';
 import { QuickExpenseTracker } from '@/components/dashboard/QuickExpenseTracker';
+import StudentSurvivalMode from '@/components/dashboard/StudentSurvivalMode';
+import SOSMoneyRequest from '@/components/dashboard/SOSMoneyRequest';
 import { useBudget } from '@/contexts/BudgetContext';
 import { formatCurrency } from '@/utils/formatters';
 
