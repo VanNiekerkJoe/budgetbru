@@ -373,6 +373,15 @@ const CouplesPage: React.FC = () => {
   // Expenses
   const handleAddExpense = async () => {
     if (!user || !coupleLink || !expDesc.trim() || !expAmount) return;
+    
+    // Determine split percentage based on split type
+    let splitPercentage = 50;
+    if (expSplitType === 'pay_full') {
+      splitPercentage = 100; // I pay 100%, partner owes 0%
+    } else if (expSplitType === 'custom') {
+      splitPercentage = Number(expSplitPct);
+    }
+    
     const { error } = await supabase.from('couple_shared_expenses').insert({
       couple_link_id: coupleLink.id,
       added_by: user.id,
@@ -380,7 +389,7 @@ const CouplesPage: React.FC = () => {
       amount: Number(expAmount),
       category: expCategory,
       split_type: expSplitType,
-      split_percentage: expSplitType === '50/50' ? 50 : Number(expSplitPct),
+      split_percentage: splitPercentage,
     });
     if (error) { toast.error('Failed to add expense'); return; }
     toast.success('Expense added');
@@ -683,10 +692,14 @@ const CouplesPage: React.FC = () => {
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant={expSplitType === '50/50' ? 'default' : 'outline'} onClick={() => setExpSplitType('50/50')}>50/50</Button>
+                      <Button size="sm" variant={expSplitType === 'pay_full' ? 'default' : 'outline'} onClick={() => setExpSplitType('pay_full')}>I'll Pay Full</Button>
                       <Button size="sm" variant={expSplitType === 'custom' ? 'default' : 'outline'} onClick={() => setExpSplitType('custom')}>Custom</Button>
                     </div>
+                    {expSplitType === 'pay_full' && (
+                      <p className="text-xs text-muted-foreground">You're covering this expense fully — no split.</p>
+                    )}
                     {expSplitType === 'custom' && (
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">My %:</span>
@@ -723,7 +736,7 @@ const CouplesPage: React.FC = () => {
                       <span className="text-xl">{cat?.emoji || '📦'}</span>
                       <div>
                         <p className="text-sm font-medium text-foreground">{e.description}</p>
-                        <p className="text-xs text-muted-foreground">{e.date} · {e.split_type === '50/50' ? '50/50' : `${e.split_percentage}%`}</p>
+                        <p className="text-xs text-muted-foreground">{e.date} · {e.split_type === '50/50' ? '50/50' : e.split_type === 'pay_full' ? 'I paid full' : `${e.split_percentage}%`}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
