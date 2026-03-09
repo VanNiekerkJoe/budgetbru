@@ -39,6 +39,8 @@ interface SharedExpense {
   split_percentage: number;
   date: string;
   created_at: string;
+  user_1_paid: boolean;
+  user_2_paid: boolean;
 }
 
 interface SharedGoal {
