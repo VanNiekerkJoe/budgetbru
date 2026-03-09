@@ -491,6 +491,8 @@ export type Database = {
           id: string
           split_percentage: number
           split_type: string
+          user_1_paid: boolean
+          user_2_paid: boolean
         }
         Insert: {
           added_by: string
@@ -503,6 +505,8 @@ export type Database = {
           id?: string
           split_percentage?: number
           split_type?: string
+          user_1_paid?: boolean
+          user_2_paid?: boolean
         }
         Update: {
           added_by?: string
@@ -515,6 +519,8 @@ export type Database = {
           id?: string
           split_percentage?: number
           split_type?: string
+          user_1_paid?: boolean
+          user_2_paid?: boolean
         }
         Relationships: [
           {
