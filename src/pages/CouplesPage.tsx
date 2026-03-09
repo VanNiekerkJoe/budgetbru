@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -85,6 +86,7 @@ const GOAL_ICONS = ['🎯', '🏠', '✈️', '💍', '🚗', '👶', '🎓', '�
 
 const CouplesPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [coupleLink, setCoupleLink] = useState<CoupleLink | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteCode, setInviteCode] = useState('');
@@ -125,22 +127,45 @@ const CouplesPage: React.FC = () => {
 
   const fetchCoupleLink = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('couple_links')
-      .select('*')
-      .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
-      .in('status', ['active', 'pending'])
-      .order('created_at', { ascending: false })
-      .limit(1);
+    
+    try {
+      const { data, error } = await supabase
+        .from('couple_links')
+        .select('*')
+        .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
+        .in('status', ['active', 'pending'])
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-    if (data && data.length > 0) {
-      setCoupleLink(data[0]);
-      if (data[0].status === 'pending' && data[0].user_id_1 === user.id) {
-        setInviteCode(data[0].invite_code);
+      if (error) {
+        console.error('Error fetching couple link:', error);
+        toast.error('Failed to load couple information');
+        setLoading(false);
+        return;
       }
+
+      if (data && data.length > 0) {
+        const link = data[0];
+        setCoupleLink(link);
+        
+        if (link.status === 'pending' && link.user_id_1 === user.id) {
+          setInviteCode(link.invite_code);
+        }
+        
+        // If we have an active link and we're on auth page, redirect to couples
+        if (link.status === 'active' && window.location.pathname === '/auth') {
+          navigate('/couples');
+        }
+      } else {
+        setCoupleLink(null);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('Something went wrong');
     }
+    
     setLoading(false);
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchAllData = useCallback(async () => {
     if (!coupleLink || coupleLink.status !== 'active') return;
@@ -161,6 +186,26 @@ const CouplesPage: React.FC = () => {
 
   useEffect(() => { fetchCoupleLink(); }, [fetchCoupleLink]);
   useEffect(() => { fetchAllData(); }, [fetchAllData]);
+
+  // Set up real-time subscription for couple link changes
+  useEffect(() => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel(`couple-links-${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'couple_links',
+        filter: `user_id_1=eq.${user.id},user_id_2=eq.${user.id}`,
+      }, (payload) => {
+        console.log('Couple link changed:', payload);
+        fetchCoupleLink();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchCoupleLink]);
 
   // Realtime messages
   useEffect(() => {
@@ -186,38 +231,82 @@ const CouplesPage: React.FC = () => {
   // --- Actions ---
   const handleCreateInvite = async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from('couple_links')
-      .insert({ user_id_1: user.id })
-      .select()
-      .single();
-    if (error) { toast.error('Failed to create invite'); return; }
-    setCoupleLink(data);
-    setInviteCode(data.invite_code);
-    toast.success('Invite code created! Share it with your partner 💕');
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('couple_links')
+        .insert({ user_id_1: user.id })
+        .select()
+        .single();
+        
+      if (error) { 
+        toast.error('Failed to create invite'); 
+        setLoading(false);
+        return; 
+      }
+      
+      setCoupleLink(data);
+      setInviteCode(data.invite_code);
+      toast.success('Invite code created! Share it with your partner 💕');
+      setLoading(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setLoading(false);
+    }
   };
 
   const handleJoinCouple = async () => {
     if (!user || !joinCode.trim()) return;
-    const { data: link } = await supabase
-      .from('couple_links')
-      .select('*')
-      .eq('invite_code', joinCode.trim())
-      .eq('status', 'pending')
-      .single();
+    setLoading(true);
+    
+    try {
+      const { data: link } = await supabase
+        .from('couple_links')
+        .select('*')
+        .eq('invite_code', joinCode.trim())
+        .eq('status', 'pending')
+        .single();
 
-    if (!link) { toast.error('Invalid or expired invite code'); return; }
-    if (link.user_id_1 === user.id) { toast.error("You can't join your own invite!"); return; }
+      if (!link) { 
+        toast.error('Invalid or expired invite code'); 
+        setLoading(false);
+        return; 
+      }
+      if (link.user_id_1 === user.id) { 
+        toast.error("You can't join your own invite!"); 
+        setLoading(false);
+        return; 
+      }
 
-    const { error } = await supabase
-      .from('couple_links')
-      .update({ user_id_2: user.id, status: 'active' })
-      .eq('id', link.id);
+      const { error } = await supabase
+        .from('couple_links')
+        .update({ user_id_2: user.id, status: 'active' })
+        .eq('id', link.id);
 
-    if (error) { toast.error('Failed to join'); return; }
-    toast.success('You are now linked! 💑');
-    setJoinCode('');
-    fetchCoupleLink();
+      if (error) { 
+        toast.error('Failed to join'); 
+        setLoading(false);
+        return; 
+      }
+      
+      toast.success('You are now linked! 💑');
+      setJoinCode('');
+      
+      // Update the local state immediately
+      const updatedLink = { ...link, user_id_2: user.id, status: 'active' };
+      setCoupleLink(updatedLink);
+      
+      // Navigate to couples page if we're not already there
+      if (window.location.pathname !== '/couples') {
+        navigate('/couples');
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setLoading(false);
+    }
   };
 
   const handleUnlink = async () => {
