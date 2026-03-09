@@ -23,6 +23,8 @@ const Sidebar: React.FC = () => {
     { path: '/planning', icon: Calendar, label: 'Planning' },
     { path: '/couples', icon: Heart, label: 'Couples' },
     { path: '/roommates', icon: Users, label: 'Roommates' },
+    { path: '/survival', icon: Gauge, label: 'Survival Mode' },
+    { path: '/sos', icon: Siren, label: 'S.O.S Money' },
     { path: '/profile', icon: User, label: 'Profile' },
   ];
 
