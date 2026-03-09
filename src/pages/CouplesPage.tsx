@@ -754,17 +754,25 @@ const CouplesPage: React.FC = () => {
             <div className="space-y-2">
               {expenses.map(e => {
                 const cat = EXPENSE_CATEGORIES.find(c => c.id === e.category);
+                const isUser1 = coupleLink?.user_id_1 === user?.id;
+                const isPaid = isUser1 ? e.user_1_paid : e.user_2_paid;
+                
                 return (
                   <motion.div key={e.id} layout className="flex items-center justify-between p-3 bg-card border border-border rounded-xl">
                     <div className="flex items-center gap-3">
+                      <Checkbox 
+                        checked={isPaid}
+                        onCheckedChange={() => handleTogglePayment(e.id, isPaid)}
+                        className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      />
                       <span className="text-xl">{cat?.emoji || '📦'}</span>
-                      <div>
+                      <div className={isPaid ? "line-through opacity-50" : ""}>
                         <p className="text-sm font-medium text-foreground">{e.description}</p>
                         <p className="text-xs text-muted-foreground">{e.date} · {e.split_type === '50/50' ? '50/50' : e.split_type === 'pay_full' ? 'I paid full' : `${e.split_percentage}%`}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-foreground">{formatCurrency(e.amount)}</span>
+                      <span className={`font-bold text-sm text-foreground ${isPaid ? "line-through opacity-50" : ""}`}>{formatCurrency(e.amount)}</span>
                       <button onClick={() => handleDeleteExpense(e.id)} className="text-muted-foreground hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </button>
