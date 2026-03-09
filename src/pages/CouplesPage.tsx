@@ -679,8 +679,11 @@ const CouplesPage: React.FC = () => {
                 <div className="space-y-2">
                   {expenses.slice(0, 5).map(e => {
                     const cat = EXPENSE_CATEGORIES.find(c => c.id === e.category);
+                    const isUser1 = coupleLink?.user_id_1 === user?.id;
+                    const isPaid = isUser1 ? e.user_1_paid : e.user_2_paid;
+                    
                     return (
-                      <div key={e.id} className="flex items-center justify-between text-sm py-1.5">
+                      <div key={e.id} className={`flex items-center justify-between text-sm py-1.5 ${isPaid ? "line-through opacity-50" : ""}`}>
                         <span>{cat?.emoji} {e.description}</span>
                         <span className="font-medium text-foreground">{formatCurrency(e.amount)}</span>
                       </div>
