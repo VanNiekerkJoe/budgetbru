@@ -201,25 +201,55 @@ const CouplesPage: React.FC = () => {
 
   const handleJoinCouple = async () => {
     if (!user || !joinCode.trim()) return;
-    const { data: link } = await supabase
-      .from('couple_links')
-      .select('*')
-      .eq('invite_code', joinCode.trim())
-      .eq('status', 'pending')
-      .single();
+    setLoading(true);
+    
+    try {
+      const { data: link } = await supabase
+        .from('couple_links')
+        .select('*')
+        .eq('invite_code', joinCode.trim())
+        .eq('status', 'pending')
+        .single();
 
-    if (!link) { toast.error('Invalid or expired invite code'); return; }
-    if (link.user_id_1 === user.id) { toast.error("You can't join your own invite!"); return; }
+      if (!link) { 
+        toast.error('Invalid or expired invite code'); 
+        setLoading(false);
+        return; 
+      }
+      if (link.user_id_1 === user.id) { 
+        toast.error("You can't join your own invite!"); 
+        setLoading(false);
+        return; 
+      }
 
-    const { error } = await supabase
-      .from('couple_links')
-      .update({ user_id_2: user.id, status: 'active' })
-      .eq('id', link.id);
+      const { error } = await supabase
+        .from('couple_links')
+        .update({ user_id_2: user.id, status: 'active' })
+        .eq('id', link.id);
 
-    if (error) { toast.error('Failed to join'); return; }
-    toast.success('You are now linked! 💑');
-    setJoinCode('');
-    fetchCoupleLink();
+      if (error) { 
+        toast.error('Failed to join'); 
+        setLoading(false);
+        return; 
+      }
+      
+      toast.success('You are now linked! 💑');
+      setJoinCode('');
+      
+      // Update the local state immediately
+      const updatedLink = { ...link, user_id_2: user.id, status: 'active' };
+      setCoupleLink(updatedLink);
+      
+      // Navigate to couples page if we're not already there
+      if (window.location.pathname !== '/couples') {
+        navigate('/couples');
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setLoading(false);
+    }
   };
 
   const handleUnlink = async () => {
