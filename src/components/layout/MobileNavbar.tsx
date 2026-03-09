@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { 
   Home, Wallet, CircleDollarSign, Plus, Check,
   ChartPie, User, Map, MessageSquare, Calendar, 
-  Zap, Lightbulb, Receipt, Shield, CreditCard, Heart, 
+  Zap, Lightbulb, Receipt, Shield, CreditCard, Heart, Users,
   MoreHorizontal, X, PiggyBank, ChevronLeft, TrendingUp
 } from 'lucide-react';
 import { useBudget } from '@/contexts/BudgetContext';
@@ -34,6 +34,7 @@ const SOCIAL_ITEMS = [
   { path: '/vibes', icon: Zap, label: 'Vibes Hub', color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
   { path: '/planning', icon: Calendar, label: 'Planning', color: 'text-pink-500', bg: 'bg-pink-500/10' },
   { path: '/couples', icon: Heart, label: 'Couples', color: 'text-rose-500', bg: 'bg-rose-500/10' },
+  { path: '/roommates', icon: Users, label: 'Roommates', color: 'text-purple-500', bg: 'bg-purple-500/10' },
   { path: '/map', icon: Map, label: 'Map', color: 'text-teal-500', bg: 'bg-teal-500/10' },
   { path: '/tips', icon: Lightbulb, label: 'Tips', color: 'text-amber-500', bg: 'bg-amber-500/10' },
   { path: '/profile', icon: User, label: 'Profile', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
