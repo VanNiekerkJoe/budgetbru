@@ -7,7 +7,7 @@ import {
   Home, Wallet, CircleDollarSign, Plus, Check,
   ChartPie, User, Map, MessageSquare, Calendar, 
   Zap, Lightbulb, Receipt, Shield, CreditCard, Heart, Users,
-  MoreHorizontal, X, PiggyBank, ChevronLeft, TrendingUp
+  MoreHorizontal, X, PiggyBank, ChevronLeft, TrendingUp, Siren, Gauge
 } from 'lucide-react';
 import { useBudget } from '@/contexts/BudgetContext';
 import { Button } from '@/components/ui/button';
