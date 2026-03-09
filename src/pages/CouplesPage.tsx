@@ -70,6 +70,15 @@ interface CoupleMessage {
   created_at: string;
 }
 
+interface GoalContribution {
+  id: string;
+  goal_id: string;
+  contributor_id: string;
+  amount: number;
+  contribution_date: string;
+  created_at: string;
+}
+
 const EXPENSE_CATEGORIES = [
   { id: 'groceries', label: 'Groceries', emoji: '🛒' },
   { id: 'dining', label: 'Dining', emoji: '🍽️' },
