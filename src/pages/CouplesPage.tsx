@@ -736,7 +736,7 @@ const CouplesPage: React.FC = () => {
                       <span className="text-xl">{cat?.emoji || '📦'}</span>
                       <div>
                         <p className="text-sm font-medium text-foreground">{e.description}</p>
-                        <p className="text-xs text-muted-foreground">{e.date} · {e.split_type === '50/50' ? '50/50' : `${e.split_percentage}%`}</p>
+                        <p className="text-xs text-muted-foreground">{e.date} · {e.split_type === '50/50' ? '50/50' : e.split_type === 'pay_full' ? 'I paid full' : `${e.split_percentage}%`}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
