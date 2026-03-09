@@ -187,6 +187,26 @@ const CouplesPage: React.FC = () => {
   useEffect(() => { fetchCoupleLink(); }, [fetchCoupleLink]);
   useEffect(() => { fetchAllData(); }, [fetchAllData]);
 
+  // Set up real-time subscription for couple link changes
+  useEffect(() => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel(`couple-links-${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'couple_links',
+        filter: `user_id_1=eq.${user.id},user_id_2=eq.${user.id}`,
+      }, (payload) => {
+        console.log('Couple link changed:', payload);
+        fetchCoupleLink();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchCoupleLink]);
+
   // Realtime messages
   useEffect(() => {
     if (!coupleLink || coupleLink.status !== 'active') return;
