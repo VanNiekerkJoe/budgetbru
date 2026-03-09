@@ -181,12 +181,14 @@ const CouplesPage: React.FC = () => {
     if (!coupleLink || coupleLink.status !== 'active') return;
     const linkId = coupleLink.id;
 
-    const [expRes, goalRes, wishRes, msgRes, contribRes] = await Promise.all([
+    const [expRes, goalRes, wishRes, msgRes] = await Promise.all([
       supabase.from('couple_shared_expenses').select('*').eq('couple_link_id', linkId).order('date', { ascending: false }),
       supabase.from('couple_shared_goals').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: false }),
       supabase.from('couple_wishlists').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: false }),
       supabase.from('couple_messages').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: true }),
-    // First get goals, then fetch contributions for those goals
+    ]);
+
+    // Fetch contributions for the goals we found
     const goalIds = goalRes.data?.map(g => g.id) || [];
     let contributions: GoalContribution[] = [];
     
