@@ -127,22 +127,45 @@ const CouplesPage: React.FC = () => {
 
   const fetchCoupleLink = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('couple_links')
-      .select('*')
-      .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
-      .in('status', ['active', 'pending'])
-      .order('created_at', { ascending: false })
-      .limit(1);
+    
+    try {
+      const { data, error } = await supabase
+        .from('couple_links')
+        .select('*')
+        .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
+        .in('status', ['active', 'pending'])
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-    if (data && data.length > 0) {
-      setCoupleLink(data[0]);
-      if (data[0].status === 'pending' && data[0].user_id_1 === user.id) {
-        setInviteCode(data[0].invite_code);
+      if (error) {
+        console.error('Error fetching couple link:', error);
+        toast.error('Failed to load couple information');
+        setLoading(false);
+        return;
       }
+
+      if (data && data.length > 0) {
+        const link = data[0];
+        setCoupleLink(link);
+        
+        if (link.status === 'pending' && link.user_id_1 === user.id) {
+          setInviteCode(link.invite_code);
+        }
+        
+        // If we have an active link and we're on auth page, redirect to couples
+        if (link.status === 'active' && window.location.pathname === '/auth') {
+          navigate('/couples');
+        }
+      } else {
+        setCoupleLink(null);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('Something went wrong');
     }
+    
     setLoading(false);
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchAllData = useCallback(async () => {
     if (!coupleLink || coupleLink.status !== 'active') return;
