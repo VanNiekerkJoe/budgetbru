@@ -7,7 +7,7 @@ import {
   Home, Wallet, CircleDollarSign, Plus, Check,
   ChartPie, User, Map, MessageSquare, Calendar, 
   Zap, Lightbulb, Receipt, Shield, CreditCard, Heart, Users,
-  MoreHorizontal, X, PiggyBank, ChevronLeft, TrendingUp
+  MoreHorizontal, X, PiggyBank, ChevronLeft, TrendingUp, Siren, Gauge
 } from 'lucide-react';
 import { useBudget } from '@/contexts/BudgetContext';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,8 @@ const FINANCE_ITEMS = [
 ];
 
 const SOCIAL_ITEMS = [
+  { path: '/survival', icon: Gauge, label: 'Survival Mode', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+  { path: '/sos', icon: Siren, label: 'S.O.S Money', color: 'text-red-500', bg: 'bg-red-500/10' },
   { path: '/community', icon: MessageSquare, label: 'Community', color: 'text-sky-500', bg: 'bg-sky-500/10' },
   { path: '/vibes', icon: Zap, label: 'Vibes Hub', color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
   { path: '/planning', icon: Calendar, label: 'Planning', color: 'text-pink-500', bg: 'bg-pink-500/10' },
