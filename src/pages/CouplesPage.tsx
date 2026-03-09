@@ -197,10 +197,30 @@ const CouplesPage: React.FC = () => {
         event: '*',
         schema: 'public',
         table: 'couple_links',
-        filter: `user_id_1=eq.${user.id},user_id_2=eq.${user.id}`,
-      }, (payload) => {
+      }, (payload: any) => {
         console.log('Couple link changed:', payload);
-        fetchCoupleLink();
+        
+        // Check if this change is relevant to current user
+        const newData = payload.new;
+        const oldData = payload.old;
+        
+        const isRelevant = newData?.user_id_1 === user.id || 
+                          newData?.user_id_2 === user.id ||
+                          oldData?.user_id_1 === user.id || 
+                          oldData?.user_id_2 === user.id;
+        
+        if (isRelevant) {
+          // Refresh couple link data when any change occurs
+          fetchCoupleLink();
+          
+          // Show toast notification when partner joins
+          if (payload.eventType === 'UPDATE' && 
+              newData?.status === 'active' && 
+              oldData?.status === 'pending' &&
+              newData?.user_id_1 === user.id) {
+            toast.success('🎉 Your partner joined! You are now linked! 💑');
+          }
+        }
       })
       .subscribe();
 
