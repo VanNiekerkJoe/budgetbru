@@ -77,6 +77,8 @@ const AnimatedRoutes = () => {
           <Route path="/notifications" element={<ProtectedRoute><MainLayout><Notifications /></MainLayout></ProtectedRoute>} />
           <Route path="/couples" element={<ProtectedRoute><MainLayout><CouplesPage /></MainLayout></ProtectedRoute>} />
           <Route path="/roommates" element={<ProtectedRoute><MainLayout><RoommatesPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/survival" element={<ProtectedRoute><MainLayout><StudentSurvivalPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/sos" element={<ProtectedRoute><MainLayout><SOSPage /></MainLayout></ProtectedRoute>} />
           
           {/* Admin route */}
           <Route path="/admin" element={<ProtectedRoute adminOnly><MainLayout><AdminPage /></MainLayout></ProtectedRoute>} />
