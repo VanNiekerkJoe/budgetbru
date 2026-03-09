@@ -186,18 +186,23 @@ const CouplesPage: React.FC = () => {
       supabase.from('couple_shared_goals').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: false }),
       supabase.from('couple_wishlists').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: false }),
       supabase.from('couple_messages').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: true }),
-      // Fetch contributions for goals in this couple link
-      supabase.from('couple_goal_contributions')
-        .select('*, goal:couple_shared_goals(couple_link_id)')
-        .eq('goal.couple_link_id', linkId)
-        .order('created_at', { ascending: false }),
-    ]);
+    // First get goals, then fetch contributions for those goals
+    const goalIds = goalRes.data?.map(g => g.id) || [];
+    let contributions: GoalContribution[] = [];
+    
+    if (goalIds.length > 0) {
+      const contribRes = await supabase.from('couple_goal_contributions')
+        .select('*')
+        .in('goal_id', goalIds)
+        .order('created_at', { ascending: false });
+      contributions = contribRes.data || [];
+    }
 
     if (expRes.data) setExpenses(expRes.data);
     if (goalRes.data) setGoals(goalRes.data);
     if (wishRes.data) setWishlist(wishRes.data);
     if (msgRes.data) setMessages(msgRes.data);
-    if (contribRes.data) setGoalContributions(contribRes.data);
+    setGoalContributions(contributions);
   }, [coupleLink]);
 
   useEffect(() => { fetchCoupleLink(); }, [fetchCoupleLink]);
