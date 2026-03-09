@@ -490,6 +490,20 @@ const CouplesPage: React.FC = () => {
   }, 0);
   const partnerShare = totalSharedExpenses - myShare;
 
+  // Helper function to get my contribution to a specific goal
+  const getMyContribution = (goalId: string): number => {
+    return goalContributions
+      .filter(c => c.goal_id === goalId && c.contributor_id === user?.id)
+      .reduce((sum, c) => sum + Number(c.amount), 0);
+  };
+
+  // Helper function to get partner's contribution to a specific goal
+  const getPartnerContribution = (goalId: string): number => {
+    return goalContributions
+      .filter(c => c.goal_id === goalId && c.contributor_id !== user?.id)
+      .reduce((sum, c) => sum + Number(c.amount), 0);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
