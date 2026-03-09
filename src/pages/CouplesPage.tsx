@@ -776,6 +776,8 @@ const CouplesPage: React.FC = () => {
               {goals.map(goal => {
                 const pct = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
                 const completed = pct >= 100;
+                const myContribution = getMyContribution(goal.id);
+                const partnerContribution = getPartnerContribution(goal.id);
                 return (
                   <Card key={goal.id} className={completed ? 'border-emerald-500/30 bg-emerald-500/5' : ''}>
                     <CardContent className="pt-4 space-y-3">
@@ -789,12 +791,20 @@ const CouplesPage: React.FC = () => {
                         </div>
                         {completed && <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">🎉 Done!</Badge>}
                       </div>
-                      <div>
-                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{formatCurrency(goal.current_amount)}</span>
                           <span>{formatCurrency(goal.target_amount)}</span>
                         </div>
                         <Progress value={Math.min(pct, 100)} className="h-2" />
+                        
+                        {/* Individual contributions */}
+                        {(myContribution > 0 || partnerContribution > 0) && (
+                          <div className="flex justify-between text-xs pt-1 border-t border-border/50">
+                            <span className="text-primary font-medium">You: {formatCurrency(myContribution)}</span>
+                            <span className="text-muted-foreground">Partner: {formatCurrency(partnerContribution)}</span>
+                          </div>
+                        )}
                       </div>
                       {!completed && (
                         <div className="flex gap-2">
