@@ -402,8 +402,31 @@ const CouplesPage: React.FC = () => {
   };
 
   const handleContributeGoal = async (goal: SharedGoal, amount: number) => {
+    if (!user) return;
+    
+    // Add the contribution record
+    const { error: contribError } = await supabase.from('couple_goal_contributions').insert({
+      goal_id: goal.id,
+      contributor_id: user.id,
+      amount: amount,
+    });
+    
+    if (contribError) { 
+      toast.error('Failed to record contribution'); 
+      return; 
+    }
+
+    // Update the goal's total amount
     const newAmount = Math.min(goal.current_amount + amount, goal.target_amount);
-    await supabase.from('couple_shared_goals').update({ current_amount: newAmount }).eq('id', goal.id);
+    const { error: goalError } = await supabase.from('couple_shared_goals').update({ 
+      current_amount: newAmount 
+    }).eq('id', goal.id);
+    
+    if (goalError) { 
+      toast.error('Failed to update goal'); 
+      return; 
+    }
+    
     if (newAmount >= goal.target_amount) toast.success('🎉 Goal achieved! Congratulations!');
     else toast.success(`Added ${formatCurrency(amount)} to "${goal.title}"`);
     fetchAllData();
