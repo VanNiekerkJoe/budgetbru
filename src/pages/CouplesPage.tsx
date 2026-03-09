@@ -683,10 +683,14 @@ const CouplesPage: React.FC = () => {
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant={expSplitType === '50/50' ? 'default' : 'outline'} onClick={() => setExpSplitType('50/50')}>50/50</Button>
+                      <Button size="sm" variant={expSplitType === 'pay_full' ? 'default' : 'outline'} onClick={() => setExpSplitType('pay_full')}>I'll Pay Full</Button>
                       <Button size="sm" variant={expSplitType === 'custom' ? 'default' : 'outline'} onClick={() => setExpSplitType('custom')}>Custom</Button>
                     </div>
+                    {expSplitType === 'pay_full' && (
+                      <p className="text-xs text-muted-foreground">You're covering this expense fully — no split.</p>
+                    )}
                     {expSplitType === 'custom' && (
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">My %:</span>
