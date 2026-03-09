@@ -405,6 +405,27 @@ const CouplesPage: React.FC = () => {
     fetchAllData();
   };
 
+  const handleTogglePayment = async (expenseId: string, currentStatus: boolean) => {
+    if (!coupleLink || !user) return;
+    
+    // Determine which user is making the payment
+    const isUser1 = coupleLink.user_id_1 === user.id;
+    const updateField = isUser1 ? 'user_1_paid' : 'user_2_paid';
+    
+    const { error } = await supabase
+      .from('couple_shared_expenses')
+      .update({ [updateField]: !currentStatus })
+      .eq('id', expenseId);
+    
+    if (error) {
+      toast.error('Failed to update payment status');
+      return;
+    }
+    
+    toast.success(currentStatus ? 'Marked as unpaid' : 'Marked as paid');
+    fetchAllData();
+  };
+
   // Goals
   const handleAddGoal = async () => {
     if (!coupleLink || !goalTitle.trim() || !goalTarget) return;
