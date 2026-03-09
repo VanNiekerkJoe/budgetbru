@@ -211,15 +211,29 @@ const CouplesPage: React.FC = () => {
   // --- Actions ---
   const handleCreateInvite = async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from('couple_links')
-      .insert({ user_id_1: user.id })
-      .select()
-      .single();
-    if (error) { toast.error('Failed to create invite'); return; }
-    setCoupleLink(data);
-    setInviteCode(data.invite_code);
-    toast.success('Invite code created! Share it with your partner 💕');
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('couple_links')
+        .insert({ user_id_1: user.id })
+        .select()
+        .single();
+        
+      if (error) { 
+        toast.error('Failed to create invite'); 
+        setLoading(false);
+        return; 
+      }
+      
+      setCoupleLink(data);
+      setInviteCode(data.invite_code);
+      toast.success('Invite code created! Share it with your partner 💕');
+      setLoading(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setLoading(false);
+    }
   };
 
   const handleJoinCouple = async () => {
