@@ -181,17 +181,22 @@ const CouplesPage: React.FC = () => {
     if (!coupleLink || coupleLink.status !== 'active') return;
     const linkId = coupleLink.id;
 
-    const [expRes, goalRes, wishRes, msgRes] = await Promise.all([
+    const [expRes, goalRes, wishRes, msgRes, contribRes] = await Promise.all([
       supabase.from('couple_shared_expenses').select('*').eq('couple_link_id', linkId).order('date', { ascending: false }),
       supabase.from('couple_shared_goals').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: false }),
       supabase.from('couple_wishlists').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: false }),
       supabase.from('couple_messages').select('*').eq('couple_link_id', linkId).order('created_at', { ascending: true }),
+      supabase.from('couple_goal_contributions').select(`
+        *,
+        goal:couple_shared_goals!goal_id(couple_link_id)
+      `).eq('goal.couple_link_id', linkId).order('created_at', { ascending: false }),
     ]);
 
     if (expRes.data) setExpenses(expRes.data);
     if (goalRes.data) setGoals(goalRes.data);
     if (wishRes.data) setWishlist(wishRes.data);
     if (msgRes.data) setMessages(msgRes.data);
+    if (contribRes.data) setGoalContributions(contribRes.data);
   }, [coupleLink]);
 
   useEffect(() => { fetchCoupleLink(); }, [fetchCoupleLink]);
